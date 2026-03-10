@@ -1,0 +1,20 @@
+<?php
+
+return [
+    // Page title
+    'page_title' => 'KDrama Hub - Startseite',
+
+    // Hero section
+    'hero_title' => 'Entdecken Sie die besten K-Dramen',
+    'hero_subtitle' => 'Erkunden Sie, folgen Sie und finden Sie, wo Sie Ihre Lieblings-K-Dramen anschauen können',
+    'hero_cta' => '📺 Katalog durchsuchen',
+
+    // Featured section
+    'featured_title' => '🌟 Jetzt beliebt',
+    'no_image' => 'Kein Bild',
+
+    // No content
+    'no_content' => 'Im Moment sind keine Inhalte verfügbar.',
+    'configure_apis' => 'Bitte konfigurieren Sie die API-Schlüssel im Admin-Panel.',
+    'setup_apis_btn' => '⚙️ APIs konfigurieren',
+];

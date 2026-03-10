@@ -1,0 +1,674 @@
+# 🍿 KDrama Laravel
+
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+
+<p align="center">
+<img src="https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP Version">
+<img src="https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel Version">
+<img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+<img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
+<img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License">
+</p>
+
+## 📝 Aperçu
+KDrama Laravel est une application web moderne permettant de parcourir des dramas asiatiques (K-Dramas), de consulter leur disponibilité sur les plateformes de streaming et de gérer une liste de favoris (watchlist). Le projet est bâti avec le framework **Laravel 12** et utilise les APIs de TMDB et RapidAPI pour les données.
+
+---
+
+## ✨ Fonctionnalités Principales
+
+### 🔐 Authentification & Autorisation
+- ✅ Inscription et connexion sécurisée (Laravel Breeze)
+- ✅ Authentification multi-rôles (utilisateurs réguliers + administrateurs)
+- ✅ Système d'admin avec middleware `IsAdmin`
+- ✅ Tableau de bord utilisateur personnalisé
+- ✅ **Force Password Change System** : Admin peut réinitialiser mot de passe utilisateur
+  - 🔑 Génération de mot de passe temporaire sécurisé (12 chars)
+  - 📧 Envoi par email automatique
+  - 🔒 Forçage du changement avant accès à l'app
+  - ✏️ Page de changement de mot de passe dédiée avec validation
+
+### 📺 Gestion de Watchlist & Notation
+- ✅ Ajout/suppression de dramas à sa watchlist
+- ✅ Marquage de dramas comme "regardés"
+- ✅ **Système de notation Netflix-style** : 👎 Pas bien (1), 👍 Bien (2), 👍👍 Très bien (3)
+- ✅ Les ratings s'affichent sur les cards du catalogue, la page watchlist et la page détail
+- ✅ Suppression de la note en re-cliquant sur le même rating
+
+### 📥 Export de Watchlist
+- ✅ **Export PDF** : Mise en page élégante avec Browsershot/Chrome, emojis parfaits, images 135x203px, pagination automatique
+- ✅ **Export CSV** : Colonnes sélectionnables (titre, statut, rating, année, vote TMDB, genres, networks, synopsis)
+- ✅ **Filtres complets** : regardés, à regarder, ou mélange
+- ✅ **Tri flexible** : date d'ajout, titre A-Z, rating personnel, vote TMDB
+- ✅ **UX optimisée** : modale interactive, spinner de chargement, noms de fichier automatiques
+
+### 🎨 Admin Panel
+- ✅ **Dashboard admin** avec statistiques (utilisateurs, contenus, synchronisations)
+- ✅ **Gestion des utilisateurs** (CRUD complet)
+- ✅ **Gestion des paramètres** (settings key-value avec grouping)
+- ✅ **Gestion auteur/site/SEO** :
+  - Profil auteur (nom, bio, email, avatar)
+  - Informations du site (nom, tagline, footer, copyright)
+  - **Social links avec drag-and-drop** (réordonner via AJAX)
+  - Icônes Tabler (4500+ disponibles avec picker modal)
+  - SEO : meta description, keywords, Open Graph tags (OG title, description, image, type)
+- ✅ **Gestion des icônes** : picker modal avec recherche en direct
+- ✅ **Gestion des messages de contact** :
+  - Liste avec stats (total, en attente, lus, en cours, réglés, spam, erreurs email)
+  - Recherche et filtrage par statut
+  - Affichage des messages avec détails (expéditeur, email, pièces jointes)
+  - **Workflow d'état** : Pending → Read → In Progress → Resolved (transitions logiques)
+  - Téléchargement des pièces jointes
+  - Suppression définitive des messages
+- ✅ **Telescope** (outil de débogage) : Accès admin uniquement
+  - Visualisation des requêtes SQL, HTTP, erreurs
+  - Logs en temps réel
+  - Performance monitoring
+
+### 🔄 Synchronisation des Données
+- ✅ Intégration **TMDB** pour les métadonnées des dramas
+- ✅ Intégration **RapidAPI** pour la disponibilité streaming
+- ✅ **Système de cache configurable** (contrôlé par admin)
+- ✅ Priorité configurable entre sources API (env ou DB)
+- ✅ **Production Companies & Networks** : récupération des studios et réseaux de diffusion depuis TMDB
+
+### 🔗 Liens de Streaming Dynamiques
+- ✅ Affichage des plateformes de streaming disponibles (Netflix, Apple TV+, Amazon Prime, Disney+)
+- ✅ Fallback sur **liens de recherche** quand RapidAPI n'a pas de données
+- ✅ Génération automatique des URL de recherche avec le titre du drama encodé
+- ✅ Cards avec icônes emoji et dégradés de couleurs par plateforme
+
+### 🛠 Stack Technique
+- **🐘 Langage :** PHP 8.2+
+- **🚀 Framework :** [Laravel 12](https://laravel.com)
+- **🎨 Frontend :** Tailwind CSS, Alpine.js, Vite
+- **🗄️ Base de données :** MySQL (ou SQLite pour le développement local)
+- **🔐 Authentification :** Laravel Breeze
+- **📦 Gestionnaire de paquets :** Composer (PHP) & npm (JS)
+
+---
+
+## 📋 Prérequis
+Avant de commencer, assurez-vous d'avoir installé :
+- ✅ PHP >= 8.2
+- ✅ Composer
+- ✅ Node.js & npm
+- ✅ Un serveur de base de données (MySQL, PostgreSQL ou SQLite)
+
+---
+
+## ⚙️ Installation et Configuration
+
+### Développement Local
+
+1. **📂 Cloner le dépôt :**
+   ```bash
+   git clone <url-du-repo>
+   cd kdrama-laravel
+   ```
+
+2. **🐘 Installer les dépendances PHP :**
+   ```bash
+   composer install
+   ```
+
+3. **📦 Installer les dépendances JavaScript :**
+   ```bash
+   npm install
+   ```
+
+4. **🔧 Configurer l'environnement :**
+   Copiez le fichier `.env.example` en `.env` et configurez vos accès à la base de données et vos clés d'API.
+   ```bash
+   cp .env.example .env
+   ```
+
+5. **🔑 Générer la clé d'application :**
+   ```bash
+   php artisan key:generate
+   ```
+
+6. **🗃️ Lancer les migrations et les seeders :**
+   ```bash
+   php artisan migrate --seed
+   ```
+
+7. **⚡ Compiler les assets :**
+   ```bash
+   npm run build
+   ```
+
+### 🚀 Déploiement en Production
+
+Pour l'export PDF avec Browsershot, consultez le **[Guide Complet de Déploiement (DEPLOYMENT_BROWSERSHOT.md)](DEPLOYMENT_BROWSERSHOT.md)** qui couvre :
+- Installation de Chromium/Chrome par OS (Linux, Windows, macOS)
+- Configuration de Puppeteer
+- Dépannage des erreurs courantes
+- Monitoring et disk space
+- Sécurité (throttling, timeouts)
+
+---
+
+## 💻 Commandes et Scripts
+
+Le projet inclut des raccourcis pratiques dans le fichier `composer.json` :
+
+- **🚀 Installation complète (Setup) :**
+  ```bash
+  composer run setup
+  ```
+  *(Installe les dépendances, configure le .env, génère la clé, lance les migrations et compile les assets).*
+
+- **🔥 Lancer le serveur de développement :**
+  ```bash
+  composer run dev
+  ```
+  *(Lance simultanément le serveur PHP, la file d'attente, les logs et Vite).*
+
+- **🧪 Lancer les tests :**
+  ```bash
+  composer run test
+  ```
+
+- **📦 Scripts npm classiques :**
+  - `npm run dev` : Lancer Vite en mode développement.
+  - `npm run build` : Compiler pour la production.
+
+---
+
+## 🔑 Variables d'Environnement
+
+Voici les variables spécifiques nécessaires au fonctionnement des services tiers :
+
+- `TMDB_API_KEY` : Votre clé API The Movie Database.
+- `RAPIDAPI_KEY` : Votre clé RapidAPI (pour Streaming Availability).
+- `RAPIDAPI_HOST` : `streaming-availability.p.rapidapi.com`
+
+---
+
+## 🔄 Synchronisation des Données
+
+Le projet synchronise plusieurs types de données depuis les APIs **TMDB** et **Streaming Availability**. Voici le détail des informations récupérées et stockées :
+
+### 📺 Contenus (Dramas)
+Les métadonnées globales des séries et films :
+- **Identifiants :** IDs TMDB et IMDB pour les références externes.
+- **Visuels :** Chemins vers les posters et images de fond (backdrop).
+- **Statistiques :** Score moyen (vote average), nombre de votes et popularité.
+- **Dates :** Date de première diffusion (first air date), dernière diffusion et date de sortie.
+- **Technique :** Type (TV/Movie), nombre de saisons/épisodes, durée des épisodes.
+
+### 📝 Titres et Synopsis
+Les informations textuelles (multi-langues, principalement anglais `en`) :
+- **Titre :** Nom localisé du contenu.
+- **Titre original :** Nom dans la langue d'origine.
+- **Overview :** Résumé complet de l'intrigue.
+
+### 🏷️ Genres et Origines
+- **Genres :** Catégorisation (ex: Action, Romance, Drame) synchronisée avec TMDB.
+- **Pays d'origine :** Liste des pays producteurs (Corée du Sud, Japon, etc.).
+
+### 🔗 Disponibilité Streaming
+Données synchronisées pour une région spécifique (par défaut `fr`) :
+- **Plateforme :** Service proposant le contenu (Netflix, Disney+, Crunchyroll, etc.).
+- **Accès :** Type de visionnage (abonnement, achat, location, gratuit).
+- **Lien :** "Deep link" redirigeant directement vers la page du drama sur la plateforme.
+- **Tarification :** Prix et devise si applicable (achat/location).
+
+---
+
+## 📂 Structure du Projet
+
+- `app/Http/Controllers` : Logique de l'application (Dramas, Watchlist, Admin).
+- `app/Services` : Intégrations avec les APIs externes et services (TMDB, Streaming Availability, WatchlistExportService).
+- `app/Jobs` : Tâches de synchronisation en arrière-plan.
+- `resources/views` : Templates Blade (utilisant Tailwind CSS et Alpine.js).
+- `routes/web.php` : Définition des routes publiques, utilisateurs et administration.
+- `database/migrations` : Structure de la base de données.
+
+---
+
+## 📥 Feature : Export de Watchlist
+
+### 🎯 Workflow
+
+1. **Accès à la modale** : Utilisateur clique sur "📥 Exporter" dans la page `/watchlist`
+
+2. **Configuration des options** :
+   - **Filtres** : Regardés ✅ / À regarder ✅ (sélectionnables)
+   - **Colonnes** : Titre, Statut, Rating, Année, Vote TMDB, Genres, Networks, Synopsis, Images Poster
+   - **Tri** : Date d'ajout (défaut), Titre A-Z, Rating personnel, Vote TMDB
+   - **Format** : PDF ou CSV (image désactivée pour CSV)
+
+3. **Génération** :
+   - POST `/watchlist/export` avec options
+   - **PDF** : Browsershot (Headless Chrome) → 3-5 secondes
+   - **CSV** : Service PHP → 100-500ms
+
+4. **Résultat** :
+   - **PDF** : A4, marges 10mm, pagination (50 items/page), images 135x203px
+   - **CSV** : colonnes dynamiques, UTF-8, échappement correct
+   - Nom : `watchlist_{username}_{date}.{format}`
+
+### 📚 Fichiers Clés
+
+| Fichier | Rôle |
+|---------|------|
+| `app/Services/WatchlistExportService.php` | Logique d'export PDF/CSV |
+| `app/Http/Controllers/WatchlistController.php` | Endpoint POST `/watchlist/export` |
+| `resources/views/watchlist/_export-modal.blade.php` | Interface modale avec spinner |
+| `resources/views/exports/watchlist-pdf.blade.php` | Template PDF (A4, HTML/CSS) |
+| `MIGRATION_DOMPDF_TO_BROWSERSHOT.md` | Détails techniques de la migration |
+
+### 💡 Améliorations Apportées
+
+- ✅ **Migration DomPDF → Browsershot** pour support parfait des emojis et CSS
+- ✅ **Spinner animé** avec message dynamique durant la génération
+- ✅ **Colonnes dynamiques** respectant les sélections utilisateur
+- ✅ **Networks & Synopsis** dans CSV
+- ✅ **Format-aware UI** : image désactivée pour CSV
+- ✅ **Images optimisées** (135x203px pour posters)
+
+---
+
+## 🧪 Tests
+Les tests sont gérés par **PHPUnit** et **Laravel Dusk**.
+Pour plus de détails, consultez le [**Guide des Tests (TESTING.md)**](TESTING.md).
+
+Commandes rapides :
+```bash
+# PHPUnit (Unit & Feature)
+php artisan test
+
+# Laravel Dusk (Browser/E2E)
+php artisan dusk
+```
+
+---
+
+## 📧 Feature : Formulaire de Contact & Admin Panel
+
+### 🎯 Page de Contact (`/contact`)
+- **Formulaire accessible publiquement**
+- Champs : Nom, Email, Sujet, Message (5000 caractères max)
+- **Pièces jointes** : PDF, CSV, Excel, images, docs (max 5MB)
+- **Counter dynamique** pour le message
+- Envoi d'email à l'admin avec notification
+- Sauvegarde en base de données (pour archivage)
+- Gestion des erreurs d'email (enregistrement même si email échoue)
+
+### 🛠️ Admin Panel : Gestion des Messages (`/admin/contact`)
+- **Liste avec statistiques** : Total, En attente, Lus, En cours, Réglés, Spam, Erreur email
+- **Recherche & filtrage** : Par nom, email, sujet, message, statut
+- **Pagination** : 15 messages par page
+- **Codes couleur** : Badges par statut avec visuels distincts
+
+### 📋 Détail d'un Message (`/admin/contact/{id}`)
+- **Infos expéditeur** : Nom, email, date, statut email
+- **Contenu complet** : Message avec formatage préservé
+- **Pièce jointe** : Affichage et téléchargement
+- **Workflow de statut** (avec transitions logiques) :
+  - **En attente (⏳)** → Lire ou Spam
+  - **Lu (👀)** → En cours, Réglé ou Spam
+  - **En cours (🔧)** → Réglé ou Spam
+  - **Réglé (✅)** → Aucun changement possible (terminal)
+  - **Spam (🚫)** → Retirer du spam (back to pending)
+- **Timeline** : Affiche quand le message a été lu et réglé
+- **Suppressions** : Avec confirmation (définitive)
+
+### 📚 Fichiers Clés (Contact)
+| Fichier | Rôle |
+|---------|------|
+| `app/Http/Controllers/ContactController.php` | Formulaire + envoi email |
+| `app/Http/Controllers/Admin/AdminContactController.php` | Admin CRUD |
+| `app/Models/ContactMessage.php` | Modèle avec pièces jointes |
+| `app/Mail/ContactMail.php` | Mailable avec attachments |
+| `resources/views/contact.blade.php` | Formulaire public |
+| `resources/views/admin/contact/index.blade.php` | Liste des messages |
+| `resources/views/admin/contact/show.blade.php` | Détail + workflow |
+| `database/migrations/*contact_messages*` | Schéma BD |
+
+---
+
+## 🔍 Feature : Telescope (Débogage Admin)
+
+### Qu'est-ce que Telescope?
+Outil de débogage Laravel pour visualiser en temps réel :
+- **Requêtes SQL** : Toutes les queries avec temps d'exécution
+- **Requêtes HTTP** : Paramètres, réponses, durées
+- **Logs** : Erreurs, warnings, infos
+- **Exceptions** : Stack trace complet
+- **Events, Cache, Jobs** : Monitoring complet
+
+### 🔐 Accès (Admin Uniquement)
+- URL : `http://localhost:8000/telescope`
+- **Sécurité** : Middleware `auth` + Gate `viewTelescope` (admins uniquement)
+- Impossible d'accéder en visiteur ou user normal
+
+### 📚 Fichiers Clés (Telescope)
+| Fichier | Rôle |
+|---------|------|
+| `config/telescope.php` | Configuration (middleware auth + Authorize) |
+| `app/Providers/TelescopeServiceProvider.php` | Gate pour vérifier is_admin |
+| `database/migrations/*telescope_entries*` | Table de stockage |
+
+### 📚 Fichiers Clés (Admin UI & Export Management & Force Password Change)
+| Fichier | Rôle |
+|---------|------|
+| **Navigation & Layout** | |
+| `resources/views/components/admin-sidebar.blade.php` | Sidebar réutilisable avec tous les menus |
+| `resources/views/layouts/app.blade.php` | Hide nav/footer on admin routes |
+| `resources/views/admin/dashboard.blade.php` | Modern dashboard with sidebar + stat cards |
+| **Force Password Change** | |
+| `app/Http/Middleware/CheckPasswordMustChange.php` | Middleware enforcement on all routes |
+| `app/Http/Controllers/Admin/AdminUserController.php` | resetPassword() method for password reset |
+| `app/Http/Controllers/ProfileController.php` | changePassword() & updatePassword() methods |
+| `app/Mail/PasswordResetMail.php` | Email mailable with temporary password |
+| `resources/views/password/change.blade.php` | User password change form |
+| `resources/views/admin/users/edit.blade.php` | User edit with reset password modal |
+| `database/migrations/2026_03_10_*_add_password_must_change_to_users_table.php` | Schema migration |
+| **Export Management** | |
+| `app/Models/ExportLog.php` | Modèle de tracking des exports |
+| `database/migrations/2026_03_09_193246_create_export_logs_table.php` | Table export_logs |
+| `app/Http/Controllers/Admin/AdminExportController.php` | Admin export management (cache/stats/export user) |
+| `resources/views/admin/exports/cache.blade.php` | Interface gestion cache PDF |
+| `resources/views/admin/exports/stats.blade.php` | Dashboard statistiques exports |
+| `resources/views/admin/exports/_admin-export-modal.blade.php` | Modale réutilisable export avec options |
+| **Admin Pages** | |
+| `resources/views/admin/users/index.blade.php` | User management avec sidebar |
+| `resources/views/admin/settings/index.blade.php` | Settings avec sidebar |
+| `resources/views/admin/author/edit.blade.php` | Author & SEO avec sidebar |
+| `resources/views/admin/contact/index.blade.php` | Messages avec sidebar |
+| `resources/views/admin/icons/search.blade.php` | Icon picker avec sidebar |
+
+---
+
+## 🚀 Fonctionnalités Complétées ✅
+
+### Phase 1 : Authentification & Admin (✅ Complétée)
+- [x] Système d'authentification (Laravel Breeze)
+- [x] Admin panel avec dashboard
+- [x] Gestion des utilisateurs (CRUD)
+- [x] Gestion des paramètres système (settings)
+- [x] First-time setup wizard
+
+### Phase 2 : Système de Notation (✅ Complétée)
+- [x] Table `ratings` (multi-utilisateurs)
+- [x] Endpoints AJAX pour noter/supprimer notes
+- [x] Affichage des ratings sur catalog, watchlist et détail
+- [x] Suppression de rating au re-clic
+
+### Phase 3 : Auteur/Site/SEO + Social Links (✅ Complétée)
+- [x] Page d'administration auteur/site
+- [x] Métadonnées SEO (meta tags, OG tags)
+- [x] Gestion des social links
+- [x] **Drag-and-drop pour réordonner** (Sortable.js + AJAX)
+- [x] Icon picker modal avec Tabler Icons
+- [x] URL auto-protocol (client + server)
+- [x] Affichage des social links dans le footer
+
+### Phase 4 : Production Data & Streaming Links (✅ Complétée)
+- [x] Récupération production_companies et networks depuis TMDB
+- [x] Synchronisation des données via Artisan command
+- [x] **Streaming Search Links** :
+  - Affichage automatique des liens de recherche quand RapidAPI est vide
+  - Génération des URLs pour Netflix, Apple TV+, Amazon Prime, Disney+
+  - Cards compactes avec icônes et dégradés
+- [x] **Recommandations compactes** :
+  - Grille optimisée (3-6 colonnes selon breakpoint)
+  - Images réduites pour meilleure lisibilité
+  - Support des emojis de notation sur les cards
+
+### Phase 5 : Export de Watchlist (✅ Complétée)
+- [x] **Export PDF avec Browsershot (Headless Chrome)**
+  - Rendu parfait des emojis et icônes (contrairement à DomPDF)
+  - Mise en page élégante avec images (135x203px)
+  - Pagination automatique (50 items par page)
+  - Posters téléchargés et encodés en base64
+  - Stats et options affichées sur page 1
+- [x] **Export CSV** :
+  - Colonnes sélectionnables (titre, statut, rating, année, vote TMDB, genres, networks, synopsis)
+  - Escaping CSV correct pour guillemets et sauts de ligne
+  - Respect dynamique des colonnes cochées dans la modale
+- [x] **Modale d'export interactive**
+  - Filtrage : regardés, à regarder, ou les deux
+  - Colonnes : sélection personnalisée de chaque colonne
+  - Tri : par date d'ajout, titre, rating personnel, vote TMDB
+  - Format : PDF ou CSV
+  - Image Poster : désactivée automatiquement pour CSV
+  - **Envoi par email** : Checkbox pour recevoir le fichier par email
+- [x] **UX améliorée**
+  - Spinner animé durant la génération du PDF
+  - Mise à jour du message (génération → téléchargement)
+  - Nom de fichier automatique avec date
+  - Boutons grisés pendant l'export
+
+### Phase 6 : Cache des PDFs & Email Notifications (✅ Complétée)
+- [x] **Cache des PDFs exportés**
+  - Hash MD5 des paramètres (user_id + filtres + colonnes + tri)
+  - Stockage dans `storage/app/exports/`
+  - TTL de 7 jours (expiration automatique)
+  - ⚡ Regénération quasi-instantanée pour mêmes paramètres
+- [x] **Envoi d'export par email**
+  - Checkbox "📧 Envoyer le fichier par email" dans la modale
+  - Email élégant avec stats (total, regardés, à regarder)
+  - PDF/CSV en attachement (base64 encodé)
+  - Lien retour vers la watchlist
+  - Support Herd: URL locale `kdrama-laravel.test` en développement
+- [x] **Job asynchrone pour email**
+  - Queue driver `sync` exécution immédiate (développement)
+  - Logging des succès/erreurs
+  - Retry automatique en cas d'échec
+- [x] **Nettoyage automatique des caches**
+  - Commande Artisan: `php artisan exports:cleanup`
+  - Scheduler: exécution quotidienne à 2h du matin
+  - Suppression des PDFs > 7 jours
+
+### Phase 6 : Contact Form & Admin Management (✅ Complétée)
+- [x] Formulaire de contact public avec pièces jointes
+- [x] Gestion d'emails pour l'admin (notification)
+- [x] Sauvegarde persistante des messages même si email échoue
+- [x] Admin panel avec liste, recherche et filtrage
+- [x] Workflow de statut avec transitions logiques (Pending → Read → In Progress → Resolved)
+- [x] Détail du message avec pièce jointe téléchargeable
+- [x] Timeline d'état (read_at, resolved_at)
+- [x] Suppression définitive avec confirmation
+
+### Phase 7 : Telescope & Admin Debugging (✅ Complétée)
+- [x] Installation et configuration de Telescope
+- [x] Migration des tables Telescope
+- [x] Sécurisation : accès admin uniquement (middleware auth + Gate)
+- [x] Redirection automatique vers login pour visiteurs
+- [x] Refus d'accès (403) pour users non-admin
+
+### Phase 9 : Admin UI Redesign & Sidebar Navigation (✅ Complétée)
+- [x] **Persistent Sidebar Navigation**
+  - Site links (Home, Kdrams, Contact, Dashboard, Watchlist)
+  - Complete admin section with all features
+  - User info footer with profile + logout
+  - Responsive: desktop sidebar + mobile overlay menu
+- [x] **Hidden Top Navigation on Admin Pages**
+  - Navbar hidden on all admin routes
+  - Footer also hidden for clean admin interface
+  - Public pages keep their navigation
+- [x] **Modern Dashboard Redesign**
+  - Gradient stat cards (Users, Contents, Data)
+  - Feature grid with descriptions
+  - Export watchlist section
+  - Hover effects and shadows
+- [x] **Responsive Admin Pages**
+  - Sidebar on desktop, menu button on mobile
+  - Sticky headers with titles + emoji + description
+  - All admin pages integrated (Users, Settings, Author, Contact, Icons, Exports)
+
+### Phase 10 : Force Password Change System (✅ Complétée)
+- [x] **Admin Password Reset Feature** (`/admin/users/{id}/edit`)
+  - 🔑 Button "🔑 Generate & Send New Password"
+  - 🎨 Custom confirmation modal (replaces browser alert)
+  - ✉️ Secure temporary password (12 chars: mixed case, numbers, symbols)
+  - 📧 Email notification with password reset mail template
+  - 🔒 Sets `password_must_change=true` flag on user
+- [x] **Middleware Enforcement** (`CheckPasswordMustChange`)
+  - Applied to ALL routes (public, protected, admin)
+  - Redirects to `/change-password` if flag is true
+  - User cannot access any page until password is changed
+  - Skips only password change and authentication routes
+- [x] **Password Change Page** (`/change-password`)
+  - Requires current password verification
+  - New password with strength requirements display
+    - At least 8 characters
+    - Mix of uppercase & lowercase
+    - At least one number or symbol
+  - Password confirmation field
+  - Clears `password_must_change=false` on successful change
+  - Redirects to dashboard with success message
+  - Shows warning if mandatory password change is required
+- [x] **Database Schema**
+  - Added `password_must_change` column to users table
+  - Boolean field (default: false)
+  - Proper casting in User model
+  - Included in fillable array for mass assignment
+- [x] **Admin Sidebar Integration**
+  - 🔍 Telescope debug link added to Admin menu (desktop + mobile)
+  - Gate `viewTelescope` ensures only `is_admin=true` users can access
+  - Visible in Admin panel under "⚙️ Admin" section
+
+### Phase 8 : Admin Export Management & Statistics (✅ Complétée)
+- [x] **Logging automatique des exports**
+  - Enregistrement BD: user_id, format, item_count, file_size, cache_hash, was_cached, generation_time, filters
+  - Exécuté lors de chaque export (PDF/CSV)
+  - Tracking des cache hits vs nouvelles générations
+- [x] **Interface de gestion du cache** (`/admin/exports/cache`)
+  - Liste des fichiers PDF en cache avec tailles
+  - Statut expiration (actif/expiré) avec jours restants
+  - Suppression individuelle de fichiers
+  - Actions groupées : purger tout / purger expiré seulement
+  - Sécurité : validation avec `realpath()` check
+- [x] **Dashboard de statistiques** (`/admin/exports/stats`)
+  - Total exports tous formats + breakdown PDF/CSV
+  - Taux de cache hit avec pourcentage
+  - Espace disque utilisé
+  - Temps moyen génération (cachés vs non-cachés)
+  - Gain de performance du cache en %
+  - Top 5 utilisateurs par nombre d'exports (avec email)
+  - Graphique quotidien des exports (7/30/90 jours configurable)
+- [x] **Modèle ExportLog**
+  - Relation `belongsTo(User::class)`
+  - Casts typés pour all fields
+  - Index sur user_id, format, created_at
+  - Foreign key avec cascade delete
+- [x] **Export des watchlists par l'admin avec filtres complets**
+  - Modale réutilisable avec options complètes (filtres, colonnes, tri, format)
+  - Bouton "⚙️ Exporter avec options" sur dashboard admin (`/admin`)
+  - Admin peut exporter sa propre watchlist avec personnalisation
+  - Bouton export (⚙️) sur page gestion utilisateurs (`/admin/users`)
+  - Admin peut exporter la watchlist de n'importe quel utilisateur
+  - Endpoint: `POST /admin/exports/user/{userId}` (accepte JSON avec options)
+  - Logging automatique + cache PDF + support email
+
+### Améliorations Techniques
+- [x] Documentation détaillée sur les types de données synchronisés
+- [x] Système de cache configurable pour API
+- [x] Priorité configurable entre sources API
+- [x] Helper `StreamingLinkHelper` pour génération d'URLs de recherche
+- [x] Component `production-info` pour affichage studios/réseaux
+- [x] Service `WatchlistExportService` avec Browsershot
+- [x] Modal réactive avec JavaScript pour gestion des options
+- [x] Service de gestion des messages de contact (ContactController)
+- [x] Workflow state machine avec transitions validées
+- [x] Telescope avec Gate personnalisée pour les admins
+
+## 🔮 Fonctionnalités Futures (À Prévoir)
+
+Voici une liste des idées et améliorations envisagées pour les prochaines phases du projet. Ces features sont classées par niveau de complexité.
+
+### 🎯 Simples à Implémenter (Rapides)
+
+1. **Plusieurs Listes Personnalisées**
+   - Créer plusieurs watchlists au lieu d'une seule (p.ex. "À regarder avec ma copine", "Action", "Romantique")
+   - Chaque K-drama peut être dans plusieurs listes
+   - Export par liste
+
+2. **Statistiques Personnelles de l'Utilisateur**
+   - Total de K-dramas regardés
+   - Genres favoris (top 3-5)
+   - Acteurs/réalisateurs les plus vus
+   - Temps total regardé (si nb d'épisodes ajouté)
+   - Distribution des ratings (👎, 👍, 👍👍)
+   - Graphique de progression (K-dramas/mois)
+
+3. **Dark/Light Mode Toggle**
+   - Améliorer l'accessibilité et l'expérience utilisateur
+   - Stocker en localStorage ou base de données
+
+4. **Recherche Avancée Améliorée**
+   - Filtrer par: genre, année de sortie, statut (en cours/terminé), réseau (Netflix, Apple TV, etc)
+   - Tri multiple: rating utilisateur, rating TMDB, date d'ajout
+
+5. **Badges/Achievements**
+   - Gamification légère (p.ex. "Regardé 10 K-dramas", "Fan de Romance")
+   - Affichage dans le profil utilisateur
+   - Système de progression
+
+### 🔗 Moyennes à Implémenter (Travail Modéré)
+
+6. **Système d'Avis Texte (Reviews)**
+   - Avis écrit en complément de la notation 1-3
+   - Affichage sur page détail du K-drama
+   - Options: public, amis ou privé
+
+7. **Partage de Watchlist**
+   - Générer un lien public pour partager sa watchlist
+   - Lien lisible: `/user/{id}/watchlist/public`
+   - Options de confidentialité: privé/amis/public
+
+8. **Import depuis MyDramaList (MDL)**
+   - Parser fichier CSV de MyDramaList
+   - Importer watchlist existante automatiquement
+   - Mapper TMDB IDs
+
+9. **Système de Notifications/Reminders**
+   - Rappels email pour items wishlist
+   - Alertes: "K-drama X est dispo sur Netflix!"
+   - Nouveautés en genres préférés
+   - Cron job pour envois périodiques
+
+### 🚀 Avancées à Implémenter (Plus Complexes)
+
+10. **Système de Recommandations**
+    - "Utilisateurs qui ont aimé X ont aussi aimé Y"
+    - Basé sur ratings similaires ou watchlist croisées
+    - Collaborative filtering simple
+
+11. **Communauté/Social**
+    - Voir ratings d'autres utilisateurs
+    - Commentaires sur K-dramas
+    - Top-rated par la communauté
+    - Profils utilisateurs publics (optionnel)
+
+12. **Calendrier de Sortie**
+    - Dates des nouveaux épisodes
+    - Alertes pour prochains épisodes de la watchlist
+    - ICS export pour intégration calendrier
+
+13. **Tests de Bout en Bout**
+    - Laravel Dusk pour tests E2E (navigateur)
+    - Coverage des workflows critiques
+
+14. **API Publique**
+    - REST API pour développeurs
+    - Documentation OpenAPI
+    - Rate limiting et authentication
+
+---
+
+## 🚀 TODO / Améliorations Futures (En Cours)
+- [ ] Tests de bout en bout avec Laravel Dusk
+- [ ] Recommandations basées sur les ratings
+- [ ] Système de reviews détaillées
+- [ ] Notifications utilisateur
+
+---
+
+## 📄 Licence
+Ce projet est sous licence [MIT](https://opensource.org/licenses/MIT).

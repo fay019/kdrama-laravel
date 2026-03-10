@@ -1,0 +1,294 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Kdrama;
+use App\Models\WatchlistItem;
+use App\Services\TmdbService;
+use App\Services\StreamingAvailabilityService;
+use App\Helpers\StreamingLinkHelper;
+use Illuminate\Http\Request;
+
+class ContentController extends Controller
+{
+    private $tmdbService;
+    private $streamingService;
+
+    public function __construct(TmdbService $tmdbService, StreamingAvailabilityService $streamingService)
+    {
+        $this->tmdbService = $tmdbService;
+        $this->streamingService = $streamingService;
+    }
+
+    public function index()
+    {
+        // Afficher les K-Dramas populaires
+        $featured = $this->tmdbService->discoverAsianContent([
+            'origins' => ['KR'],
+            'sort' => 'popularity.desc',
+            'page' => 1
+        ]);
+
+        return view('index', [
+            'featured' => $featured['results'] ?? []
+        ]);
+    }
+
+    public function catalog(Request $request)
+    {
+        $filters = [
+            'origins' => ['KR'],
+            'sort' => $request->get('sort', 'popularity.desc'),
+            'page' => $request->get('page', 1),
+            'min_rating' => $request->get('min_rating', 0),
+            'from_year' => $request->get('from_year'),
+            'to_year' => $request->get('to_year'),
+            'search' => $request->get('search'),
+            'actor' => $request->get('actor'),
+            'actor_id' => $request->get('actor_id'),
+            'hide_watched' => $request->boolean('hide_watched'),
+            'hide_watchlist' => $request->boolean('hide_watchlist'),
+        ];
+
+        if (!empty($filters['actor_id'])) {
+            $results = $this->tmdbService->getPersonTvCredits($filters['actor_id'], $filters['page']);
+            if (!$results || empty($results['results'])) {
+                $results = ['results' => [], 'total_pages' => 0];
+            }
+        } elseif (!empty($filters['actor'])) {
+            $personSearch = $this->tmdbService->searchPerson($filters['actor']);
+            if (!empty($personSearch['results'])) {
+                // On cherche l'acteur qui a le plus de popularité ET qui est dans le département 'Acting'
+                $bestMatch = null;
+                foreach ($personSearch['results'] as $person) {
+                    if (isset($person['known_for_department']) && $person['known_for_department'] === 'Acting') {
+                        if (!$bestMatch || $person['popularity'] > $bestMatch['popularity']) {
+                            $bestMatch = $person;
+                        }
+                    }
+                }
+
+                // Si aucun n'est dans 'Acting', on prend quand même le premier par défaut
+                $personId = $bestMatch ? $bestMatch['id'] : $personSearch['results'][0]['id'];
+
+                $filters['with_cast'] = $personId;
+                $results = $this->tmdbService->getPersonTvCredits($personId, $filters['page']);
+
+                // Si l'acteur n'a pas de crédits TV coréens, on s'assure que $results est bien vide
+                if (!$results || empty($results['results'])) {
+                    $results = ['results' => [], 'total_pages' => 0];
+                }
+            } else {
+                // Si l'acteur n'est pas trouvé, on force 0 résultats
+                $results = ['results' => [], 'total_pages' => 0];
+            }
+        }
+
+        if (!isset($results)) {
+            if (!empty($filters['search'])) {
+                $results = $this->tmdbService->searchContent($filters['search'], $filters['page']);
+            } else {
+                $results = $this->tmdbService->discoverAsianContent($filters);
+            }
+        }
+
+        // Si aucun résultat (ex: recherche infructueuse ou erreur API)
+        if (!$results) {
+            $results = ['results' => [], 'total_pages' => 0, 'total_results' => 0];
+        }
+
+        // Récupérer les infos de watchlist et ratings si l'utilisateur est connecté
+        $userStatus = [];
+        if (auth()->check()) {
+            // Get watchlist items
+            $watchlistItems = WatchlistItem::where('user_id', auth()->id())->get();
+
+            // Map watchlist items with ratings
+            $userStatus = $watchlistItems->mapWithKeys(function ($item) {
+                return [$item->tmdb_id => [
+                    'is_in_watchlist' => $item->is_in_watchlist,
+                    'is_watched' => $item->is_watched,
+                    'rating' => $item->rating
+                ]];
+            })->toArray();
+
+            // Appliquer les filtres de masquage
+            if ($filters['hide_watched'] || $filters['hide_watchlist']) {
+                $results['results'] = array_filter($results['results'], function ($item) use ($userStatus, $filters) {
+                    $tmdbId = $item['id'] ?? null;
+                    if (!$tmdbId || !isset($userStatus[$tmdbId])) return true;
+
+                    if ($filters['hide_watched'] && $userStatus[$tmdbId]['is_watched']) return false;
+                    if ($filters['hide_watchlist'] && $userStatus[$tmdbId]['is_in_watchlist']) return false;
+
+                    return true;
+                });
+                // Note: array_filter reset les index, on peut ré-indexer si besoin mais pour le foreach ça va.
+                $results['results'] = array_values($results['results']);
+            }
+        }
+
+        if ($request->ajax()) {
+            $html = '';
+            foreach ($results['results'] ?? [] as $kdrama) {
+                $html .= view('kdrams._card', [
+                    'kdrama' => $kdrama,
+                    'filters' => $filters,
+                    'userStatus' => $userStatus
+                ])->render();
+            }
+            return response()->json([
+                'html' => $html,
+                'next_page' => $filters['page'] + 1,
+                'has_more' => ($filters['page'] < ($results['total_pages'] ?? 1)),
+                'total_results' => (int) ($results['total_results'] ?? 0),
+                'current_count' => count($results['results'] ?? [])
+            ]);
+        }
+
+        return view('kdrams.index', [
+            'kdrams' => $results['results'] ?? [],
+            'total_pages' => $results['total_pages'] ?? 1,
+            'total_results' => $results['total_results'] ?? 0,
+            'current_page' => $filters['page'],
+            'filters' => $filters,
+            'userStatus' => $userStatus
+        ]);
+    }
+
+    public function show($id, Request $request)
+    {
+        // 1. Chercher en base de données
+        $kdrama = Kdrama::where('tmdb_id', $id)->first();
+        $details = null;
+
+        // Si présent et frais (< 24h), on utilise les données locales
+        if ($kdrama && $kdrama->last_updated_at && $kdrama->last_updated_at->gt(now()->subDay())) {
+            $details = $kdrama->toArray();
+        } else {
+            // 2. Sinon (absent ou expiré), appeler TMDB
+            $details = $this->tmdbService->getContentDetails($id, 'tv');
+
+            if ($details) {
+                // 3. Enregistrer ou mettre à jour en base
+                $kdrama = Kdrama::updateOrCreate(
+                    ['tmdb_id' => $id],
+                    [
+                        'name' => $details['name'] ?? null,
+                        'en_name' => $details['translations']['en']['name'] ?? ($details['name'] ?? null),
+                        'original_name' => $details['original_name'] ?? null,
+                        'overview' => $details['overview'] ?? null,
+                        'poster_path' => $details['poster_path'] ?? null,
+                        'backdrop_path' => $details['backdrop_path'] ?? null,
+                        'first_air_date' => $details['first_air_date'] ?? null,
+                        'vote_average' => $details['vote_average'] ?? 0,
+                        'vote_count' => $details['vote_count'] ?? 0,
+                        'genres' => $details['genres'] ?? [],
+                        'origin_country' => $details['origin_country'] ?? [],
+                        'status' => $details['status'] ?? null,
+                        'original_language' => $details['original_language'] ?? null,
+                        'number_of_episodes' => $details['number_of_episodes'] ?? null,
+                        'number_of_seasons' => $details['number_of_seasons'] ?? null,
+                        'last_air_date' => $details['last_air_date'] ?? null,
+                        'credits' => $details['credits'] ?? [],
+                        'production_companies' => $details['production_companies'] ?? [],
+                        'networks' => $details['networks'] ?? [],
+                        'similar' => $details['similar'] ?? [],
+                        'translations' => $details['translations'] ?? [],
+                        'last_updated_at' => now(),
+                    ]
+                );
+                // On met à jour $details avec les données fraîches pour la vue
+                $details = $kdrama->toArray();
+            }
+        }
+
+        if (!$details) {
+            abort(404);
+        }
+
+        $titleForSearch = $details['translations']['en']['name'] ?? ($details['name'] ?? null);
+        $availability = $this->streamingService->getAvailability($id, 'tv', 'fr', $titleForSearch);
+
+        // 4. Récupérer l'état pour l'utilisateur connecté (Watchlist / Regardé / Rating)
+        $userStatus = null;
+        if (auth()->check()) {
+            $watchlistItem = WatchlistItem::where('user_id', auth()->id())
+                ->where('tmdb_id', $id)
+                ->first();
+
+            if ($watchlistItem) {
+                // Create object with watchlist info (including rating from watchlist_items)
+                $userStatus = (object) [
+                    'id' => $watchlistItem->id,
+                    'user_id' => $watchlistItem->user_id,
+                    'tmdb_id' => $watchlistItem->tmdb_id,
+                    'is_in_watchlist' => $watchlistItem->is_in_watchlist,
+                    'is_watched' => $watchlistItem->is_watched,
+                    'rating' => $watchlistItem->rating
+                ];
+            }
+        }
+
+        // On s'assure d'avoir un tableau pour la vue (pour la compatibilité avec le code existant)
+        // On s'assure que 'tmdb_id' est bien présent dans le tableau $details
+        if (!isset($details['tmdb_id']) && isset($details['id'])) {
+            $details['tmdb_id'] = $details['id'];
+        }
+
+        // Générer les liens de recherche pour les plateformes connues (si pas de données RapidAPI)
+        $streamingLinks = StreamingLinkHelper::generateStreamingLinks($details);
+
+        // Mais on passe l'objet Kdrama s'il existe pour avoir accès aux casts si nécessaire
+        $viewData = [
+            'kdrama' => $details, // $details est un tableau (venant de toArray() ou TMDB)
+            'availability' => $availability ?? [],
+            'streamingLinks' => $streamingLinks,
+            'highlight_actor' => $request->get('actor_id'),
+            'userStatus' => $userStatus
+        ];
+
+        // On peut ajouter l'objet modèle s'il est utile pour certains calculs complexes dans la vue
+        if ($kdrama instanceof Kdrama) {
+            $viewData['model'] = $kdrama;
+        }
+
+        return view('kdrams.show', $viewData);
+    }
+
+    public function refreshStreaming($id)
+    {
+        $kdrama = Kdrama::where('tmdb_id', $id)->first();
+        $title = null;
+        if ($kdrama) {
+            $title = $kdrama->en_name ?? $kdrama->name;
+        }
+
+        try {
+            // Force le rafraîchissement depuis l'API
+            $availability = $this->streamingService->getAvailability($id, 'tv', 'fr', $title, true);
+
+            if (empty($availability)) {
+                return back()->with('success', __('show.refresh_no_platforms'));
+            }
+
+            return back()->with('success', __('show.refresh_success'));
+        } catch (\Exception $e) {
+            \Log::error("Manual refresh failed for TMDB {$id}: " . $e->getMessage());
+            return back()->with('error', __('show.refresh_error', ['error' => $e->getMessage()]));
+        }
+    }
+
+    public function actorDetails($id)
+    {
+        $actor = $this->tmdbService->getPersonDetails($id);
+
+        if (!$actor) {
+            return response()->json(['error' => __('show.actor_not_found')], 404);
+        }
+
+        return view('kdrams._actor_modal', [
+            'actor' => $actor
+        ])->render();
+    }
+}

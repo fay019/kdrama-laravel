@@ -42,4 +42,22 @@ return [
     'removed_watchlist' => '❌ Aus Ihrer Watchlist entfernt',
     'marked_watched' => '✅ Als angesehen markiert',
     'marked_unwatched' => '🔄 Als nicht angesehen markiert',
+
+    // Actor Modal
+    'actor_real_name' => 'Richtiger Name',
+    'actor_birth_date' => 'Geburtsdatum',
+    'actor_place_of_birth' => 'Geburtsort',
+    'actor_biography' => 'Biografie',
+    'actor_no_biography' => 'Derzeit keine Biografie verfügbar.',
+    'actor_recent_projects' => 'Letzte Projekte',
+    'actor_view_all_dramas' => '🔍 Alle K-Dramen anzeigen',
+
+    // Social Media Links
+    'social_instagram' => 'Instagram',
+    'social_facebook' => 'Facebook',
+    'social_twitter' => 'Twitter',
+    'social_tiktok' => 'TikTok',
+    'social_youtube' => 'YouTube',
+    'social_imdb' => 'IMDb',
+    'social_wikidata' => 'Wikidata',
 ];

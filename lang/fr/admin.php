@@ -30,11 +30,10 @@ return [
     'logged_in_as' => 'Connecté en tant que',
     'profile_settings' => 'Paramètres de profil',
     'logout' => 'Se déconnecter',
-];
 
     // Icon Picker Page
     'icons_title' => 'Sélecteur d\'icônes',
-    'icons_subtitle' => 'Chercher et prévisualiser les icônes Tabler',
+    'icons_subtitle' => 'Chercher parmi Tabler Icons + Simple Icons (préfixe si-)',
     'icons_search_placeholder' => 'Chercher les icônes en direct (ex: mail, github, link...)',
     'icons_clear' => 'Effacer',
     'icons_results_updating' => 'Les résultats se mettent à jour au fur et à mesure...',

@@ -42,4 +42,22 @@ return [
     'removed_watchlist' => '❌ Removed from your watchlist',
     'marked_watched' => '✅ Marked as watched',
     'marked_unwatched' => '🔄 Marked as unwatched',
+
+    // Actor Modal
+    'actor_real_name' => 'Real Name',
+    'actor_birth_date' => 'Birth Date',
+    'actor_place_of_birth' => 'Place of Birth',
+    'actor_biography' => 'Biography',
+    'actor_no_biography' => 'No biography available at the moment.',
+    'actor_recent_projects' => 'Recent Projects',
+    'actor_view_all_dramas' => '🔍 View all K-Dramas',
+
+    // Social Media Links
+    'social_instagram' => 'Instagram',
+    'social_facebook' => 'Facebook',
+    'social_twitter' => 'Twitter',
+    'social_tiktok' => 'TikTok',
+    'social_youtube' => 'YouTube',
+    'social_imdb' => 'IMDb',
+    'social_wikidata' => 'Wikidata',
 ];

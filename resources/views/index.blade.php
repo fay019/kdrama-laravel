@@ -8,7 +8,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center">
             <h1 class="text-5xl sm:text-6xl font-bold mb-6">
-                {{ __('home.hero_title') }} <span class="gradient-text">K-Dramas</span>
+                {!! str_replace('{k-dramas}', '<span class="gradient-text">K-Dramas</span>', __('home.hero_title')) !!}
             </h1>
             <p class="text-xl sm:text-2xl text-slate-50 mb-8 max-w-2xl mx-auto leading-relaxed">
                 {{ __('home.hero_subtitle') }}

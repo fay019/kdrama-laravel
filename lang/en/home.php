@@ -5,7 +5,7 @@ return [
     'page_title' => 'KDrama Hub - Home',
 
     // Hero section
-    'hero_title' => 'Discover the Best K-Dramas',
+    'hero_title' => 'Discover the best {k-dramas}',
     'hero_subtitle' => 'Explore, follow, and find where to watch your favorite Korean dramas',
     'hero_cta' => '📺 Browse Catalog',
 

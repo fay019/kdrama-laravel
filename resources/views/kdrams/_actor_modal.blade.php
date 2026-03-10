@@ -13,7 +13,7 @@
 
         <div class="mt-4 w-full space-y-3">
             <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
-                <p class="text-slate-400 text-xs uppercase tracking-wider font-bold">Nom Réel</p>
+                <p class="text-slate-400 text-xs uppercase tracking-wider font-bold">{{ __('show.actor_real_name') }}</p>
                 <p class="text-white font-medium">{{ $actor['latin_name'] ?? $actor['name'] }}</p>
                 @if(($actor['original_name'] ?? $actor['name']) !== ($actor['latin_name'] ?? $actor['name']))
                     <p class="text-slate-400 text-sm">{{ $actor['original_name'] ?? $actor['name'] }}</p>
@@ -22,7 +22,7 @@
 
             @if($actor['birthday'])
                 <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
-                    <p class="text-slate-400 text-xs uppercase tracking-wider font-bold">Date de naissance</p>
+                    <p class="text-slate-400 text-xs uppercase tracking-wider font-bold">{{ __('show.actor_birth_date') }}</p>
                     <p class="text-white font-medium">
                         {{ \Carbon\Carbon::parse($actor['birthday'])->format('d/m/Y') }}
                         @if(!$actor['deathday'])
@@ -34,32 +34,78 @@
 
             @if($actor['place_of_birth'])
                 <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
-                    <p class="text-slate-400 text-xs uppercase tracking-wider font-bold">Lieu de naissance</p>
+                    <p class="text-slate-400 text-xs uppercase tracking-wider font-bold">{{ __('show.actor_place_of_birth') }}</p>
                     <p class="text-white font-medium text-sm">{{ $actor['place_of_birth'] }}</p>
                 </div>
             @endif
 
-            @if(isset($actor['external_ids']['instagram_id']) && $actor['external_ids']['instagram_id'])
-                <a href="https://instagram.com/{{ $actor['external_ids']['instagram_id'] }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-bold hover:opacity-90 transition">
-                    <span>📸</span> Instagram
-                </a>
-            @endif
+            <!-- Social Media Links (Simple Icons) -->
+            <div class="space-y-2">
+                @if(isset($actor['external_ids']['instagram_id']) && $actor['external_ids']['instagram_id'])
+                    <a href="{{ 'https://instagram.com/' . $actor['external_ids']['instagram_id'] }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-bold hover:opacity-90 transition text-white">
+                        <x-si-instagram class="w-5 h-5 fill-current" />
+                        {{ __('show.social_instagram') }}
+                    </a>
+                @endif
+
+                @if(isset($actor['external_ids']['facebook_id']) && $actor['external_ids']['facebook_id'])
+                    <a href="{{ 'https://facebook.com/' . $actor['external_ids']['facebook_id'] }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-blue-600 rounded-lg font-bold hover:opacity-90 transition text-white">
+                        <x-si-facebook class="w-5 h-5 fill-current" />
+                        {{ __('show.social_facebook') }}
+                    </a>
+                @endif
+
+                @if(isset($actor['external_ids']['twitter_id']) && $actor['external_ids']['twitter_id'])
+                    <a href="{{ 'https://twitter.com/' . $actor['external_ids']['twitter_id'] }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-slate-700 rounded-lg font-bold hover:opacity-90 transition text-white">
+                        <x-si-x class="w-5 h-5 fill-current" />
+                        {{ __('show.social_twitter') }}
+                    </a>
+                @endif
+
+                @if(isset($actor['external_ids']['tiktok_id']) && $actor['external_ids']['tiktok_id'])
+                    <a href="{{ 'https://tiktok.com/@' . $actor['external_ids']['tiktok_id'] }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-black rounded-lg font-bold hover:opacity-90 transition text-white">
+                        <x-si-tiktok class="w-5 h-5 fill-current" />
+                        {{ __('show.social_tiktok') }}
+                    </a>
+                @endif
+
+                @if(isset($actor['external_ids']['youtube_id']) && $actor['external_ids']['youtube_id'])
+                    <a href="{{ 'https://youtube.com/' . $actor['external_ids']['youtube_id'] }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-red-600 rounded-lg font-bold hover:opacity-90 transition text-white">
+                        <x-si-youtube class="w-5 h-5 fill-current" />
+                        {{ __('show.social_youtube') }}
+                    </a>
+                @endif
+
+                @if(isset($actor['external_ids']['imdb_id']) && $actor['external_ids']['imdb_id'])
+                    <a href="{{ 'https://imdb.com/name/' . $actor['external_ids']['imdb_id'] }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-yellow-700 rounded-lg font-bold hover:opacity-90 transition text-white">
+                        <x-si-imdb class="w-5 h-5 fill-current" />
+                        {{ __('show.social_imdb') }}
+                    </a>
+                @endif
+
+                @if(isset($actor['external_ids']['wikidata_id']) && $actor['external_ids']['wikidata_id'])
+                    <a href="{{ 'https://wikidata.org/wiki/' . $actor['external_ids']['wikidata_id'] }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-cyan-600 rounded-lg font-bold hover:opacity-90 transition text-white">
+                        <x-si-wikidata class="w-5 h-5 fill-current" />
+                        {{ __('show.social_wikidata') }}
+                    </a>
+                @endif
+            </div>
         </div>
     </div>
 
     <!-- Biographie & Travaux -->
     <div class="w-full md:w-2/3">
-        <h3 class="text-2xl font-bold mb-4 text-red-500">Biographie</h3>
+        <h3 class="text-2xl font-bold mb-4 text-red-500">{{ __('show.actor_biography') }}</h3>
         <div class="text-slate-300 text-sm leading-relaxed max-h-64 overflow-y-auto pr-2 custom-scrollbar">
             @if($actor['biography'])
                 {{ $actor['biography'] }}
             @else
-                <p class="italic text-slate-500">Aucune biographie disponible pour le moment.</p>
+                <p class="italic text-slate-500">{{ __('show.actor_no_biography') }}</p>
             @endif
         </div>
 
         @if(isset($actor['combined_credits']['cast']) && count($actor['combined_credits']['cast']) > 0)
-            <h3 class="text-xl font-bold mt-8 mb-4">Derniers Projets</h3>
+            <h3 class="text-xl font-bold mt-8 mb-4">{{ __('show.actor_recent_projects') }}</h3>
             <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
                 @php
                     $projects = collect($actor['combined_credits']['cast'])
@@ -89,7 +135,7 @@
 
         <div class="mt-8 flex justify-end">
             <a href="{{ route('kdrams.catalog', ['actor_id' => $actor['id'], 'actor' => $actor['latin_name'] ?? $actor['name']]) }}" class="btn-primary py-2 px-6 text-sm">
-                🔍 Voir tous ses K-Dramas
+                {{ __('show.actor_view_all_dramas') }}
             </a>
         </div>
     </div>

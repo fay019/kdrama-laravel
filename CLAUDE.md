@@ -1,7 +1,21 @@
 # 🎬 KDrama Laravel - Documentation Complète
 
 **Date de mise à jour:** 2026-03-10
-**Dernier développement:** Force Password Change System + Netflix-style rating system + Admin sidebar + Export management
+**Dernier développement:** Simple Icons + Tabler Icons integration with fallback system + Icon picker modal with si- prefix support + Admin icon browser with pagination (5000+ icons) + Social links footer with dual-icon support
+
+---
+
+## ⚠️ IMPORTANT - Git Commits
+
+**NE JAMAIS faire de commit automatiquement.**
+
+Les commits doivent TOUJOURS être demandés explicitement par l'utilisateur avec la commande `/commit` ou en disant "ok commit".
+
+Si des modifications sont détectées:
+1. ✅ Informer l'utilisateur qu'il y a des changements
+2. ✅ Afficher un résumé des fichiers modifiés
+3. ❌ NE PAS créer de commit sans autorisation explicite
+4. ⏳ Attendre l'instruction de l'utilisateur
 
 ---
 
@@ -14,7 +28,9 @@
 - **Frontend:** Tailwind CSS + Alpine.js
 - **Database:** MySQL
 - **Auth:** Laravel Breeze
-- **Icons:** Tabler Icons (@tabler/icons)
+- **Icons:**
+  - Tabler Icons (@tabler/icons) - 5000+ general UI icons
+  - Simple Icons (codeat3/blade-simple-icons) - 1000+ brand logos with automatic Tabler fallback
 - **PDF:** Browsershot (Headless Chrome)
 - **Caching:** File-based + DB settings
 
@@ -107,7 +123,85 @@ routes/
 └── api.php
 
 storage/app/exports/  # PDFs cachés (7 jours TTL)
+
+lang/
+├── fr/                    # Fichiers français
+│   ├── common.php         # Textes communs
+│   ├── admin.php          # Textes admin
+│   ├── catalog.php        # Catalogue
+│   ├── contact.php        # Contact
+│   ├── show.php           # Pages détail
+│   ├── auth.php           # Authentification
+│   ├── dashboard.php      # Dashboard
+│   ├── watchlist.php      # Watchlist
+│   └── emails.php         # Emails
+├── en/                    # English files
+└── de/                    # Deutsche Dateien
 ```
+
+---
+
+## 🌍 Localisation & Multilangue
+
+### Vue d'ensemble
+Le projet supporte **3 langues complètement traduites** (FR/EN/DE) avec sélection de langue instantanée sur toutes les pages.
+
+### Architecture
+- **Défaut:** Français (FR)
+- **Fallback:** Anglais (EN)
+- **Middleware:** `SetLocale.php` - détecte et applique la locale
+  - Priorité: `user->preferred_language` → `session('locale')` → `'fr'`
+- **Validation:** Locales supportées = ['fr', 'en', 'de']
+
+### Où Change la Langue ?
+
+**1. Navbar (Pages publiques)**
+```blade
+<!-- 3 boutons: 🇫🇷 FR | 🇬🇧 EN | 🇩🇪 DE -->
+<!-- Route: POST /language/{locale} -->
+```
+
+**2. Admin Sidebar (Pages admin)**
+```blade
+<!-- 3 formulaires en footer du sidebar (desktop + mobile) -->
+<!-- Même route: POST /language/{locale} -->
+```
+
+**3. Profil Utilisateur**
+```blade
+<!-- Champ select "Langue préférée" -->
+<!-- Sauvegardée dans user.preferred_language -->
+<!-- Appliquée automatiquement à chaque connexion -->
+```
+
+### Fichiers Clés
+- `app/Http/Middleware/SetLocale.php` - Détection et application locale
+- `routes/web.php` - Route POST `/language/{locale}` (language.switch)
+- `lang/fr|en|de/*.php` - Fichiers de traduction
+- `resources/views/components/admin-sidebar.blade.php` - Sélecteur sidebar
+- `resources/views/profile/partials/update-profile-information-form.blade.php` - Profil
+- `resources/views/layouts/navigation.blade.php` - Navbar
+
+### Pattern d'Utilisation
+```blade
+<!-- Textes simples -->
+{{ __('common.cancel') }} → "Annuler" (FR) / "Cancel" (EN) / "Abbrechen" (DE)
+
+<!-- Avec variables -->
+{{ __('contact.thanks', ['name' => $user->name]) }}
+
+<!-- Choisir la clé -->
+<!-- common.php → textes partagés -->
+<!-- {module}.php → textes spécifiques au module -->
+<!-- admin.php → textes admin -->
+```
+
+### Database
+```sql
+ALTER TABLE users ADD preferred_language VARCHAR(5) DEFAULT 'fr';
+```
+- Défaut: `'fr'`
+- Valeurs acceptées: `'fr'`, `'en'`, `'de'`
 
 ---
 
@@ -517,75 +611,114 @@ WatchlistItem::where('user_id', $userId)
 
 ---
 
-### 6. **Icon Picker** (Live Search + Copy)
+### 6. **Integrated Icon System** (Tabler + Simple Icons with Fallback)
 
-#### HTML Structure
-```html
-<input id="iconSearch" type="text" placeholder="...">
-<div id="iconsGrid">
-  <!-- Icons grid here -->
-</div>
+#### Overview
+- **Tabler Icons** (5,021 total): General UI icons via `@tabler/icons` npm package
+- **Simple Icons** (3,356 total): ALL brand logos via `codeat3/blade-simple-icons` package
+- **Naming Convention**: Simple Icons use `si-` prefix (e.g., `si-youtube`, `si-instagram`)
+- **Total Icons Available**: 8,377 icons (5,021 Tabler + 3,356 Simple)
+- **Dynamic Count**: Recalculated from file system on each request (updates with composer updates)
+- **Fallback System**: Missing Simple Icons automatically use Tabler fallback (pre-loaded all)
+
+#### Admin Icon Browser (`/admin/icons`)
+```
+Features:
+- Live search across 8,377 total icons (Tabler + Simple)
+- Display 100 icons per page with "Load More" pagination
+- Real-time counter: "Affichage 200 icons sur 8377" (dynamically calculated)
+- **Icon labels in blue** for all icons (Tabler + Simple) - better information
+- Click any icon to copy name to clipboard (with si- prefix for Simple Icons)
+- Dual SVG sources: actual files for display
+- Dynamic total: Updates if composer updates icon packages
 ```
 
-#### Data Attributes
+#### Icon Picker Modal (in admin/author)
 ```html
-<div class="icon-card" data-icon-name="face-id-error">
-  <!-- SVG here -->
-</div>
+<!-- Used in /admin/author for social links icon selection -->
+<x-icon-picker-modal />
+
+Features:
+- Searchable icon library (all icons + fallbacks)
+- Displays icon with name on hover
+- Automatically adds "si-" prefix for Simple Icons
+- Toast notification on selection
 ```
 
-#### JavaScript Pattern
-```javascript
-// Event delegation pour clicks
-document.addEventListener('click', (e) => {
-  const iconCard = e.target.closest('.icon-card');
-  if (iconCard) {
-    const iconName = iconCard.getAttribute('data-icon-name');
-    copyToClipboard(iconName);
-  }
-});
+#### Backend System (AdminIconsController)
+```php
+// Returns combined icon list with metadata:
+$icon = [
+    'name' => 'youtube',        // Base name without prefix
+    'type' => 'simple',         // 'tabler' or 'simple'
+    'label' => 'YouTube',       // Human-readable label
+    'svg' => '<svg>...',        // Actual SVG content
+];
 
-// Live search avec debounce
-const searchInput = document.getElementById('iconSearch');
-let searchTimeout;
-
-searchInput.addEventListener('input', (e) => {
-  clearTimeout(searchTimeout);
-  const query = e.target.value.trim();
-
-  searchTimeout = setTimeout(() => {
-    searchIcons(query);  // AJAX call
-  }, 300);  // 300ms debounce
-});
-
-// Fetch avec JSON response
-fetch(`/admin/icons/search?q=${query}`, {
-  headers: { 'X-Requested-With': 'XMLHttpRequest' }
-})
-.then(r => r.json())
-.then(data => displayIcons(data.icons));
-
-// Copy avec fallback
-function copyToClipboard(text) {
-  // 1. Try execCommand (legacy but compatible)
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand('copy');
-  document.body.removeChild(textarea);
-
-  // 2. Fallback: clipboard API
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text);
-  }
+// Automatic fallback when Simple Icon missing:
+if (!simpleIconExists('disneyplus')) {
+    // Uses 'disneyplus.svg' from Tabler instead
+    $type = 'tabler';
+    $svg = getTablerSvg('disneyplus');
 }
 ```
 
-#### localStorage Pattern (future)
+#### Frontend Display
+```blade
+<!-- In admin/icons page -->
+@if($icon['type'] === 'simple')
+    si-{{ $icon['name'] }}    <!-- Display with prefix -->
+@else
+    {{ $icon['name'] }}       <!-- Tabler (no prefix) -->
+@endif
+
+<!-- Data attribute for copying -->
+data-icon-name="{{ $icon['type'] === 'simple' ? 'si-' . $icon['name'] : $icon['name'] }}"
+```
+
+#### Footer Usage
+```blade
+<!-- Automatically detects icon type by si- prefix -->
+@if(str_starts_with($link->icon, 'si-'))
+    <!-- Simple Icon: use fill-current -->
+    {{ actualIconName = substr($link->icon, 3); }}
+    {!! getSimpleIconSvg(actualIconName) !!}
+@else
+    <!-- Tabler Icon: use stroke-current -->
+    {!! getTablerSvg($link->icon) !!}
+@endif
+```
+
+#### JavaScript Pattern (Icon Picker Modal)
 ```javascript
-// Could store recent icons copied
-localStorage.setItem('recent-icons', JSON.stringify(recentList));
+function selectIcon(iconName, iconType = 'tabler') {
+    // Automatically adds si- prefix for Simple Icons
+    const displayName = iconType === 'simple'
+        ? 'si-' + iconName
+        : iconName;
+
+    inputElement.value = displayName;  // Set input value
+    showToast(`✅ Selected: ${displayName}`);
+}
+
+// JSON response includes type for correct handling:
+{
+    icons: [
+        { name: 'instagram', type: 'simple', svg: '...' },
+        { name: 'brand-instagram', type: 'tabler', svg: '...' },
+    ]
+}
+```
+
+#### Helper Methods
+```php
+// IconHelper class
+IconHelper::getSimpleIcons()           // Get all available Simple Icons
+IconHelper::getSimpleIconLabel($name)  // Get label for icon
+IconHelper::hasSimpleIcon($name)       // Check if exists
+
+// Example usage
+$youtube = IconHelper::getSimpleIconLabel('youtube');  // "YouTube"
 ```
 
 ---
@@ -1216,6 +1349,115 @@ php artisan exports:cleanup
 ---
 
 ## 🔄 Recent Changes (2026-03-10)
+
+### Complete Icon System Upgrade
+- ✅ **All 3,356 Simple Icons** now available in admin icon picker (`/admin/icons`)
+- ✅ **Total 8,377 icons**: 5,021 Tabler + 3,356 Simple Icons
+- ✅ **Dynamic icon count**: Recalculated from file system (updates with composer updates)
+- ✅ **Icon labels in blue**: All icons display labels for better information
+- ✅ **Live search & pagination**: Search all icons, load 100 at a time
+- ✅ **Social media logos** in actor modal with Simple Icons branding
+- ✅ **Fallback system**: All icons work with automatic Tabler fallback
+
+**Admin Icon Browser Features:**
+- Search across all 8,377 icons with live 300ms debounce
+- Pagination: Display 100 + "Load More" for rest
+- Copy to clipboard with `si-` prefix for Simple Icons
+- Type badges (Tabler vs Simple Icons)
+- Real-time counter updates
+- Professional SVG rendering with dual sources
+
+**Icon Helper (IconHelper.php):**
+```php
+// Get all available Simple Icons (now 3,356 from package)
+IconHelper::getSimpleIcons()  // Returns curated list (48 popular ones)
+
+// Get label for specific icon
+IconHelper::getSimpleIconLabel('instagram')  // Returns "Instagram"
+
+// Check if icon exists
+IconHelper::hasSimpleIcon('tiktok')  // Returns true/false
+```
+
+**Available Simple Icons:**
+- 1000+ brand & social logos from [Simple Icons](https://simpleicons.org/)
+- All accessible via `si-` prefix in admin icon picker
+- Professional quality, optimized for web use
+
+### Actor Modal - Complete Social Media Integration + Full Translations
+- ✅ **7 Social Media Networks** displayed in actor modal:
+  - 📸 Instagram (gradient pink/purple button)
+  - 📘 Facebook (blue button)
+  - 𝕏 Twitter (dark gray button)
+  - 🎵 TikTok (black button) - **Fixed URL generation**
+  - 📺 YouTube (red button)
+  - 🎬 IMDb (yellow button)
+  - 📚 Wikidata (cyan button)
+- ✅ **Complete translations for actor modal** in 3 languages (FR/EN/DE):
+  - Actor real name label
+  - Birth date and place labels
+  - Biography section header
+  - Recent projects section header
+  - "View all K-Dramas" button
+  - All 7 social media button labels
+- ✅ **URL generation fixed** using Blade string concatenation:
+  - `{{ 'https://tiktok.com/@' . $actor['external_ids']['tiktok_id'] }}`
+  - Ensures correct URL format for all platforms
+- ✅ **Files updated:**
+  - `lang/fr/show.php` - 14 new translation keys
+  - `lang/en/show.php` - 14 new translation keys
+  - `lang/de/show.php` - 14 new translation keys
+  - `resources/views/kdrams/_actor_modal.blade.php` - added all social links + translations
+
+### Hero Title Placeholder Implementation
+- ✅ **Fixed Hero Title Duplication Issue**
+  - Changed `hero_title` from hardcoded "K-Dramas" to placeholder `{dramas}`
+  - Updated translation files: `lang/fr/home.php`, `lang/en/home.php`, `lang/de/home.php`
+  - Example: FR `'hero_title' => 'Découvrez les meilleurs {dramas}'`
+  - Example: EN `'hero_title' => 'Discover the best {dramas}'`
+  - Example: DE `'hero_title' => 'Entdecken Sie die besten {k-dramas}'`
+- ✅ **Dynamic K-Dramas Injection**
+  - HTML in `resources/views/index.blade.php` uses `str_replace()`:
+  - `{!! str_replace('{dramas}', '<span class="gradient-text">K-Dramas</span>', __('home.hero_title')) !!}`
+  - Result: "K-Dramas" appears only once with gradient styling applied
+  - Fully translatable while maintaining CSS styling
+
+### Complete Laravel Localization (FR/EN/DE)
+- ✅ **Comprehensive Translation System**
+  - 3 languages fully supported: Français (default) | English | Deutsch
+  - 9 translation files per language (common, admin, catalog, contact, show, auth, dashboard, watchlist, emails)
+  - 48+ admin-specific keys + all other page translations
+- ✅ **Language Switcher Footer**
+  - 3 buttons in footer: 🇫🇷 FR | 🇬🇧 EN | 🇩🇪 DE
+  - Uses POST route `language.switch`
+  - Saves locale to session (for guests) or user preference (for logged-in)
+  - Placed at bottom right of footer (away from navbar dropdown)
+- ✅ **Admin Sidebar Language Selector**
+  - 3 buttons in footer of admin sidebar (both desktop + mobile versions)
+  - Same functionality as footer switcher
+  - Always visible for quick language changes
+- ✅ **User Profile Language Preference**
+  - New field in profile: "Langue préférée" / "Preferred Language" / "Bevorzugte Sprache"
+  - Select dropdown with 3 options (FR/EN/DE)
+  - Saved to `user.preferred_language` column
+  - Applied automatically on user login via `SetLocale` middleware
+- ✅ **Admin Pages Translation**
+  - All 5 admin pages fully translated:
+    - `/admin/icons` - Icon picker page
+    - `/admin/users` - User management
+    - `/admin/settings` - Site settings
+    - `/admin/author` - Author & SEO
+    - `/admin/contact` - Contact management (index + detail pages)
+  - All sidebar labels, buttons, confirmations, and error messages translated
+- ✅ **Primary Button Styling**
+  - Changed color from `bg-slate-800` (gray) to `bg-red-600` (red)
+  - Better visibility and consistency with brand colors
+  - Applied to all form submit buttons across the application
+- ✅ **Dropdown & Z-index Fixes**
+  - Fixed user dropdown visibility issue on home page
+  - Navigation now has `z-40` for proper layering
+  - Dropdown component uses `z-[999]` with Alpine.js style binding
+  - Fixed `x-show` toggle with explicit `x-bind:style="open && 'display: block;'"`
 
 ### Force Password Change System
 - ✅ **Admin Panel:** Reset user password from `/admin/users/{id}/edit`

@@ -28,6 +28,15 @@ KDrama Laravel est une application web moderne permettant de parcourir des drama
   - 🔒 Forçage du changement avant accès à l'app
   - ✏️ Page de changement de mot de passe dédiée avec validation
 
+### 🌍 Localisation Multilingue
+- ✅ **Support complet FR/EN/DE** (Français, English, Deutsch)
+- ✅ Sélecteur de langue dans le **footer** (buttons 🇫🇷 🇬🇧 🇩🇪)
+- ✅ Sélecteur dans l'**admin sidebar** (desktop + mobile)
+- ✅ **Préférence utilisateur** : sauvegardée au profil
+- ✅ Traductions intégrales de toutes les pages publiques et admin
+- ✅ Changement de langue instantané sans rechargement
+- ✅ **Hero title avec placeholder** : "K-Dramas" injecté dynamiquement avec style gradient préservé
+
 ### 📺 Gestion de Watchlist & Notation
 - ✅ Ajout/suppression de dramas à sa watchlist
 - ✅ Marquage de dramas comme "regardés"
@@ -44,15 +53,24 @@ KDrama Laravel est une application web moderne permettant de parcourir des drama
 
 ### 🎨 Admin Panel
 - ✅ **Dashboard admin** avec statistiques (utilisateurs, contenus, synchronisations)
+- ✅ **Sidebar collapsible** avec sections (Site, Admin, Exports)
+- ✅ **Sélecteur de langue intégré** (changement instantané)
 - ✅ **Gestion des utilisateurs** (CRUD complet)
 - ✅ **Gestion des paramètres** (settings key-value avec grouping)
 - ✅ **Gestion auteur/site/SEO** :
   - Profil auteur (nom, bio, email, avatar)
   - Informations du site (nom, tagline, footer, copyright)
   - **Social links avec drag-and-drop** (réordonner via AJAX)
-  - Icônes Tabler (4500+ disponibles avec picker modal)
+  - **Icônes intégrées**: Tabler (5021) + Simple Icons (3356) = 8377 icons total
+  - Icon picker modal avec recherche en direct sur 8377+ icons
   - SEO : meta description, keywords, Open Graph tags (OG title, description, image, type)
-- ✅ **Gestion des icônes** : picker modal avec recherche en direct
+- ✅ **Gestion des icônes** :
+  - **Admin Icon Browser** (`/admin/icons`) : Recherche tous les 8377 icons (Tabler + Simple)
+  - Pagination "Load More" avec compteur dynamique (100 icons par page)
+  - **Labels en bleu** pour tous les icons (meilleure information)
+  - Type badges pour distinguer Tabler et Simple Icons
+  - Copy to clipboard avec préfixe `si-` pour Simple Icons
+  - **Compteur dynamique**: Mis à jour automatiquement si les packages changent
 - ✅ **Gestion des messages de contact** :
   - Liste avec stats (total, en attente, lus, en cours, réglés, spam, erreurs email)
   - Recherche et filtrage par statut
@@ -78,6 +96,21 @@ KDrama Laravel est une application web moderne permettant de parcourir des drama
 - ✅ Génération automatique des URL de recherche avec le titre du drama encodé
 - ✅ Cards avec icônes emoji et dégradés de couleurs par plateforme
 
+### 🎭 Casting & Réseaux Sociaux des Acteurs
+- ✅ **Affichage du casting complet** avec photos, biographies, dates de naissance
+- ✅ **7 réseaux sociaux intégrés** pour chaque acteur:
+  - 📸 Instagram
+  - 📘 Facebook
+  - 𝕏 Twitter/X
+  - 🎵 TikTok
+  - 📺 YouTube
+  - 🎬 IMDb
+  - 📚 Wikidata
+- ✅ **Modale dédiée** pour explorer les acteurs avec détails complets
+- ✅ **Projets récents** affichés pour chaque acteur
+- ✅ **Lien vers tous les K-Dramas** d'un acteur spécifique
+- ✅ **Traductions complètes** FR/EN/DE pour la modale des acteurs
+
 ### 🛠 Stack Technique
 - **🐘 Langage :** PHP 8.2+
 - **🚀 Framework :** [Laravel 12](https://laravel.com)
@@ -85,6 +118,57 @@ KDrama Laravel est une application web moderne permettant de parcourir des drama
 - **🗄️ Base de données :** MySQL (ou SQLite pour le développement local)
 - **🔐 Authentification :** Laravel Breeze
 - **📦 Gestionnaire de paquets :** Composer (PHP) & npm (JS)
+- **🎯 Icons System:**
+  - **Tabler Icons** (@tabler/icons) - 5,021 UI icons
+  - **Simple Icons** (codeat3/blade-simple-icons) - 3,356 brand logos (ALL)
+  - **Total: 8,377 icons** available in admin icon browser
+  - **Dynamic count** - recalculated from filesystem (updates with composer)
+  - **Labels in blue** - all icons display labels for better information
+
+---
+
+## 🌐 Localisation et Multilingue
+
+### Langues Supportées
+Le projet supporte **3 langues** complètement traduites :
+- 🇫🇷 **Français (FR)** - Langue par défaut
+- 🇬🇧 **English (EN)**
+- 🇩🇪 **Deutsch (DE)**
+
+### Comment Changer la Langue ?
+
+**1️⃣ Via le Footer** (pages publiques)
+```
+Boutons 🇫🇷 FR | 🇬🇧 EN | 🇩🇪 DE en bas à droite
+```
+
+**2️⃣ Via l'Admin Sidebar** (pages admin)
+```
+Footer du sidebar avec sélecteur de langue
+Disponible sur desktop et mobile
+```
+
+**3️⃣ Via le Profil Utilisateur**
+```
+Settings → "Langue préférée"
+Sauvegardée et appliquée à chaque connexion
+```
+
+### Fichiers de Traduction
+- `lang/fr/` - Fichiers français
+- `lang/en/` - Fichiers anglais
+- `lang/de/` - Fichiers allemands
+
+Chaque langue contient :
+- `common.php` - Textes communs (boutons, navigation, erreurs)
+- `admin.php` - Textes admin (sidebar, pages admin, modales)
+- `catalog.php` - Catalogue et filtres
+- `contact.php` - Formulaire contact et FAQ
+- `show.php` - Pages détail
+- `auth.php` - Authentification
+- `dashboard.php` - Dashboard utilisateur
+- `watchlist.php` - Watchlist et exports
+- `emails.php` - Templates email
 
 ---
 
@@ -283,6 +367,112 @@ php artisan test
 # Laravel Dusk (Browser/E2E)
 php artisan dusk
 ```
+
+---
+
+## 🎨 Feature : Système d'Icônes Intégré (Tabler + Simple Icons)
+
+### 📁 Architecture Dual-Icons
+
+**Tabler Icons** (5,021 total)
+- Icônes UI générales pour l'application
+- Fournis via `@tabler/icons` npm package
+- Chargement depuis `node_modules/@tabler/icons/icons/outline/`
+- Utilisés: navigation, boutons, UI controls
+
+**Simple Icons** (3,356 total - TOUS disponibles)
+- Logos de marques (social media, services)
+- Fournis via `codeat3/blade-simple-icons` package
+- Chargement depuis `vendor/codeat3/blade-simple-icons/resources/svg/`
+- Utilisés: social links, streaming services, branding
+- **TOUS les 3,356 icons** disponibles dans l'admin icon browser
+
+**Total: 8,377 Icons**
+- Dynamique: recalculé depuis le système de fichiers à chaque requête
+- Mise à jour automatique si les packages changent via `composer update`
+
+### 🔍 Admin Icon Browser (`/admin/icons`)
+
+**Fonctionnalités:**
+- ✅ Recherche en direct sur 8,377 icons (Tabler 5,021 + Simple Icons 3,356)
+- ✅ Pagination: 100 icons par page + bouton "Load More"
+- ✅ **Compteur dynamique**: "Affichage 200 icons sur 8377" (se met à jour automatiquement)
+- ✅ **Labels en bleu** pour TOUS les icons (Tabler + Simple) - meilleure information
+- ✅ Type badges: "Tabler" ou "Simple Icons" dans les tooltips
+- ✅ Copy to clipboard automatique avec préfixe `si-` pour Simple Icons
+- ✅ Live search avec 300ms debounce
+- ✅ Affichage du SVG réel (pas de placeholders)
+
+**Exemple d'utilisation:**
+```
+Recherche "youtube" → Affiche:
+  • brand-youtube (Tabler) + label bleu
+  • brand-youtube-kids (Tabler) + label bleu
+  • si-youtube (Simple Icons) ← avec préfixe + label bleu
+
+Click sur "si-youtube" → copie "si-youtube" dans clipboard
+```
+
+### 🎯 Icon Picker Modal (pour Admin/Author)
+
+**Utilisée dans:** `/admin/author` - Sélection des icônes pour les social links
+
+**Fonctionnalités:**
+- ✅ Modal searchable avec tous les icons
+- ✅ Affiche SVG avec hover tooltip
+- ✅ Sélection = ajoute `si-` prefix automatiquement pour Simple Icons
+- ✅ Toast notification avec nom complet
+- ✅ Remplit l'input form avec le nom correct
+
+**Exemple:**
+```
+1. Click "🎨" button → ouvre modal
+2. Cherche "youtube"
+3. Click sur icon YouTube
+4. Input reçoit: "si-youtube" (pas "youtube")
+5. Toast: "✅ Selected: si-youtube"
+```
+
+### 🦶 Footer Display (Social Links)
+
+**Support Intelligent:**
+- ✅ Détecte le type par préfixe `si-`
+- ✅ Simple Icons: load SVG + `fill-current` styling
+- ✅ Tabler Icons: load SVG + `stroke-current` styling
+- ✅ Fallback placeholder si icon manque dans les deux sources
+- ✅ Compatible avec tous les types d'icônes
+
+**Exemple:**
+```
+Social Link: instagram (Simple)
+1. Icon name: "si-instagram"
+2. Détecte: préfixe "si-" → Simple Icon
+3. Load: /vendor/codeat3/blade-simple-icons/resources/svg/instagram.svg
+4. Render: <svg class="w-6 h-6 fill-current">...</svg>
+5. Affiche: Logo Instagram en couleur blanche
+```
+
+### 🛠️ Fichiers Clés (Icons System)
+
+| Fichier | Rôle |
+|---------|------|
+| `app/Http/Controllers/Admin/AdminIconsController.php` | Fallback logic + pagination |
+| `app/Helpers/IconHelper.php` | List of all Simple Icons + helpers |
+| `resources/views/admin/icons/search.blade.php` | Browser avec "Load More" |
+| `resources/views/components/icon-picker-modal.blade.php` | Modal avec si- prefix support |
+| `resources/views/components/footer.blade.php` | Dual-source loading (Tabler + Simple) |
+
+### 💡 Pattern de Nommage
+
+**Simple Icons:** `si-{icon-name}`
+- Affichage: `si-youtube`
+- Copié: `si-youtube`
+- Utilisé dans formulaires: `social_links[0][icon] = "si-youtube"`
+
+**Tabler Icons:** `{icon-name}` (pas de préfixe)
+- Affichage: `brand-youtube`
+- Copié: `brand-youtube`
+- Utilisé partout: `{icon-name}`
 
 ---
 
@@ -501,7 +691,30 @@ Outil de débogage Laravel pour visualiser en temps réel :
   - Sticky headers with titles + emoji + description
   - All admin pages integrated (Users, Settings, Author, Contact, Icons, Exports)
 
-### Phase 10 : Force Password Change System (✅ Complétée)
+### Phase 10 : Integrated Icon System (✅ Complétée)
+- [x] **Dual Icon Library System**
+  - Tabler Icons (5000+) + Simple Icons (1000+) integrated
+  - Automatic fallback for missing Simple Icons to Tabler alternatives
+- [x] **Admin Icon Browser** (`/admin/icons`)
+  - Search 6000+ combined icons with live filtering
+  - Pagination: 100 icons per page + "Load More" button
+  - Dynamic counter: "Displaying 200 icons out of 5051"
+  - Type badges: "Tabler" vs "Simple Icons"
+  - Copy to clipboard with si- prefix for Simple Icons
+- [x] **Icon Picker Modal** (`icon-picker-modal.blade.php`)
+  - Used in admin/author for social links selection
+  - Auto-adds si- prefix when selecting Simple Icons
+  - Toast notification on selection
+- [x] **Footer Social Links** with dual-source display
+  - Detects icon type by si- prefix
+  - Loads from correct source (Tabler or Simple Icons)
+  - Proper SVG styling (fill vs stroke)
+- [x] **Helper Methods** (IconHelper class)
+  - getSimpleIcons() - All 30+ brand logos
+  - getSimpleIconLabel() - Get human-readable label
+  - hasSimpleIcon() - Check if icon exists
+
+### Phase 11 : Force Password Change System (✅ Complétée)
 - [x] **Admin Password Reset Feature** (`/admin/users/{id}/edit`)
   - 🔑 Button "🔑 Generate & Send New Password"
   - 🎨 Custom confirmation modal (replaces browser alert)

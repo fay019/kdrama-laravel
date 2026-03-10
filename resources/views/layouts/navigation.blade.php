@@ -1,11 +1,11 @@
-<nav x-data="{ open: false }" class="bg-slate-800 border-b border-slate-700">
+<nav x-data="{ open: false }" class="bg-slate-800 border-b border-slate-700 relative z-40">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ auth()->check() ? route('dashboard') : route('home') }}">
+                    <a href="{{ route('home') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-white" />
                     </a>
                 </div>
@@ -32,28 +32,6 @@
                         @endif
                     @endauth
                 </div>
-            </div>
-
-            <!-- Language Switcher -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6 space-x-2">
-                <form action="{{ route('language.switch', 'fr') }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="px-2 py-1 text-sm rounded {{ app()->getLocale() === 'fr' ? 'bg-red-600 text-white' : 'text-slate-300 hover:text-white' }} transition">
-                        🇫🇷 FR
-                    </button>
-                </form>
-                <form action="{{ route('language.switch', 'en') }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="px-2 py-1 text-sm rounded {{ app()->getLocale() === 'en' ? 'bg-red-600 text-white' : 'text-slate-300 hover:text-white' }} transition">
-                        🇬🇧 EN
-                    </button>
-                </form>
-                <form action="{{ route('language.switch', 'de') }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="px-2 py-1 text-sm rounded {{ app()->getLocale() === 'de' ? 'bg-red-600 text-white' : 'text-slate-300 hover:text-white' }} transition">
-                        🇩🇪 DE
-                    </button>
-                </form>
             </div>
 
             <!-- Settings Dropdown -->

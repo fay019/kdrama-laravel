@@ -6,7 +6,7 @@
                 <div class="px-3 sm:px-6 lg:px-8 py-4">
                     <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2 sm:gap-3">
                         <span class="text-3xl sm:text-4xl">🎨</span>
-                        <span>{{ __('admin.icons_title') }} ({{ $count }}/4500+ Icons)</span>
+                        <span>{{ __('admin.icons_title') }} ({{ $count }} Icons)</span>
                     </h1>
                     <p class="text-slate-400 mt-1">{{ __('admin.icons_subtitle') }}</p>
                 </div>
@@ -31,40 +31,89 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="iconsList">
                         @foreach($icons as $icon)
                             <div class="icon-card group relative p-4 bg-slate-700 rounded hover:bg-slate-600 transition cursor-pointer"
-                                 data-icon-name="{{ $icon }}">
+                                 data-icon-name="{{ $icon['type'] === 'simple' ? 'si-' . $icon['name'] : $icon['name'] }}"
+                                 data-icon-type="{{ $icon['type'] ?? 'tabler' }}">
 
-                                <!-- Icon Preview (loaded via SVG from node_modules) -->
+                                <!-- Icon Preview -->
                                 <div class="mb-3 flex justify-center h-12 text-slate-300">
-                                    @php
-                                        $svgPath = base_path("node_modules/@tabler/icons/icons/outline/{$icon}.svg");
-                                        $svgContent = file_exists($svgPath) ? file_get_contents($svgPath) : null;
-                                    @endphp
-                                    @if($svgContent)
-                                        <div class="w-8 h-8" style="display: flex; align-items: center; justify-content: center;">
-                                            {!! str_replace(['<svg', '</svg>'], ['<svg class="w-8 h-8"', '</svg>'], $svgContent) !!}
-                                        </div>
-                                    @else
-                                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                        </svg>
+                                    @if($icon['type'] === 'tabler')
+                                        @php
+                                            $svgPath = base_path("node_modules/@tabler/icons/icons/outline/{$icon['name']}.svg");
+                                            $svgContent = file_exists($svgPath) ? file_get_contents($svgPath) : null;
+                                        @endphp
+                                        @if($svgContent)
+                                            <div class="w-8 h-8" style="display: flex; align-items: center; justify-content: center;">
+                                                {!! str_replace(['<svg', '</svg>'], ['<svg class="w-8 h-8"', '</svg>'], $svgContent) !!}
+                                            </div>
+                                        @else
+                                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                            </svg>
+                                        @endif
+                                    @elseif($icon['type'] === 'simple')
+                                        <!-- Simple Icons SVG -->
+                                        @php
+                                            $simpleSvgPath = base_path("vendor/codeat3/blade-simple-icons/resources/svg/{$icon['name']}.svg");
+                                            $simpleSvgContent = file_exists($simpleSvgPath) ? file_get_contents($simpleSvgPath) : null;
+                                        @endphp
+                                        @if($simpleSvgContent)
+                                            <div class="w-8 h-8" style="display: flex; align-items: center; justify-content: center;">
+                                                {!! str_replace(['<svg', '</svg>'], ['<svg class="w-8 h-8 fill-current"', '</svg>'], $simpleSvgContent) !!}
+                                            </div>
+                                        @else
+                                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                            </svg>
+                                        @endif
                                     @endif
                                 </div>
 
-                                <!-- Icon Name -->
-                                <p class="text-xs text-slate-300 text-center truncate font-mono">
-                                    {{ $icon }}
-                                </p>
+                                <!-- Icon Name & Type -->
+                                <div class="mb-2">
+                                    <p class="text-xs text-slate-300 text-center truncate font-mono">
+                                        @if($icon['type'] === 'simple')
+                                            si-{{ $icon['name'] }}
+                                        @else
+                                            {{ $icon['name'] }}
+                                        @endif
+                                    </p>
+                                    <p class="text-xs text-blue-400 text-center truncate">
+                                        {{ $icon['label'] }}
+                                    </p>
+                                </div>
 
                                 <!-- Copy Tooltip -->
                                 <div class="hidden group-hover:block absolute inset-0 bg-black/80 rounded flex items-center justify-center z-10">
                                     <div class="text-center">
-                                        <p class="text-white text-xs font-semibold mb-1">Click to copy</p>
-                                        <p class="text-slate-300 text-xs font-mono break-all">{{ $icon }}</p>
+                                        <p class="text-white text-xs font-semibold mb-1">📋 Click to copy</p>
+                                        <p class="text-slate-300 text-xs font-mono break-all">
+                                            @if($icon['type'] === 'simple')
+                                                si-{{ $icon['name'] }}
+                                            @else
+                                                {{ $icon['name'] }}
+                                            @endif
+                                        </p>
+                                        @if($icon['type'] === 'simple')
+                                            <p class="text-blue-300 text-xs font-semibold mt-1">Simple Icons</p>
+                                        @else
+                                            <p class="text-gray-400 text-xs font-semibold mt-1">Tabler</p>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
+                    @if(count($icons) < $count)
+                        <div class="mt-6 text-center">
+                            <p class="text-slate-400 text-sm mb-4" id="iconsCounter">
+                                Affichage <strong id="displayedCount">{{ count($icons) }}</strong> icons sur <strong id="totalCount">{{ $count }}</strong>
+                            </p>
+                            <button onclick="loadMoreIcons()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition">
+                                📥 Charger plus
+                            </button>
+                            <p class="text-slate-500 text-xs mt-3">💡 Conseil: Utilisez la recherche pour trouver rapidement un icon</p>
+                        </div>
+                    @endif
                 @else
                     <div class="text-center py-12">
                         <p class="text-slate-400 text-lg">❌ {{ __('admin.icons_no_found') }}</p>
@@ -135,6 +184,90 @@ function searchIcons(query) {
     });
 }
 
+let currentOffset = 100;
+
+function loadMoreIcons() {
+    const button = event.target;
+    button.disabled = true;
+    button.innerHTML = '⏳ Chargement...';
+
+    fetch(`{{ route('admin.icons.search') }}?offset=${currentOffset}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const list = document.getElementById('iconsList');
+        const grid = document.getElementById('iconsGrid');
+
+        if (data.icons.length === 0) {
+            button.remove();
+            showToast('✅ Tous les icons sont affichés', 'success');
+            return;
+        }
+
+        // Ajouter les nouveaux icons à la grille
+        data.icons.forEach(icon => {
+            const escapedName = icon.name.replace(/"/g, '&quot;');
+            const displayName = icon.type === 'simple' ? 'si-' + escapedName : escapedName;
+
+            const iconHtml = `
+                <div class="icon-card group relative p-4 bg-slate-700 rounded hover:bg-slate-600 transition cursor-pointer"
+                     data-icon-name="${displayName}">
+                    <div class="mb-3 flex justify-center h-12 text-slate-300">
+                        ${icon.svg || '<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>'}
+                    </div>
+                    <p class="text-xs text-slate-300 text-center truncate font-mono">${displayName}</p>
+                    <p class="text-xs text-blue-400 text-center truncate">${icon.label || ''}</p>
+                    <div class="hidden group-hover:block absolute inset-0 bg-black/80 rounded flex items-center justify-center z-10">
+                        <div class="text-center">
+                            <p class="text-white text-xs font-semibold mb-1">📋 {{ __('admin.icons_click_copy') }}</p>
+                            <p class="text-slate-300 text-xs font-mono break-all">${displayName}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            list.innerHTML += iconHtml;
+        });
+
+        currentOffset += data.icons.length;
+
+        // Mettre à jour le compteur
+        const displayedCount = document.getElementById('displayedCount');
+        const totalCount = document.getElementById('totalCount');
+        const counter = document.getElementById('iconsCounter');
+
+        if (displayedCount) {
+            displayedCount.textContent = currentOffset;
+        }
+        if (totalCount) {
+            totalCount.textContent = data.total;
+        }
+
+        // Mettre à jour ou supprimer le bouton
+        if (currentOffset >= data.total) {
+            button.remove();
+            const message = document.createElement('p');
+            message.className = 'text-slate-500 text-sm text-center mt-4';
+            message.innerHTML = '✅ Tous les icons sont affichés';
+            grid.appendChild(message);
+        } else {
+            button.disabled = false;
+            button.innerHTML = '📥 Charger plus';
+        }
+
+        showToast(`✅ ${data.icons.length} icons chargés`, 'success');
+    })
+    .catch(error => {
+        console.error('Load error:', error);
+        button.disabled = false;
+        button.innerHTML = '📥 Charger plus';
+        showToast('❌ Erreur lors du chargement', 'error');
+    });
+}
+
 function displayIcons(icons, query) {
     const grid = document.getElementById('iconsGrid');
 
@@ -151,17 +284,19 @@ function displayIcons(icons, query) {
     let html = '<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">';
     icons.forEach(icon => {
         const escapedName = icon.name.replace(/"/g, '&quot;');
+        const displayName = icon.type === 'simple' ? 'si-' + escapedName : escapedName;
         html += `
             <div class="icon-card group relative p-4 bg-slate-700 rounded hover:bg-slate-600 transition cursor-pointer"
-                 data-icon-name="${escapedName}">
+                 data-icon-name="${displayName}">
                 <div class="mb-3 flex justify-center h-12 text-slate-300">
                     ${icon.svg || '<svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>'}
                 </div>
-                <p class="text-xs text-slate-300 text-center truncate font-mono">${escapedName}</p>
+                <p class="text-xs text-slate-300 text-center truncate font-mono">${displayName}</p>
+                <p class="text-xs text-blue-400 text-center truncate">${icon.label || ''}</p>
                 <div class="hidden group-hover:block absolute inset-0 bg-black/80 rounded flex items-center justify-center z-10">
                     <div class="text-center">
                         <p class="text-white text-xs font-semibold mb-1">📋 {{ __('admin.icons_click_copy') }}</p>
-                        <p class="text-slate-300 text-xs font-mono break-all">${escapedName}</p>
+                        <p class="text-slate-300 text-xs font-mono break-all">${displayName}</p>
                     </div>
                 </div>
             </div>

@@ -107,12 +107,14 @@ function displayIcons(icons, total = null) {
     icons.forEach(iconData => {
         // Si on reçoit un objet avec name et svg
         const iconName = iconData.name || iconData;
+        const iconType = iconData.type || 'tabler';
         const svgContent = iconData.svg || null;
+        const displayName = iconType === 'simple' ? 'si-' + iconName : iconName;
 
         const iconEl = document.createElement('div');
         iconEl.className = 'p-2 bg-slate-700 rounded hover:bg-slate-600 transition cursor-pointer flex items-center justify-center group relative';
-        iconEl.title = iconName;
-        iconEl.onclick = () => selectIcon(iconName);
+        iconEl.title = displayName;
+        iconEl.onclick = () => selectIcon(iconName, iconType);
 
         if (svgContent) {
             iconEl.innerHTML = `
@@ -120,7 +122,7 @@ function displayIcons(icons, total = null) {
                     ${svgContent}
                 </div>
                 <div class="hidden group-hover:block absolute bottom-full mb-1 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                    ${iconName}
+                    ${displayName}
                 </div>
             `;
         } else {
@@ -131,7 +133,7 @@ function displayIcons(icons, total = null) {
                     </svg>
                 </div>
                 <div class="hidden group-hover:block absolute bottom-full mb-1 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                    ${iconName}
+                    ${displayName}
                 </div>
             `;
         }
@@ -140,13 +142,15 @@ function displayIcons(icons, total = null) {
     });
 }
 
-function selectIcon(iconName) {
+function selectIcon(iconName, iconType = 'tabler') {
     if (currentIconInput) {
-        currentIconInput.value = iconName;
+        // Add si- prefix for Simple Icons
+        const displayName = iconType === 'simple' ? 'si-' + iconName : iconName;
+        currentIconInput.value = displayName;
         currentIconInput.dispatchEvent(new Event('change', { bubbles: true }));
 
         // Show toast
-        showToast(`✅ Selected: ${iconName}`);
+        showToast(`✅ Selected: ${displayName}`);
 
         // Close modal after selection
         setTimeout(() => closeIconPicker(), 300);

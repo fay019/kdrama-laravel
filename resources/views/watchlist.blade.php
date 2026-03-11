@@ -25,6 +25,9 @@
             <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="towatch">
                 {{ __('watchlist.filter_to_watch') }} ({{ count($toWatch) }})
             </button>
+            <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="watching">
+                {{ __('watchlist.filter_watching') }} ({{ count($watching) }})
+            </button>
             <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="watched">
                 {{ __('watchlist.filter_watched') }} ({{ count($watched) }})
             </button>
@@ -32,11 +35,15 @@
 
         <div class="content-grid" id="watchlistGrid">
             @foreach($items as $item)
-                <div class="content-card group fade-in watchlist-item" data-watched="{{ $item->is_watched ? 'true' : 'false' }}" data-in-watchlist="{{ $item->is_in_watchlist ? 'true' : 'false' }}" data-content-id="{{ $item->tmdb_id }}">
+                <div class="content-card group fade-in watchlist-item" data-watched="{{ $item->is_watched ? 'true' : 'false' }}" data-watching="{{ $item->is_watching ? 'true' : 'false' }}" data-in-watchlist="{{ $item->is_in_watchlist ? 'true' : 'false' }}" data-content-id="{{ $item->tmdb_id }}">
                     <!-- Status Badge -->
                     @if($item->is_watched)
                         <div class="absolute top-2 left-2 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
                             {{ __('watchlist.status_watched') }}
+                        </div>
+                    @elseif($item->is_watching)
+                        <div class="absolute top-2 left-2 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
+                            {{ __('watchlist.status_watching') }}
                         </div>
                     @else
                         <div class="absolute top-2 left-2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
@@ -65,6 +72,11 @@
                                 <!-- Watchlist Toggle -->
                                 <button type="button" class="toggle-watchlist-btn {{ $item->is_in_watchlist ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-600 hover:bg-slate-700' }} text-white font-bold py-2 px-3 rounded-lg shadow-lg transform transition hover:scale-105 text-sm" data-content-id="{{ $item->tmdb_id }}" title="{{ __('watchlist.title_watchlist_toggle') }}">
                                     {{ __('watchlist.btn_list') }}
+                                </button>
+
+                                <!-- Watching Toggle -->
+                                <button type="button" class="toggle-watching-btn {{ $item->is_watching ? 'bg-amber-500 hover:bg-amber-600' : 'bg-slate-600 hover:bg-slate-700' }} text-white font-bold py-2 px-3 rounded-lg shadow-lg transform transition hover:scale-105 text-sm" data-content-id="{{ $item->tmdb_id }}" title="{{ __('watchlist.title_watching_toggle') }}">
+                                    {{ __('watchlist.btn_watching') }}
                                 </button>
 
                                 <!-- Watched Toggle -->
@@ -140,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const watchlistItems = document.querySelectorAll('.watchlist-item');
     const watchlistToggleBtns = document.querySelectorAll('.toggle-watchlist-btn');
+    const watchingBtns = document.querySelectorAll('.toggle-watching-btn');
     const watchedBtns = document.querySelectorAll('.toggle-watched-btn');
     const deleteBtns = document.querySelectorAll('.delete-btn');
     let currentFilter = 'all';
@@ -158,11 +171,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Filter items
             watchlistItems.forEach(item => {
                 const isWatched = item.dataset.watched === 'true';
+                const isWatching = item.dataset.watching === 'true';
                 const isInWatchlist = item.dataset.inWatchlist === 'true';
 
                 if (currentFilter === 'all') {
                     item.style.display = '';
-                } else if (currentFilter === 'towatch' && isInWatchlist && !isWatched) {
+                } else if (currentFilter === 'towatch' && isInWatchlist && !isWatched && !isWatching) {
+                    item.style.display = '';
+                } else if (currentFilter === 'watching' && isWatching) {
                     item.style.display = '';
                 } else if (currentFilter === 'watched' && isWatched) {
                     item.style.display = '';
@@ -195,15 +211,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     const data = await response.json();
                     item.dataset.inWatchlist = data.inWatchlist ? 'true' : 'false';
+                    item.dataset.watching = 'false'; // Reset watching when toggling watchlist
                     item.dataset.watched = data.inWatched ? 'true' : 'false';
 
                     // Update button colors based on server response
                     const watchlistBtn = this;
+                    const watchingBtn = item.querySelector('.toggle-watching-btn');
                     const watchedBtn = item.querySelector('.toggle-watched-btn');
 
                     if (data.inWatchlist) {
                         watchlistBtn.classList.remove('bg-slate-600', 'hover:bg-slate-700');
                         watchlistBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                        watchingBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+                        watchingBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
                         watchedBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
                         watchedBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
                     } else {
@@ -216,8 +236,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateBadge(item);
 
                     // Re-apply filter if needed
-                    if (currentFilter === 'towatch' && item.dataset.watched === 'false' && !isInWatchlist) {
-                        // Was in towatch, now only watched or empty
+                    if (currentFilter === 'towatch' && item.dataset.watched === 'false' && item.dataset.watching === 'false' && item.dataset.inWatchlist === 'false') {
+                        // Was in towatch, now not in any category
                         item.style.display = 'none';
                     }
                 } else {
@@ -254,15 +274,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     const data = await response.json();
                     item.dataset.watched = data.inWatched ? 'true' : 'false';
+                    item.dataset.watching = 'false'; // Reset watching when toggling watched
                     item.dataset.inWatchlist = data.inWatchlist ? 'true' : 'false';
 
-                    // Update watched and watchlist button colors
+                    // Update watched, watching and watchlist button colors
                     const watchedBtn = this;
+                    const watchingBtn = item.querySelector('.toggle-watching-btn');
                     const watchlistBtn = item.querySelector('.toggle-watchlist-btn');
 
                     if (data.inWatched) {
                         watchedBtn.classList.remove('bg-slate-600', 'hover:bg-slate-700');
                         watchedBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                        watchingBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+                        watchingBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
                         watchlistBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
                         watchlistBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
                     } else {
@@ -275,9 +299,73 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateBadge(item);
 
                     // Re-apply filter if needed
-                    if (currentFilter === 'towatch' && newWatched) {
+                    if (currentFilter === 'towatch' && item.dataset.watched === 'true') {
                         item.style.display = 'none';
-                    } else if (currentFilter === 'watched' && !newWatched) {
+                    } else if (currentFilter === 'watched' && item.dataset.watched === 'false') {
+                        item.style.display = 'none';
+                    }
+                } else {
+                    showToast(window.i18n.watchlist_error_modify, 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast(window.i18n.watchlist_error_modify, 'error');
+            } finally {
+                this.disabled = false;
+            }
+        });
+    });
+
+    // Toggle watching functionality
+    watchingBtns.forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const contentId = this.dataset.contentId;
+            const item = this.closest('.watchlist-item');
+
+            try {
+                this.disabled = true;
+
+                const response = await fetch(`/api/watching/toggle/${contentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    item.dataset.watching = data.inWatching ? 'true' : 'false';
+                    item.dataset.inWatchlist = data.inWatchlist || false ? 'true' : 'false';
+                    item.dataset.watched = data.inWatched || false ? 'true' : 'false';
+
+                    // Update watching, watchlist and watched button colors
+                    const watchingBtn = this;
+                    const watchlistBtn = item.querySelector('.toggle-watchlist-btn');
+                    const watchedBtn = item.querySelector('.toggle-watched-btn');
+
+                    if (data.inWatching) {
+                        watchingBtn.classList.remove('bg-slate-600', 'hover:bg-slate-700');
+                        watchingBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
+                        watchlistBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                        watchlistBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
+                        watchedBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        watchedBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
+                    } else {
+                        watchingBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+                        watchingBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
+                    }
+                    showToast(data.message, 'success');
+
+                    // Update badge
+                    updateBadge(item);
+
+                    // Re-apply filter if needed
+                    if (currentFilter === 'watching' && item.dataset.watching === 'false') {
+                        item.style.display = 'none';
+                    } else if (currentFilter === 'towatch' && item.dataset.watching === 'true') {
                         item.style.display = 'none';
                     }
                 } else {
@@ -428,14 +516,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateBadge(item) {
         const badgeContainer = item.querySelector('.absolute.top-2.left-2');
         const isWatched = item.dataset.watched === 'true';
+        const isWatching = item.dataset.watching === 'true';
 
         // Remove all color classes
-        badgeContainer.classList.remove('bg-green-600', 'bg-red-600');
+        badgeContainer.classList.remove('bg-green-600', 'bg-amber-500', 'bg-red-600');
 
-        // Add correct color based on state
+        // Add correct color based on state (exclusive: only one can be true)
         if (isWatched) {
             badgeContainer.classList.add('bg-green-600');
             badgeContainer.textContent = window.i18n.watchlist_badge_watched;
+        } else if (isWatching) {
+            badgeContainer.classList.add('bg-amber-500');
+            badgeContainer.textContent = window.i18n.watchlist_badge_watching;
         } else {
             badgeContainer.classList.add('bg-red-600');
             badgeContainer.textContent = window.i18n.watchlist_badge_to_watch;

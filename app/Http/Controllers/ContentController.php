@@ -107,6 +107,7 @@ class ContentController extends Controller
             $userStatus = $watchlistItems->mapWithKeys(function ($item) {
                 return [$item->tmdb_id => [
                     'is_in_watchlist' => $item->is_in_watchlist,
+                    'is_watching' => $item->is_watching,
                     'is_watched' => $item->is_watched,
                     'rating' => $item->rating
                 ]];
@@ -224,6 +225,7 @@ class ContentController extends Controller
                     'user_id' => $watchlistItem->user_id,
                     'tmdb_id' => $watchlistItem->tmdb_id,
                     'is_in_watchlist' => $watchlistItem->is_in_watchlist,
+                    'is_watching' => $watchlistItem->is_watching,
                     'is_watched' => $watchlistItem->is_watched,
                     'rating' => $watchlistItem->rating
                 ];

@@ -37,6 +37,7 @@
                 @auth
                     @php
                         $isInWatchlist = $userStatus && $userStatus->is_in_watchlist;
+                        $isWatching = $userStatus && $userStatus->is_watching;
                         $isWatched = $userStatus && $userStatus->is_watched;
                     @endphp
                     <button id="watchlistBtn" data-content-id="{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}"
@@ -44,6 +45,12 @@
                             data-remove-text="{{ __('show.remove_watchlist') }}"
                             data-add-text="{{ __('show.add_watchlist') }}">
                         {{ $isInWatchlist ? __('show.remove_watchlist') : __('show.add_watchlist') }}
+                    </button>
+                    <button id="watchingBtn" data-content-id="{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}"
+                            class="w-full {{ $isWatching ? 'bg-slate-700' : 'bg-amber-500' }} hover:opacity-90 text-white font-bold py-3 rounded-lg transition watching-btn"
+                            data-unwatching-text="{{ __('show.mark_unwatching') }}"
+                            data-watching-text="{{ __('show.mark_watching') }}">
+                        {{ $isWatching ? __('show.mark_unwatching') : __('show.mark_watching') }}
                     </button>
                     <button id="watchedBtn" data-content-id="{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}"
                             class="w-full {{ $isWatched ? 'bg-slate-700' : 'bg-green-600' }} hover:opacity-90 text-white font-bold py-3 rounded-lg transition watched-btn"
@@ -488,17 +495,24 @@
 document.addEventListener('DOMContentLoaded', function() {
     const contentId = {{ $kdrama['tmdb_id'] ?? $kdrama['id'] }};
     const watchlistBtn = document.getElementById('watchlistBtn');
+    const watchingBtn = document.getElementById('watchingBtn');
     const watchedBtn = document.getElementById('watchedBtn');
 
-    if (!watchlistBtn || !watchedBtn) return;
+    if (!watchlistBtn || !watchingBtn || !watchedBtn) return;
 
     let inWatchlist = @auth {{ $isInWatchlist ? 'true' : 'false' }} @else false @endauth;
+    let inWatching = @auth {{ $isWatching ? 'true' : 'false' }} @else false @endauth;
     let inWatched = @auth {{ $isWatched ? 'true' : 'false' }} @else false @endauth;
 
     // Event listeners
     watchlistBtn.addEventListener('click', function(e) {
         e.preventDefault();
         toggleWatchlist();
+    });
+
+    watchingBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        toggleWatching();
     });
 
     watchedBtn.addEventListener('click', function(e) {
@@ -512,6 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
 
             inWatchlist = data.inWatchlist;
+            inWatching = data.inWatching;
             inWatched = data.inWatched;
             updateButtonStates();
         } catch (error) {
@@ -545,6 +560,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok && data.status === 'success') {
                 // Use server response to update states
                 inWatchlist = data.inWatchlist;
+                inWatching = false; // Reset watching when toggling watchlist
                 inWatched = data.inWatched;
 
                 // Reset rating when removing "watched" status (switch from watched to watchlist)
@@ -601,6 +617,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok && data.status === 'success') {
                 // Use server response to update states
                 inWatched = data.inWatched;
+                inWatching = false; // Reset watching when toggling watched
                 inWatchlist = data.inWatchlist;
 
                 // Reset rating when removing "watched" status
@@ -631,9 +648,65 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    async function toggleWatching() {
+        const wasInWatching = inWatching;
+        const wasInWatchlist = inWatchlist;
+        const wasInWatched = inWatched;
+
+        // Update immediately
+        inWatching = !inWatching;
+        updateButtonStates();
+
+        try {
+            watchingBtn.disabled = true;
+
+            const response = await fetch(`/api/watching/toggle/${contentId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+            console.log('Toggle Watching Response:', data);
+
+            if (response.ok && data.status === 'success') {
+                // Use server response to update states (exclusive: only one can be true)
+                inWatching = data.inWatching;
+                inWatchlist = data.inWatchlist || false; // Force false if watching is true
+                inWatched = data.inWatched || false; // Force false if watching is true
+
+                updateButtonStates();
+                showToast(data.message, 'success');
+            } else {
+                // Revert on error
+                inWatching = wasInWatching;
+                inWatchlist = wasInWatchlist;
+                inWatched = wasInWatched;
+                updateButtonStates();
+                const errorMsg = data.message || 'Erreur lors de la modification';
+                showToast(errorMsg, 'error');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            // Revert on error
+            inWatching = wasInWatching;
+            inWatchlist = wasInWatchlist;
+            inWatched = wasInWatched;
+            updateButtonStates();
+            showToast('Erreur de connexion au serveur', 'error');
+        } finally {
+            watchingBtn.disabled = false;
+        }
+    }
+
     function updateButtonStates() {
         const removeText = watchlistBtn.getAttribute('data-remove-text') || '❌ Retirer de ma watchlist';
         const addText = watchlistBtn.getAttribute('data-add-text') || '📺 Ajouter à ma watchlist';
+        const unwatchingText = watchingBtn.getAttribute('data-unwatching-text') || '⏸️ Arrêter de regarder';
+        const watchingText = watchingBtn.getAttribute('data-watching-text') || '🎬 En train de voir';
         const unwatchText = watchedBtn.getAttribute('data-unwatch-text') || '🔄 Marquer comme non-vu';
         const watchText = watchedBtn.getAttribute('data-watch-text') || '✅ Marquer comme regardé';
 
@@ -645,6 +718,16 @@ document.addEventListener('DOMContentLoaded', function() {
             watchlistBtn.textContent = addText;
             watchlistBtn.classList.remove('bg-slate-700');
             watchlistBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+        }
+
+        if (inWatching) {
+            watchingBtn.textContent = unwatchingText;
+            watchingBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+            watchingBtn.classList.add('bg-slate-700');
+        } else {
+            watchingBtn.textContent = watchingText;
+            watchingBtn.classList.remove('bg-slate-700');
+            watchingBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
         }
 
         if (inWatched) {

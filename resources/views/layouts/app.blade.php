@@ -62,6 +62,7 @@
                 'watchlist_confirm_delete_short' => __('watchlist.js.confirm_delete_short'),
                 'watchlist_action_done' => __('watchlist.js.action_done'),
                 'watchlist_badge_watched' => __('watchlist.js.badge_watched'),
+                'watchlist_badge_watching' => __('watchlist.js.badge_watching'),
                 'watchlist_badge_to_watch' => __('watchlist.js.badge_to_watch'),
             ];
         @endphp

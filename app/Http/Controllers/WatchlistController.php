@@ -24,18 +24,21 @@ class WatchlistController extends Controller
         $items = WatchlistItem::where('user_id', auth()->id())
             ->where(function ($query) {
                 $query->where('is_in_watchlist', true)
+                    ->orWhere('is_watching', true)
                     ->orWhere('is_watched', true);
             })
             ->with(['kdrama'])
             ->orderBy('added_at', 'desc')
             ->get();
 
-        $toWatch = $items->where('is_in_watchlist', true)->where('is_watched', false);
+        $toWatch = $items->where('is_in_watchlist', true)->where('is_watched', false)->where('is_watching', false);
+        $watching = $items->where('is_watching', true);
         $watched = $items->where('is_watched', true);
 
         return view('watchlist', [
             'items' => $items,
             'toWatch' => $toWatch,
+            'watching' => $watching,
             'watched' => $watched,
         ]);
     }
@@ -100,10 +103,10 @@ class WatchlistController extends Controller
             // Vérifier si c'était en "regardé" avant (pour le message de basculement)
             $wasWatched = $item && $item->is_watched;
 
-            // Ajouter à la watchlist (et retirer de "regardé" automatiquement)
+            // Ajouter à la watchlist (et retirer de "regardé" et "en train de voir" automatiquement)
             WatchlistItem::updateOrCreate(
                 ['user_id' => $userId, 'tmdb_id' => $tmdbId],
-                ['is_in_watchlist' => true, 'is_watched' => false, 'added_at' => now()]
+                ['is_in_watchlist' => true, 'is_watching' => false, 'is_watched' => false, 'added_at' => now()]
             );
 
             if (request()->ajax() || request()->wantsJson()) {
@@ -130,8 +133,6 @@ class WatchlistController extends Controller
         $item = WatchlistItem::where('user_id', $userId)
             ->where('tmdb_id', $tmdbId)
             ->first();
-
-        \Log::info("toggleWatched called: tmdbId={$tmdbId}, item exists=" . ($item ? 'yes' : 'no') . ", is_watched=" . ($item?->is_watched ? 'true' : 'false'));
 
         if ($item && $item->is_watched) {
             // Retirer des regardés et supprimer la note associée
@@ -180,7 +181,7 @@ class WatchlistController extends Controller
             // Ajouter aux regardés
             WatchlistItem::updateOrCreate(
                 ['user_id' => $userId, 'tmdb_id' => $tmdbId],
-                ['is_watched' => true, 'is_in_watchlist' => false]
+                ['is_watched' => true, 'is_in_watchlist' => false, 'is_watching' => false]
             );
 
             if (request()->ajax() || request()->wantsJson()) {
@@ -200,10 +201,79 @@ class WatchlistController extends Controller
         }
     }
 
+    public function toggleWatching($tmdbId)
+    {
+        $userId = auth()->id();
+
+        $item = WatchlistItem::where('user_id', $userId)
+            ->where('tmdb_id', $tmdbId)
+            ->first();
+
+        if ($item && $item->is_watching) {
+            // Retirer de "en train de voir"
+            $item->is_watching = false;
+
+            if (!$item->is_in_watchlist && !$item->is_watched) {
+                $item->delete();
+            } else {
+                $item->save();
+            }
+
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'action' => 'removed',
+                    'message' => __('watchlist.marked_to_watch'),
+                    'inWatching' => false,
+                    'inWatchlist' => false,
+                    'inWatched' => false
+                ]);
+            }
+            return back()->with('success', __('watchlist.removed_from_watching'));
+        } else {
+            // S'assurer qu'il est en cache pour l'affichage
+            $kdrama = Kdrama::where('tmdb_id', $tmdbId)->first();
+            if (!$kdrama) {
+                $details = $this->tmdbService->getContentDetails($tmdbId, 'tv');
+                if ($details) {
+                    Kdrama::updateOrCreate(['tmdb_id' => $tmdbId], [
+                        'name' => $details['name'],
+                        'en_name' => $details['translations']['en']['name'] ?? $details['name'],
+                        'original_name' => $details['original_name'] ?? null,
+                        'first_air_date' => $details['first_air_date'] ?? null,
+                        'poster_path' => $details['poster_path'] ?? null,
+                        'vote_average' => $details['vote_average'] ?? 0,
+                        'production_companies' => $details['production_companies'] ?? [],
+                        'networks' => $details['networks'] ?? [],
+                        'last_updated_at' => now(),
+                    ]);
+                }
+            }
+
+            // Marquer comme "en train de voir"
+            WatchlistItem::updateOrCreate(
+                ['user_id' => $userId, 'tmdb_id' => $tmdbId],
+                ['is_watching' => true, 'is_in_watchlist' => false, 'is_watched' => false]
+            );
+
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'action' => 'added',
+                    'message' => __('watchlist.marked_watching'),
+                    'inWatching' => true,
+                    'inWatchlist' => false,
+                    'inWatched' => false
+                ]);
+            }
+            return back()->with('success', __('watchlist.marked_watching'));
+        }
+    }
+
     public function checkStatus($tmdbId)
     {
         if (!auth()->check()) {
-            return response()->json(['inWatchlist' => false, 'inWatched' => false]);
+            return response()->json(['inWatchlist' => false, 'inWatching' => false, 'inWatched' => false]);
         }
 
         $item = WatchlistItem::where('user_id', auth()->id())
@@ -212,6 +282,7 @@ class WatchlistController extends Controller
 
         return response()->json([
             'inWatchlist' => $item && $item->is_in_watchlist,
+            'inWatching' => $item && $item->is_watching,
             'inWatched' => $item && $item->is_watched
         ]);
     }
@@ -292,6 +363,7 @@ class WatchlistController extends Controller
         $validated = $request->validate([
             'format' => 'required|in:csv,pdf',
             'filters.watched' => 'sometimes|boolean',
+            'filters.watching' => 'sometimes|boolean',
             'filters.to_watch' => 'sometimes|boolean',
             'columns' => 'sometimes|array',
             'sort' => 'sometimes|in:added_at,title,rating,vote_average',
@@ -306,6 +378,7 @@ class WatchlistController extends Controller
         $options = [
             'filters' => [
                 'watched' => $request->boolean('filters.watched', true),
+                'watching' => $request->boolean('filters.watching', true),
                 'to_watch' => $request->boolean('filters.to_watch', true),
             ],
             'columns' => $request->input('columns', [
@@ -428,16 +501,21 @@ class WatchlistController extends Controller
                 if ($filters['to_watch'] ?? false) {
                     $query->orWhere('is_in_watchlist', true);
                 }
+                if ($filters['watching'] ?? false) {
+                    $query->orWhere('is_watching', true);
+                }
             })
             ->get();
 
         $totalItems = $items->count();
         $watchedCount = $items->where('is_watched', true)->count();
-        $toWatchCount = $totalItems - $watchedCount;
+        $watchingCount = $items->where('is_watching', true)->count();
+        $toWatchCount = $totalItems - $watchedCount - $watchingCount;
 
         return [
             'totalItems' => $totalItems,
             'watchedCount' => $watchedCount,
+            'watchingCount' => $watchingCount,
             'toWatchCount' => $toWatchCount,
         ];
     }

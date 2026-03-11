@@ -35,7 +35,13 @@ class WatchlistExportService
             $row[] = "\"{$title}\"";
 
             if ($selectedColumns['status'] ?? true) {
-                $status = $item['is_watched'] ? 'Vu' : 'À regarder';
+                if ($item['is_watched']) {
+                    $status = 'Vu';
+                } elseif ($item['is_watching'] ?? false) {
+                    $status = 'En train de voir';
+                } else {
+                    $status = 'À regarder';
+                }
                 $row[] = "\"{$status}\"";
             }
 
@@ -86,7 +92,8 @@ class WatchlistExportService
         // Calculer stats
         $totalItems = count($items);
         $watchedCount = count(array_filter($items, fn($i) => $i['is_watched']));
-        $toWatchCount = $totalItems - $watchedCount;
+        $watchingCount = count(array_filter($items, fn($i) => $i['is_watching'] ?? false));
+        $toWatchCount = $totalItems - $watchedCount - $watchingCount;
 
         // Formater les options pour l'affichage
         $displayOptions = $this->formatOptionsForDisplay($options);
@@ -100,6 +107,7 @@ class WatchlistExportService
             'pages' => $pages,
             'totalItems' => $totalItems,
             'watchedCount' => $watchedCount,
+            'watchingCount' => $watchingCount,
             'toWatchCount' => $toWatchCount,
             'options' => $options,
             'displayOptions' => $displayOptions,
@@ -121,7 +129,7 @@ class WatchlistExportService
     private function getFilteredWatchlist(int $userId, array $options = []): array
     {
         // Options par défaut
-        $filters = $options['filters'] ?? ['watched' => true, 'to_watch' => true];
+        $filters = $options['filters'] ?? ['watched' => true, 'to_watch' => true, 'watching' => true];
         $sort = $options['sort'] ?? 'added_at';
         $columns = $options['columns'] ?? [
             'title' => true,
@@ -137,6 +145,9 @@ class WatchlistExportService
             ->where(function ($query) use ($filters) {
                 if ($filters['watched'] ?? false) {
                     $query->orWhere('is_watched', true);
+                }
+                if ($filters['watching'] ?? false) {
+                    $query->orWhere('is_watching', true);
                 }
                 if ($filters['to_watch'] ?? false) {
                     $query->orWhere('is_in_watchlist', true);
@@ -156,6 +167,7 @@ class WatchlistExportService
 
             return array_merge($kdrama, [
                 'is_watched' => $item->is_watched,
+                'is_watching' => $item->is_watching,
                 'is_in_watchlist' => $item->is_in_watchlist,
                 'added_at' => $item->added_at,
                 'rating' => $item->rating,
@@ -282,6 +294,7 @@ class WatchlistExportService
         $filters = $options['filters'] ?? [];
         $filterLabels = [];
         if ($filters['watched'] ?? false) $filterLabels[] = 'Regardés';
+        if ($filters['watching'] ?? false) $filterLabels[] = 'En train de voir';
         if ($filters['to_watch'] ?? false) $filterLabels[] = 'À regarder';
         $display['filters'] = implode(' + ', $filterLabels) ?: 'Aucun filtre';
 

@@ -9,10 +9,11 @@ class WatchlistItem extends Model
     const CREATED_AT = 'added_at';
     const UPDATED_AT = 'updated_at';
 
-    protected $fillable = ['user_id', 'tmdb_id', 'is_in_watchlist', 'is_watched', 'notes', 'rating'];
+    protected $fillable = ['user_id', 'tmdb_id', 'is_in_watchlist', 'is_watching', 'is_watched', 'notes', 'rating'];
 
     protected $casts = [
         'is_in_watchlist' => 'boolean',
+        'is_watching' => 'boolean',
         'is_watched' => 'boolean',
         'tmdb_id' => 'integer',
         'rating' => 'integer',

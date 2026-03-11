@@ -56,6 +56,7 @@
                 @php
                     $isWatched = is_array($userStatusForItem) ? $userStatusForItem['is_watched'] : $userStatusForItem->is_watched;
                     $isInWatchlist = is_array($userStatusForItem) ? $userStatusForItem['is_in_watchlist'] : $userStatusForItem->is_in_watchlist;
+                    $isWatching = is_array($userStatusForItem) ? $userStatusForItem['is_watching'] : $userStatusForItem->is_watching;
                     $rating = is_array($userStatusForItem) ? ($userStatusForItem['rating'] ?? null) : ($userStatusForItem->rating ?? null);
                 @endphp
                 @if($isWatched)
@@ -70,6 +71,10 @@
                             @endif
                         </span>
                     @endif
+                @elseif($isWatching)
+                    <span class="bg-amber-500/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                        🎬 EN COURS
+                    </span>
                 @elseif($isInWatchlist)
                     <span class="bg-red-500/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg flex items-center gap-1">
                         📺 À VOIR

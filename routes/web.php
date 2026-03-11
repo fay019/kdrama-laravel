@@ -70,6 +70,7 @@ Route::middleware(['auth', 'check.password'])->group(function () {
 
     // API routes for AJAX
     Route::post('/api/watchlist/toggle/{contentId}', [WatchlistController::class, 'toggleWatchlist'])->name('api.watchlist.toggle');
+    Route::post('/api/watching/toggle/{contentId}', [WatchlistController::class, 'toggleWatching'])->name('api.watching.toggle');
     Route::post('/api/watched/toggle/{contentId}', [WatchlistController::class, 'toggleWatched'])->name('api.watched.toggle');
     Route::get('/api/watchlist/status/{contentId}', [WatchlistController::class, 'checkStatus'])->name('api.watchlist.status');
     Route::delete('/api/watchlist/{contentId}', [WatchlistController::class, 'deleteItem'])->name('api.watchlist.delete');

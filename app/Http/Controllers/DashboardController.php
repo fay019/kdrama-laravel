@@ -14,8 +14,15 @@ class DashboardController extends Controller
         $watchlist = WatchlistItem::where('user_id', $user->id)
             ->where('is_in_watchlist', true)
             ->where('is_watched', false)
+            ->where('is_watching', false)
             ->with(['kdrama'])
             ->orderBy('added_at', 'desc')
+            ->get();
+
+        $watching = WatchlistItem::where('user_id', $user->id)
+            ->where('is_watching', true)
+            ->with(['kdrama'])
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $watched = WatchlistItem::where('user_id', $user->id)
@@ -38,6 +45,7 @@ class DashboardController extends Controller
         // Statistiques
         $stats = [
             'total_watchlist' => $watchlist->count(),
+            'total_watching' => $watching->count(),
             'total_watched' => $watched->count(),
             'total_rated' => $ratedCount,
             'avg_rating' => $avgRating,
@@ -45,6 +53,7 @@ class DashboardController extends Controller
 
         return view('dashboard', [
             'watchlist' => $watchlist,
+            'watching' => $watching,
             'watched' => $watched,
             'rated' => $rated,
             'stats' => $stats,

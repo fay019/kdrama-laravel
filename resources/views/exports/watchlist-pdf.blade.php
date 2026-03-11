@@ -247,7 +247,7 @@
 
                 <!-- Stats -->
                 <div class="stats-line">
-                    📊 <strong>Total: {{ $totalItems }}</strong> | 📺 <strong>A regarder: {{ $toWatchCount }}</strong> | ✅ <strong>Regardes: {{ $watchedCount }}</strong>
+                    📊 <strong>Total: {{ $totalItems }}</strong> | 📺 <strong>A regarder: {{ $toWatchCount }}</strong> | 🎬 <strong>En cours: {{ $watchingCount }}</strong> | ✅ <strong>Regardes: {{ $watchedCount }}</strong>
                 </div>
 
                 <!-- Options -->
@@ -276,7 +276,13 @@
                         }
 
                         $year = $item['first_air_date'] ? \Carbon\Carbon::parse($item['first_air_date'])->year : 'N/A';
-                        $status = $item['is_watched'] ? 'Vu' : 'A voir';
+                        if ($item['is_watched']) {
+                            $status = 'Vu';
+                        } elseif ($item['is_watching'] ?? false) {
+                            $status = 'En cours';
+                        } else {
+                            $status = 'A voir';
+                        }
                         $rating = '';
                         if ($item['rating'] ?? false) {
                             $rating = match($item['rating']) {

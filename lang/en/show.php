@@ -8,6 +8,8 @@ return [
     // Buttons
     'add_watchlist' => '📺 Add to my watchlist',
     'remove_watchlist' => '❌ Remove from my watchlist',
+    'mark_watching' => '🎬 Now watching',
+    'mark_unwatching' => '⏸️ Stop watching',
     'mark_watched' => '✅ Mark as watched',
     'mark_unwatched' => '🔄 Mark as unwatched',
     'login_to_add' => 'Login to add',

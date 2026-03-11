@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                 <div class="card p-5 hover:border-red-500/50 transition">
                     <div class="flex items-center justify-between">
                         <div>
@@ -16,6 +16,15 @@
                             <p class="text-3xl font-bold text-red-400 mt-1">{{ $stats['total_watchlist'] }}</p>
                         </div>
                         <div class="text-5xl opacity-15">📺</div>
+                    </div>
+                </div>
+                <div class="card p-5 hover:border-amber-500/50 transition">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-400 text-sm font-medium">{{ __('dashboard.stat_watching') }}</p>
+                            <p class="text-3xl font-bold text-amber-400 mt-1">{{ $stats['total_watching'] }}</p>
+                        </div>
+                        <div class="text-5xl opacity-15">🎬</div>
                     </div>
                 </div>
                 <div class="card p-5 hover:border-green-500/50 transition">
@@ -108,6 +117,70 @@
                                             {{ __('dashboard.btn_view') }}
                                         </a>
                                         <form action="{{ route('api.watchlist.toggle', $item->tmdb_id) }}" method="POST" class="flex-1">
+                                            @csrf
+                                            <button type="submit" class="w-full bg-slate-700 hover:bg-red-600 text-white text-xs font-semibold py-2 px-2 rounded transition">
+                                                ✕
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            <!-- Watching Section -->
+            <div class="mb-8">
+                <h3 class="font-semibold text-xl text-slate-100 mb-4 flex items-center gap-2">
+                    {{ __('dashboard.section_watching') }} ({{ $watching->count() }})
+                </h3>
+                @if($watching->isEmpty())
+                    <div class="card p-8 text-center">
+                        <p class="text-slate-400 mb-4">{{ __('dashboard.empty_watchlist') }}</p>
+                        <a href="{{ route('kdrams.catalog') }}" class="btn-primary inline-block">
+                            {{ __('dashboard.see_catalog') }}
+                        </a>
+                    </div>
+                @else
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                        @foreach($watching as $item)
+                            <div class="group relative rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition ring-2 ring-amber-500/50">
+                                <!-- Poster Image -->
+                                @if($item->kdrama->poster_path)
+                                    <img src="https://image.tmdb.org/t/p/w342{{ $item->kdrama->poster_path }}"
+                                         alt="{{ $item->kdrama->name }}"
+                                         class="w-full h-auto object-cover group-hover:brightness-50 transition duration-300">
+                                @else
+                                    <div class="w-full aspect-[2/3] bg-slate-700 flex items-center justify-center">
+                                        <span class="text-4xl">📺</span>
+                                    </div>
+                                @endif
+
+                                <!-- Playing Badge -->
+                                <div class="absolute top-2 right-2 bg-amber-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">
+                                    🎬
+                                </div>
+
+                                <!-- Hover Info -->
+                                <div class="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-between p-3">
+                                    <div>
+                                        <h4 class="text-white font-bold text-sm line-clamp-2 mb-2">
+                                            {{ $item->kdrama->name ?? $item->kdrama->en_name }}
+                                        </h4>
+                                        @if($item->kdrama->first_air_date)
+                                            <p class="text-slate-300 text-xs mb-2">
+                                                {{ $item->kdrama->first_air_date->format('Y') }}
+                                            </p>
+                                        @endif
+                                    </div>
+
+                                    <div class="flex gap-2">
+                                        <a href="{{ route('kdrams.show', $item->tmdb_id) }}"
+                                           class="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-2 px-2 rounded text-center transition">
+                                            {{ __('dashboard.btn_view') }}
+                                        </a>
+                                        <form method="DELETE" class="flex-1" onsubmit="removeWatching(event, this)">
                                             @csrf
                                             <button type="submit" class="w-full bg-slate-700 hover:bg-red-600 text-white text-xs font-semibold py-2 px-2 rounded transition">
                                                 ✕

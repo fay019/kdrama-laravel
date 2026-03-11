@@ -7,6 +7,7 @@ return [
 
     // Stats labels
     'stat_to_watch' => 'À Regarder',
+    'stat_watching' => 'En Cours',
     'stat_watched' => 'Regardés',
     'stat_rated' => 'Notés',
     'stat_average' => 'Moyenne',
@@ -14,6 +15,7 @@ return [
 
     // Section titles
     'section_to_watch' => '📺 À Regarder',
+    'section_watching' => '🎬 En Train de Voir',
     'section_watched' => '✅ Regardés',
     'section_ratings' => '⭐ Mes Notes',
 

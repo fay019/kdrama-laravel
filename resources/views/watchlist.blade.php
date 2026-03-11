@@ -19,23 +19,23 @@
     @if(count($items) > 0)
         <!-- Filter Buttons -->
         <div class="mb-8 flex gap-3 flex-wrap">
-            <button class="filter-btn active px-6 py-2 rounded-lg font-semibold transition" data-filter="all">
-                {{ __('watchlist.filter_all') }} ({{ count($items) }})
+            <button class="filter-btn active px-6 py-2 rounded-lg font-semibold transition" data-filter="all" id="filterAll">
+                {{ __('watchlist.filter_all') }} (<span id="countAll">{{ count($items) }}</span>)
             </button>
-            <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="towatch">
-                {{ __('watchlist.filter_to_watch') }} ({{ count($toWatch) }})
+            <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="towatch" id="filterToWatch">
+                {{ __('watchlist.filter_to_watch') }} (<span id="countToWatch">{{ count($toWatch) }}</span>)
             </button>
-            <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="watching">
-                {{ __('watchlist.filter_watching') }} ({{ count($watching) }})
+            <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="watching" id="filterWatching">
+                {{ __('watchlist.filter_watching') }} (<span id="countWatching">{{ count($watching) }}</span>)
             </button>
-            <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="watched">
-                {{ __('watchlist.filter_watched') }} ({{ count($watched) }})
+            <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="watched" id="filterWatched">
+                {{ __('watchlist.filter_watched') }} (<span id="countWatched">{{ count($watched) }}</span>)
             </button>
         </div>
 
         <div class="content-grid" id="watchlistGrid">
             @foreach($items as $item)
-                <div class="content-card group fade-in watchlist-item" data-watched="{{ $item->is_watched ? 'true' : 'false' }}" data-watching="{{ $item->is_watching ? 'true' : 'false' }}" data-in-watchlist="{{ $item->is_in_watchlist ? 'true' : 'false' }}" data-content-id="{{ $item->tmdb_id }}">
+                <div class="content-card group fade-in watchlist-item" data-watched="{{ $item->is_watched ? 'true' : 'false' }}" data-watching="{{ $item->is_watching ? 'true' : 'false' }}" data-in-watchlist="{{ $item->is_in_watchlist ? 'true' : 'false' }}" data-content-id="{{ $item->tmdb_id }}" data-title="{{ $item->kdrama->name ?? 'Unknown' }}">
                     <!-- Status Badge -->
                     @if($item->is_watched)
                         <div class="absolute top-2 left-2 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
@@ -157,6 +157,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteBtns = document.querySelectorAll('.delete-btn');
     let currentFilter = 'all';
 
+    // Update counter badges
+    function updateCounters() {
+        let toWatchCount = 0;
+        let watchingCount = 0;
+        let watchedCount = 0;
+
+        document.querySelectorAll('.watchlist-item').forEach(item => {
+            const isWatched = item.dataset.watched === 'true';
+            const isWatching = item.dataset.watching === 'true';
+            const isInWatchlist = item.dataset.inWatchlist === 'true';
+
+            if (isWatched) {
+                watchedCount++;
+            } else if (isWatching) {
+                watchingCount++;
+            } else if (isInWatchlist) {
+                toWatchCount++;
+            }
+        });
+
+        const totalCount = toWatchCount + watchingCount + watchedCount;
+
+        // Update counter displays
+        document.getElementById('countAll').textContent = totalCount;
+        document.getElementById('countToWatch').textContent = toWatchCount;
+        document.getElementById('countWatching').textContent = watchingCount;
+        document.getElementById('countWatched').textContent = watchedCount;
+    }
+
     // Filter functionality
     filterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -232,8 +261,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     showToast(data.message, 'success');
 
-                    // Update badge
+                    // Update badge and counters
                     updateBadge(item);
+                    updateCounters();
 
                     // Re-apply filter if needed
                     if (currentFilter === 'towatch' && item.dataset.watched === 'false' && item.dataset.watching === 'false' && item.dataset.inWatchlist === 'false') {
@@ -295,8 +325,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     showToast(data.message, 'success');
 
-                    // Update badge
+                    // Update badge and counters
                     updateBadge(item);
+                    updateCounters();
 
                     // Re-apply filter if needed
                     if (currentFilter === 'towatch' && item.dataset.watched === 'true') {
@@ -359,8 +390,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     showToast(data.message, 'success');
 
-                    // Update badge
+                    // Update badge and counters
                     updateBadge(item);
+                    updateCounters();
 
                     // Re-apply filter if needed
                     if (currentFilter === 'watching' && item.dataset.watching === 'false') {
@@ -386,50 +418,56 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
 
             const action = this.dataset.action;
-            const confirmMsg = action === 'remove-all'
-                ? window.i18n.watchlist_confirm_delete
-                : window.i18n.watchlist_confirm_delete_short;
-
-            if (!confirm(confirmMsg)) return;
-
             const contentId = this.dataset.contentId;
             const item = this.closest('.watchlist-item');
+            const deleteBtn = this;
+            const dramaTitle = item.dataset.title;
 
-            try {
-                this.disabled = true;
+            // Build confirmation message with drama title
+            const confirmMsg = (window.i18n.watchlist_confirm_delete_item || 'Supprimer "{title}"?')
+                .replace('{title}', dramaTitle);
 
-                const response = await fetch(`/api/watchlist/${contentId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Content-Type': 'application/json',
-                    },
-                });
+            // Show modal confirmation with drama title
+            showConfirmModal(confirmMsg, async () => {
+                try {
+                    deleteBtn.disabled = true;
 
-                if (response.ok) {
-                    const data = await response.json();
+                    const response = await fetch(`/api/watchlist/${contentId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                        },
+                    });
 
-                    // Animate removal
-                    item.style.transition = 'opacity 0.3s ease';
-                    item.style.opacity = '0';
-                    setTimeout(() => {
-                        item.remove();
-                        showToast(data.message || window.i18n.watchlist_action_done, 'success');
+                    if (response.ok) {
+                        const data = await response.json();
 
-                        // Check if grid is empty
-                        if (document.querySelectorAll('.watchlist-item').length === 0) {
-                            location.reload();
-                        }
-                    }, 300);
-                } else {
+                        // Animate removal
+                        item.style.transition = 'opacity 0.3s ease';
+                        item.style.opacity = '0';
+                        setTimeout(() => {
+                            item.remove();
+                            showToast(data.message || window.i18n.watchlist_action_done, 'success');
+
+                            // Update counters
+                            updateCounters();
+
+                            // Check if grid is empty
+                            if (document.querySelectorAll('.watchlist-item').length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    } else {
+                        showToast(window.i18n.watchlist_error_delete, 'error');
+                        deleteBtn.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
                     showToast(window.i18n.watchlist_error_delete, 'error');
-                    this.disabled = false;
+                    deleteBtn.disabled = false;
                 }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showToast(window.i18n.watchlist_error_delete, 'error');
-                this.disabled = false;
-            }
+            }, null, dramaTitle);
         });
     });
 
@@ -557,6 +595,55 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
+
+    // Confirmation modal
+    window.showConfirmModal = function(message, onConfirm, onCancel = null, title = null) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+        modal.id = 'confirmModal';
+        const titleHTML = title ? `<p class="text-slate-400 text-sm mb-4 truncate">📺 ${title}</p>` : '';
+        modal.innerHTML = `
+            <div class="fixed inset-0 bg-black/50" onclick="closeConfirmModal()"></div>
+            <div class="relative bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full mx-4 p-6">
+                <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                    <span>⚠️</span> ${window.i18n.watchlist_confirm_title || 'Confirmation'}
+                </h3>
+                ${titleHTML}
+                <p class="text-slate-300 mb-6">${message}</p>
+                <div class="flex gap-3">
+                    <button class="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition" onclick="closeConfirmModal()">
+                        ${window.i18n.watchlist_confirm_cancel || 'Annuler'}
+                    </button>
+                    <button class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition" id="confirmBtn">
+                        ${window.i18n.watchlist_confirm_delete_btn || 'Supprimer'}
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('confirmBtn').addEventListener('click', () => {
+            closeConfirmModal();
+            onConfirm();
+        });
+
+        // Close on Escape key
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                closeConfirmModal();
+                if (onCancel) onCancel();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+    };
+
+    window.closeConfirmModal = function() {
+        const modal = document.getElementById('confirmModal');
+        if (modal) {
+            modal.remove();
+        }
+    };
 });
 </script>
 

@@ -13,8 +13,8 @@ class AdminIconsController extends Controller
         $query = strtolower($request->get('q', ''));
         $allIcons = [];
 
-        // Get Tabler Icons if available (optional - requires npm)
-        $tablerPath = base_path('node_modules/@tabler/icons/icons/outline');
+        // Get Tabler Icons from Composer package
+        $tablerPath = base_path('vendor/secondnetwork/blade-tabler-icons/resources/svg');
         if (is_dir($tablerPath)) {
             $files = scandir($tablerPath);
             foreach ($files as $file) {
@@ -103,11 +103,11 @@ class AdminIconsController extends Controller
     }
 
     /**
-     * Get Tabler Icon SVG content (if available)
+     * Get Tabler Icon SVG content from Composer package
      */
     private function getTablerIconSvg(string $iconName): ?string
     {
-        $svgPath = base_path('node_modules/@tabler/icons/icons/outline/' . $iconName . '.svg');
+        $svgPath = base_path('vendor/secondnetwork/blade-tabler-icons/resources/svg/' . $iconName . '.svg');
         if (file_exists($svgPath)) {
             $content = file_get_contents($svgPath);
             // Add sizing class

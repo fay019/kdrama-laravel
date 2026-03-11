@@ -61,8 +61,8 @@
                                         $svgContent = str_replace('<svg', '<svg class="w-6 h-6 fill-current"', $svgContent);
                                     }
                                 } else {
-                                    // Tabler Icon (if available)
-                                    $iconPath = base_path("node_modules/@tabler/icons/icons/outline/{$iconName}.svg");
+                                    // Tabler Icon from Composer package
+                                    $iconPath = base_path("vendor/secondnetwork/blade-tabler-icons/resources/svg/{$iconName}.svg");
                                     if (file_exists($iconPath)) {
                                         $svgContent = file_get_contents($iconPath);
                                         $svgContent = str_replace(['<svg', '</svg>'], ['<svg class="w-6 h-6 stroke-current"', '</svg>'], $svgContent);

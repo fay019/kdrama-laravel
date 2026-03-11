@@ -29,6 +29,16 @@
             @endif
         @endif
 
+        <!-- Google AdSense -->
+        @php
+            // Fetches the AdSense client ID from the database, with a fallback to the .env file.
+            $adsenseClient = \App\Models\Setting::get('adsense_client_id', env('ADSENSE_CLIENT_ID'));
+        @endphp
+        @if($adsenseClient)
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsenseClient }}"
+                    crossorigin="anonymous"></script>
+        @endif
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />

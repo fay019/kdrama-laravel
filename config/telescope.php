@@ -27,9 +27,7 @@ return [
     |
     */
 
-    'authorization' => function ($request) {
-        return $request->user() && $request->user()->is_admin === true;
-    },
+    'authorization' => \App\Telescope\TelescopeAuthorizer::class,
 
     /*
     |--------------------------------------------------------------------------

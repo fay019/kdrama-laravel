@@ -12,10 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('preferred_language')->default('fr')->after('password');
-            $table->string('preferred_region')->default('fr')->after('preferred_language');
-            $table->boolean('is_admin')->default(false)->after('preferred_region');
-            $table->boolean('is_public')->default(true)->after('is_admin');
+            // Only add columns if they don't already exist
+            if (!Schema::hasColumn('users', 'preferred_language')) {
+                $table->string('preferred_language')->default('fr')->after('password');
+            }
+            if (!Schema::hasColumn('users', 'preferred_region')) {
+                $table->string('preferred_region')->default('fr')->after('preferred_language');
+            }
+            if (!Schema::hasColumn('users', 'is_admin')) {
+                $table->boolean('is_admin')->default(false)->after('preferred_region');
+            }
+            if (!Schema::hasColumn('users', 'is_public')) {
+                $table->boolean('is_public')->default(true)->after('is_admin');
+            }
         });
     }
 

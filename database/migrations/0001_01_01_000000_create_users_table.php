@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->boolean('password_must_change')->default(false);
             $table->string('preferred_language')->default('fr');
+            $table->boolean('is_admin')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

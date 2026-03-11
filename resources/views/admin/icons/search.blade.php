@@ -39,7 +39,7 @@
                                     @php
                                         $svgContent = null;
                                         if ($icon['type'] === 'tabler') {
-                                            $tablerPath = base_path("node_modules/@tabler/icons/icons/outline/{$icon['name']}.svg");
+                                            $tablerPath = base_path("vendor/secondnetwork/blade-tabler-icons/resources/svg/{$icon['name']}.svg");
                                             if (file_exists($tablerPath)) {
                                                 $svgContent = file_get_contents($tablerPath);
                                                 $svgContent = str_replace(['<svg', '</svg>'], ['<svg class="w-8 h-8"', '</svg>'], $svgContent);

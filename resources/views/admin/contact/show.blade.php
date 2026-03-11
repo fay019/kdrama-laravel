@@ -3,22 +3,30 @@
 @section('title', __('admin.contact_show_back') . ' - Admin')
 
 @section('content')
-<!-- Header -->
-<div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 py-12 mb-8">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between mb-4">
-            <a href="{{ route('admin.contact.index') }}" class="text-red-400 hover:text-red-300 transition flex items-center gap-2">
-                {{ __('admin.contact_show_back') }}
-            </a>
-        </div>
-        <h1 class="text-4xl font-bold text-white">
-            📧 {{ $message->subject }}
-        </h1>
-    </div>
-</div>
+<div class="flex min-h-screen bg-slate-900">
+    <!-- Sidebar -->
+    <x-admin-sidebar />
 
-<!-- Content -->
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <!-- Main Content -->
+    <div class="flex-1">
+        <!-- Header -->
+        <div class="w-full bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700 sticky top-0 z-10 overflow-hidden">
+            <div class="px-3 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center justify-between mb-4">
+                    <a href="{{ route('admin.contact.index') }}" class="text-red-400 hover:text-red-300 transition flex items-center gap-2 text-sm sm:text-base">
+                        {{ __('admin.contact_show_back') }}
+                    </a>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2 sm:gap-3">
+                    <span class="text-3xl sm:text-4xl">📧</span>
+                    <span class="truncate">{{ $message->subject }}</span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="w-full py-6 px-3 sm:py-8 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto">
     @if(session('success'))
         <div class="bg-green-900/20 border border-green-600/50 rounded-lg p-4 mb-6">
             <p class="text-green-400 font-semibold">{{ session('success') }}</p>
@@ -182,6 +190,8 @@
                 {{ __('admin.contact_show_delete_button') }}
             </button>
         </form>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

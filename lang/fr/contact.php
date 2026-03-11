@@ -38,8 +38,8 @@ return [
     'char_limit_label' => 'caractères',
 
     // Messages
-    'success' => '✅ Merci ! Votre message a été reçu. Nous vous répondrons dans les plus brefs délais.',
-    'error' => '❌ Une erreur s\'est produite. Veuillez réessayer plus tard.',
+    'success' => 'Merci ! Votre message a été reçu. Nous vous répondrons dans les plus brefs délais.',
+    'error' => 'Une erreur s\'est produite. Veuillez réessayer plus tard.',
 
     // FAQ
     'faq_title' => '❓ Questions Fréquentes',

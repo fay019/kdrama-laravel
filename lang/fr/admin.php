@@ -147,4 +147,12 @@ return [
     'contact_show_delete_warning' => 'La suppression de ce message est définitive.',
     'contact_show_confirm_delete' => 'Êtes-vous sûr de vouloir supprimer ce message de manière définitive ?',
     'contact_show_delete_button' => '❌ Supprimer le message',
+
+    // Contact namespace (for admin.contact.* keys)
+    'contact' => [
+        'status_changed' => 'Statut changé en {status}',
+        'deleted' => 'Message supprimé avec succès',
+        'status_transition_forbidden' => 'Transition de {from} vers {to} non autorisée',
+        'status_update_error' => 'Erreur lors de la mise à jour du statut: {error}',
+    ],
 ];

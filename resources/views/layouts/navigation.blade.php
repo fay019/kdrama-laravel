@@ -70,8 +70,8 @@
             </div>
             @else
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <a href="{{ route('login') }}" class="text-slate-300 hover:text-white mx-2">{{ __('Log In') }}</a>
-                <a href="{{ route('register') }}" class="text-slate-300 hover:text-white mx-2">{{ __('Register') }}</a>
+                <a href="{{ route('login') }}" class="text-slate-300 hover:text-white mx-2">{{ __('auth.log_in') }}</a>
+                <a href="{{ route('register') }}" class="text-slate-300 hover:text-white mx-2">{{ __('auth.register') }}</a>
             </div>
             @endauth
 
@@ -140,10 +140,10 @@
         <div class="pt-4 pb-1 border-t border-slate-700">
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('login')">
-                    {{ __('Log In') }}
+                    {{ __('auth.log_in') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('register')">
-                    {{ __('Register') }}
+                    {{ __('auth.register') }}
                 </x-responsive-nav-link>
             </div>
         </div>

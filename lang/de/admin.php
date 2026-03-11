@@ -147,4 +147,12 @@ return [
     'contact_show_delete_warning' => 'Das Löschen dieser Nachricht ist endgültig.',
     'contact_show_confirm_delete' => 'Möchten Sie diese Nachricht wirklich endgültig löschen?',
     'contact_show_delete_button' => '❌ Nachricht löschen',
+
+    // Contact namespace (for admin.contact.* keys)
+    'contact' => [
+        'status_changed' => 'Status geändert zu {status}',
+        'deleted' => 'Nachricht erfolgreich gelöscht',
+        'status_transition_forbidden' => 'Übergang von {from} zu {to} ist nicht zulässig',
+        'status_update_error' => 'Fehler beim Aktualisieren des Status: {error}',
+    ],
 ];

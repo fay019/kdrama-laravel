@@ -147,4 +147,12 @@ return [
     'contact_show_delete_warning' => 'Deleting this message is permanent.',
     'contact_show_confirm_delete' => 'Are you sure you want to permanently delete this message?',
     'contact_show_delete_button' => '❌ Delete Message',
+
+    // Contact namespace (for admin.contact.* keys)
+    'contact' => [
+        'status_changed' => 'Status changed to {status}',
+        'deleted' => 'Message deleted successfully',
+        'status_transition_forbidden' => 'Transition from {from} to {to} is not allowed',
+        'status_update_error' => 'Error updating status: {error}',
+    ],
 ];

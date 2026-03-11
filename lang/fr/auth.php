@@ -35,12 +35,14 @@ return [
     'remember_me' => 'Se souvenir de moi',
     'forgot_password' => 'Mot de passe oublié ?',
     'log_in' => 'Se connecter',
+    'no_account' => 'Pas encore de compte ?',
 
     // Register
-    'name' => 'Nom',
-    'confirm_password' => 'Confirmer le mot de passe',
-    'already_registered' => 'Déjà inscrit ?',
-    'register' => 'S’inscrire',
+    ‘name’ => ‘Nom’,
+    ‘confirm_password’ => ‘Confirmer le mot de passe’,
+    ‘already_registered’ => ‘Déjà inscrit ?’,
+    ‘have_account’ => ‘Vous avez déjà un compte ?’,
+    ‘register’ => ‘S’inscrire’,
 
     // Verify email
     'verify_email_title' => 'Vérifier l’adresse email',

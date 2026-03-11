@@ -32,39 +32,34 @@
                         @foreach($icons as $icon)
                             <div class="icon-card group relative p-4 bg-slate-700 rounded hover:bg-slate-600 transition cursor-pointer"
                                  data-icon-name="{{ $icon['type'] === 'simple' ? 'si-' . $icon['name'] : $icon['name'] }}"
-                                 data-icon-type="{{ $icon['type'] ?? 'tabler' }}">
+                                 data-icon-type="{{ $icon['type'] }}">
 
                                 <!-- Icon Preview -->
                                 <div class="mb-3 flex justify-center h-12 text-slate-300">
-                                    @if($icon['type'] === 'tabler')
-                                        @php
-                                            $svgPath = base_path("node_modules/@tabler/icons/icons/outline/{$icon['name']}.svg");
-                                            $svgContent = file_exists($svgPath) ? file_get_contents($svgPath) : null;
-                                        @endphp
-                                        @if($svgContent)
-                                            <div class="w-8 h-8" style="display: flex; align-items: center; justify-content: center;">
-                                                {!! str_replace(['<svg', '</svg>'], ['<svg class="w-8 h-8"', '</svg>'], $svgContent) !!}
-                                            </div>
-                                        @else
-                                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <circle cx="12" cy="12" r="10"></circle>
-                                            </svg>
-                                        @endif
-                                    @elseif($icon['type'] === 'simple')
-                                        <!-- Simple Icons SVG -->
-                                        @php
+                                    @php
+                                        $svgContent = null;
+                                        if ($icon['type'] === 'tabler') {
+                                            $tablerPath = base_path("node_modules/@tabler/icons/icons/outline/{$icon['name']}.svg");
+                                            if (file_exists($tablerPath)) {
+                                                $svgContent = file_get_contents($tablerPath);
+                                                $svgContent = str_replace(['<svg', '</svg>'], ['<svg class="w-8 h-8"', '</svg>'], $svgContent);
+                                            }
+                                        } else {
                                             $simpleSvgPath = base_path("vendor/codeat3/blade-simple-icons/resources/svg/{$icon['name']}.svg");
-                                            $simpleSvgContent = file_exists($simpleSvgPath) ? file_get_contents($simpleSvgPath) : null;
-                                        @endphp
-                                        @if($simpleSvgContent)
-                                            <div class="w-8 h-8" style="display: flex; align-items: center; justify-content: center;">
-                                                {!! str_replace(['<svg', '</svg>'], ['<svg class="w-8 h-8 fill-current"', '</svg>'], $simpleSvgContent) !!}
-                                            </div>
-                                        @else
-                                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <circle cx="12" cy="12" r="10"></circle>
-                                            </svg>
-                                        @endif
+                                            if (file_exists($simpleSvgPath)) {
+                                                $svgContent = file_get_contents($simpleSvgPath);
+                                                $svgContent = str_replace(['<svg', '</svg>'], ['<svg class="w-8 h-8 fill-current"', '</svg>'], $svgContent);
+                                            }
+                                        }
+                                    @endphp
+                                    @if($svgContent)
+                                        <div class="w-8 h-8" style="display: flex; align-items: center; justify-content: center;">
+                                            {!! $svgContent !!}
+                                        </div>
+                                    @else
+                                        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                        </svg>
                                     @endif
                                 </div>
 

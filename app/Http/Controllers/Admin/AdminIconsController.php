@@ -11,17 +11,17 @@ class AdminIconsController extends Controller
     public function search(Request $request)
     {
         $query = strtolower($request->get('q', ''));
-        $iconsPath = base_path('node_modules/@tabler/icons/icons/outline');
+        $allIcons = [];
 
-        // Get Tabler Icons from file system
-        $tabledIcons = [];
-        if (is_dir($iconsPath)) {
-            $files = scandir($iconsPath);
+        // Get Tabler Icons if available (optional - requires npm)
+        $tablerPath = base_path('node_modules/@tabler/icons/icons/outline');
+        if (is_dir($tablerPath)) {
+            $files = scandir($tablerPath);
             foreach ($files as $file) {
                 if (str_ends_with($file, '.svg')) {
                     $iconName = str_replace('.svg', '', $file);
                     if (empty($query) || str_contains($iconName, $query)) {
-                        $tabledIcons[] = [
+                        $allIcons[] = [
                             'name' => $iconName,
                             'type' => 'tabler',
                             'label' => $iconName,
@@ -31,8 +31,7 @@ class AdminIconsController extends Controller
             }
         }
 
-        // Get ALL Simple Icons from file system
-        $simpleIcons = [];
+        // Get Simple Icons from file system (always available via Composer)
         $simpleIconsPath = base_path('vendor/codeat3/blade-simple-icons/resources/svg');
         if (is_dir($simpleIconsPath)) {
             $files = scandir($simpleIconsPath);
@@ -40,7 +39,7 @@ class AdminIconsController extends Controller
                 if (str_ends_with($file, '.svg')) {
                     $iconName = str_replace('.svg', '', $file);
                     if (empty($query) || str_contains($iconName, $query)) {
-                        $simpleIcons[] = [
+                        $allIcons[] = [
                             'name' => $iconName,
                             'type' => 'simple',
                             'label' => $iconName,
@@ -50,8 +49,7 @@ class AdminIconsController extends Controller
             }
         }
 
-        // Combine all icons
-        $allIcons = array_merge($tabledIcons, $simpleIcons);
+        // Sort icons
         usort($allIcons, function ($a, $b) {
             return strcmp($a['name'], $b['name']);
         });
@@ -67,13 +65,8 @@ class AdminIconsController extends Controller
                 $svgContent = null;
 
                 if ($icon['type'] === 'tabler') {
-                    $svgPath = "{$iconsPath}/{$icon['name']}.svg";
-                    if (file_exists($svgPath)) {
-                        $svgContent = file_get_contents($svgPath);
-                        $svgContent = str_replace('<svg', '<svg class="w-6 h-6 text-current"', $svgContent);
-                    }
-                } elseif ($icon['type'] === 'simple') {
-                    // Get actual Simple Icon SVG
+                    $svgContent = $this->getTablerIconSvg($icon['name']);
+                } else {
                     $svgContent = $this->getSimpleIconSvg($icon['name']);
                 }
 
@@ -107,6 +100,20 @@ class AdminIconsController extends Controller
     {
         $svgPath = base_path('vendor/codeat3/blade-simple-icons/resources/svg/' . $iconName . '.svg');
         return file_exists($svgPath);
+    }
+
+    /**
+     * Get Tabler Icon SVG content (if available)
+     */
+    private function getTablerIconSvg(string $iconName): ?string
+    {
+        $svgPath = base_path('node_modules/@tabler/icons/icons/outline/' . $iconName . '.svg');
+        if (file_exists($svgPath)) {
+            $content = file_get_contents($svgPath);
+            // Add sizing class
+            return str_replace('<svg', '<svg class="w-6 h-6 stroke-current"', $content);
+        }
+        return null;
     }
 
     /**

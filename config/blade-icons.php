@@ -13,13 +13,8 @@ return [
     |
     */
 
-    'sets' => [
-
-        'tabler' => [
-            'path' => 'node_modules/@tabler/icons/icons/outline',
-            'prefix' => 'tabler',
-        ],
-
+    'sets' => [// NOTE: Tabler Icons disabled - requires npm which is not available on server
+        // Using Simple Icons only via Composer (codeat3/blade-simple-icons)
     ],
 
     /*

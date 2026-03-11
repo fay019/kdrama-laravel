@@ -104,12 +104,19 @@ function displayIcons(icons, total = null) {
 
     noResults.classList.add('hidden');
 
-    icons.forEach(iconData => {
+    // Get number of columns (4 for mobile, 6 for md and up)
+    const colsPerRow = window.innerWidth >= 768 ? 6 : 4;
+
+    icons.forEach((iconData, index) => {
         // Si on reçoit un objet avec name et svg
         const iconName = iconData.name || iconData;
         const iconType = iconData.type || 'tabler';
         const svgContent = iconData.svg || null;
         const displayName = iconType === 'simple' ? 'si-' + iconName : iconName;
+
+        // Check if in first row
+        const isFirstRow = index < colsPerRow;
+        const tooltipPosition = isFirstRow ? 'top-full mt-1' : 'bottom-full mb-1';
 
         const iconEl = document.createElement('div');
         iconEl.className = 'p-2 bg-slate-700 rounded hover:bg-slate-600 transition cursor-pointer flex items-center justify-center group relative';
@@ -121,7 +128,7 @@ function displayIcons(icons, total = null) {
                 <div class="text-slate-400 group-hover:text-white transition w-6 h-6 flex items-center justify-center">
                     ${svgContent}
                 </div>
-                <div class="hidden group-hover:block absolute bottom-full mb-1 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                <div class="hidden group-hover:block absolute ${tooltipPosition} bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap z-50">
                     ${displayName}
                 </div>
             `;
@@ -132,7 +139,7 @@ function displayIcons(icons, total = null) {
                         <circle cx="12" cy="12" r="10"></circle>
                     </svg>
                 </div>
-                <div class="hidden group-hover:block absolute bottom-full mb-1 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                <div class="hidden group-hover:block absolute ${tooltipPosition} bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap z-50">
                     ${displayName}
                 </div>
             `;

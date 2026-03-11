@@ -5,25 +5,31 @@ namespace App\Helpers;
 class IconHelper
 {
     /**
-     * Get icon SVG content by name
+     * Get icon SVG content by name (supports both Tabler and Simple Icons)
      */
     public static function getSvg(string $iconName, array $attributes = []): string
     {
-        $iconsPath = base_path('node_modules/@tabler/icons/icons/outline');
-        $svgPath = "{$iconsPath}/{$iconName}.svg";
-
-        if (!file_exists($svgPath)) {
-            return ''; // Return empty if icon not found
+        // Try Tabler first (if available)
+        $tablerPath = base_path('node_modules/@tabler/icons/icons/outline/' . $iconName . '.svg');
+        if (file_exists($tablerPath)) {
+            $svgContent = file_get_contents($tablerPath);
+            if (!empty($attributes)) {
+                $svgContent = str_replace('<svg', '<svg ' . self::buildAttributes($attributes), $svgContent);
+            }
+            return $svgContent;
         }
 
-        $svgContent = file_get_contents($svgPath);
-
-        // Add attributes like width, height, class
-        if (!empty($attributes)) {
-            $svgContent = str_replace('<svg', '<svg ' . $this->buildAttributes($attributes), $svgContent);
+        // Try Simple Icon (Composer package - always available)
+        $simpleIconPath = base_path('vendor/codeat3/blade-simple-icons/resources/svg/' . $iconName . '.svg');
+        if (file_exists($simpleIconPath)) {
+            $svgContent = file_get_contents($simpleIconPath);
+            if (!empty($attributes)) {
+                $svgContent = str_replace('<svg', '<svg ' . self::buildAttributes($attributes), $svgContent);
+            }
+            return $svgContent;
         }
 
-        return $svgContent;
+        return '';
     }
 
     /**
@@ -126,31 +132,28 @@ class IconHelper
     }
 
     /**
-     * Get icon with fallback to Tabler Icons
-     * First tries Simple Icons, then falls back to Tabler Icons
+     * Get icon with fallback - tries Tabler first, then Simple Icons
      */
     public static function getIconWithFallback(string $iconName): array
     {
-        $iconsPath = base_path('node_modules/@tabler/icons/icons/outline');
+        // Check Tabler Icons first (if available)
+        $tablerPath = base_path('node_modules/@tabler/icons/icons/outline/' . $iconName . '.svg');
+        if (file_exists($tablerPath)) {
+            return [
+                'name' => $iconName,
+                'type' => 'tabler',
+                'label' => $iconName,
+                'exists' => true,
+            ];
+        }
 
-        // Check Simple Icons first
+        // Check Simple Icons
         $simpleIcons = self::getSimpleIcons();
         if (isset($simpleIcons[$iconName])) {
             return [
                 'name' => $iconName,
                 'type' => 'simple',
                 'label' => $simpleIcons[$iconName],
-                'exists' => true,
-            ];
-        }
-
-        // Fallback to Tabler Icons
-        $tablerPath = "{$iconsPath}/{$iconName}.svg";
-        if (file_exists($tablerPath)) {
-            return [
-                'name' => $iconName,
-                'type' => 'tabler',
-                'label' => $iconName,
                 'exists' => true,
             ];
         }

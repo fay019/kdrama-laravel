@@ -13,7 +13,14 @@ class TelescopeAuthorize
     public function handle(Request $request, Closure $next)
     {
         // Only admins can access Telescope
-        if (! auth()->user()?->is_admin) {
+        $user = auth()->user();
+
+        if (! $user?->is_admin) {
+            dd([
+                'user' => $user?->email,
+                'is_admin' => $user?->is_admin,
+                'blocked' => true
+            ]);
             abort(403, 'Unauthorized access to Telescope');
         }
 

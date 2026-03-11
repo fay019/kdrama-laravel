@@ -76,10 +76,11 @@
                 if (toolbar) {
                     toolbar.style.right = '10px';
                     toolbar.style.left = 'auto';
+                    return true;
                 }
+                return false;
             }
 
-            // Run on page load
             document.addEventListener('DOMContentLoaded', function() {
                 repositionGoogleConsentToolbar();
 
@@ -88,6 +89,15 @@
                 if (document.body) {
                     observer.observe(document.body, { childList: true, subtree: true });
                 }
+
+                // Fallback: Polling in case toolbar loads very late
+                let attempts = 0;
+                const pollInterval = setInterval(function() {
+                    if (repositionGoogleConsentToolbar() || attempts > 50) {
+                        clearInterval(pollInterval);
+                    }
+                    attempts++;
+                }, 200);
             });
         </script>
     </head>

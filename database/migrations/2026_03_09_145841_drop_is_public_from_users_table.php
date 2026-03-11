@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('is_public');
+            // Only drop if column exists
+            if (Schema::hasColumn('users', 'is_public')) {
+                $table->dropColumn('is_public');
+            }
         });
     }
 

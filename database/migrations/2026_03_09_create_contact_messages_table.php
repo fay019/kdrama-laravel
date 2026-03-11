@@ -17,15 +17,27 @@ return new class extends Migration
             $table->string('email');
             $table->string('subject');
             $table->longText('message');
+
+            // Attachments
             $table->string('attachment_path')->nullable();
             $table->string('attachment_original_name')->nullable();
             $table->string('attachment_mime')->nullable();
             $table->bigInteger('attachment_size')->nullable();
+
             $table->boolean('email_sent')->default(false);
             $table->text('error_message')->nullable();
+
+            // Status and timestamps (merged from other migrations)
+            $table->enum('status', ['pending', 'read', 'in_progress', 'resolved', 'spam'])->default('pending');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamp('resolved_at')->nullable();
+
             $table->timestamps();
+
+            // Indexes
             $table->index('email_sent');
             $table->index('created_at');
+            $table->index('status');
         });
     }
 

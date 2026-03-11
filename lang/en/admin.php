@@ -88,6 +88,9 @@ return [
     'author_site_copyright' => 'Copyright',
     'author_social_links' => '🔗 Social Links',
     'author_icon_hint' => '💡 Click the 🎨 icon picker button to search and select icons',
+    'author_favicon_title' => '🎨 Favicon',
+    'author_favicon_label' => 'Browser Icon',
+    'author_favicon_hint' => 'Recommended: 512x512px or higher',
 
     // Contact Page - List
     'contact_title' => 'Message Management',

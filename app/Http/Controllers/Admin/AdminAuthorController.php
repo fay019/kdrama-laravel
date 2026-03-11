@@ -45,6 +45,7 @@ class AdminAuthorController extends Controller
             'og_description' => 'nullable|string|max:500',
             'og_image' => 'nullable|image|max:2048',
             'og_type' => 'nullable|in:website,blog,article',
+            'favicon' => 'nullable|image|max:512',
         ]);
 
         $metadata = SiteMetadata::firstOrCreate([]);
@@ -65,6 +66,15 @@ class AdminAuthorController extends Controller
             }
             $path = $request->file('og_image')->store('og-images', 'public');
             $validated['og_image'] = $path;
+        }
+
+        // Handle favicon upload
+        if ($request->hasFile('favicon')) {
+            if ($metadata->favicon_path && Storage::disk('public')->exists($metadata->favicon_path)) {
+                Storage::disk('public')->delete($metadata->favicon_path);
+            }
+            $path = $request->file('favicon')->store('favicons', 'public');
+            $validated['favicon_path'] = $path;
         }
 
         $metadata->update($validated);

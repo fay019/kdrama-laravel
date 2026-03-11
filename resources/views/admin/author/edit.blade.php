@@ -207,6 +207,25 @@
                             </div>
                         </div>
 
+                        <hr class="border-slate-700 my-8">
+
+                        <!-- 🎨 FAVICON -->
+                        <div class="mb-8">
+                            <h3 class="font-semibold text-lg text-white mb-4">{{ __('admin.author_favicon_title') }}</h3>
+
+                            <div class="mb-4">
+                                <label class="block text-slate-200 font-semibold mb-2">{{ __('admin.author_favicon_label') }}</label>
+                                @if($metadata->favicon_path)
+                                    <div class="mb-2">
+                                        <img src="{{ asset('storage/' . $metadata->favicon_path) }}" alt="Favicon" class="w-16 h-16 rounded">
+                                    </div>
+                                @endif
+                                <input type="file" name="favicon" accept="image/*" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded text-white">
+                                <p class="text-xs text-slate-400 mt-1">{{ __('admin.author_favicon_hint') }}</p>
+                                @error('favicon') <span class="text-red-400 text-sm">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
                         <div class="flex gap-4">
                             <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold">{{ __('admin.settings_save') }}</button>
                             <a href="{{ route('admin.dashboard') }}" class="px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded font-semibold">{{ __('common.cancel') }}</a>

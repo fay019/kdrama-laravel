@@ -88,6 +88,9 @@ return [
     'author_site_copyright' => 'Urheberrecht',
     'author_social_links' => '🔗 Soziale Links',
     'author_icon_hint' => '💡 Klicken Sie auf den 🎨 Icon-Picker-Button, um Symbole zu suchen und auszuwählen',
+    'author_favicon_title' => '🎨 Favicon',
+    'author_favicon_label' => 'Browser-Symbol',
+    'author_favicon_hint' => 'Empfohlen: 512x512px oder größer',
 
     // Contact Page - List
     'contact_title' => 'Nachrichtenverwaltung',

@@ -88,6 +88,9 @@ return [
     'author_site_copyright' => 'Droits d\'auteur',
     'author_social_links' => '🔗 Liens sociaux',
     'author_icon_hint' => '💡 Cliquez sur le bouton 🎨 sélecteur d\'icônes pour chercher et sélectionner des icônes',
+    'author_favicon_title' => '🎨 Favicon',
+    'author_favicon_label' => 'Icône du navigateur',
+    'author_favicon_hint' => 'Recommandé: 512x512px ou plus',
 
     // Contact Page - List
     'contact_title' => 'Gestion des messages',

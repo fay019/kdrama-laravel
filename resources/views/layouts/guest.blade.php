@@ -27,6 +27,11 @@
                 <meta property="og:image" content="{{ asset('storage/' . $metadata->og_image) }}">
                 <meta property="og:image:type" content="image/png">
             @endif
+
+            <!-- Favicon -->
+            @if($metadata->favicon_path)
+                <link rel="icon" type="image/png" href="{{ asset('storage/' . $metadata->favicon_path) }}">
+            @endif
         @endif
 
         <!-- Fonts -->

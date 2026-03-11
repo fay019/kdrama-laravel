@@ -21,6 +21,7 @@ class SiteMetadata extends Model
         'og_description',
         'og_image',
         'og_type',
+        'favicon_path',
     ];
 
     public function socialLinks()

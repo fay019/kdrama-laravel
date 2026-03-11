@@ -12,8 +12,8 @@ class TelescopeAuthorize
      */
     public function handle(Request $request, Closure $next)
     {
-        // Check if user can view Telescope using the gate
-        if ($request->user() && ! auth()->user()->is_admin) {
+        // Only admins can access Telescope
+        if (! auth()->user()?->is_admin) {
             abort(403, 'Unauthorized access to Telescope');
         }
 

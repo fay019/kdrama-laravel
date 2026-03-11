@@ -318,17 +318,6 @@ table th {
     background: #475569;
 }
 
-/* Google Consent Mode Floating Toolbar */
-#ft-floating-toolbar {
-    right: 10px !important;
-    left: auto !important;
-}
-
-#ft-floating-toolbar.ft-left-pos {
-    right: 10px !important;
-    left: auto !important;
-}
-
 /* Print styles */
 @media print {
     body {

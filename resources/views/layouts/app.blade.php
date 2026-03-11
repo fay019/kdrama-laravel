@@ -68,6 +68,24 @@
         <script>
             window.i18n = @json($i18n);
         </script>
+
+        <!-- Google Consent Mode Toolbar Repositioning -->
+        <script>
+            function repositionGoogleConsentToolbar() {
+                const toolbar = document.getElementById('ft-floating-toolbar');
+                if (toolbar) {
+                    toolbar.style.right = '10px';
+                    toolbar.style.left = 'auto';
+                }
+            }
+
+            // Run on page load
+            document.addEventListener('DOMContentLoaded', repositionGoogleConsentToolbar);
+
+            // Also watch for toolbar appearing dynamically
+            const observer = new MutationObserver(repositionGoogleConsentToolbar);
+            observer.observe(document.body, { childList: true, subtree: true });
+        </script>
     </head>
     <body class="font-sans antialiased overflow-x-hidden">
         <div class="min-h-screen w-full bg-slate-800">

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('url');
             $table->string('icon')->nullable();
             $table->integer('order')->default(0);
+            $table->boolean('is_visible')->default(true);
             $table->timestamps();
         });
     }

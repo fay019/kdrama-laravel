@@ -24,7 +24,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('password.update') }}" class="space-y-4">
+                <form method="POST" action="{{ route('change-password.update') }}" class="space-y-4">
                     @csrf
 
                     <!-- Current Password -->

@@ -15,8 +15,8 @@ class CheckPasswordMustChange
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip password change routes
-        if ($request->routeIs('password.change', 'password.update')) {
+        // Skip password change routes (both standard Breeze and custom mandatory change)
+        if ($request->routeIs('password.change', 'password.update', 'change-password.update')) {
             return $next($request);
         }
 

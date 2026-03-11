@@ -58,7 +58,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['au
 Route::middleware(['auth', 'check.password'])->group(function () {
     // Password change (always accessible, even if password_must_change is true)
     Route::get('/change-password', [ProfileController::class, 'changePassword'])->name('password.change');
-    Route::post('/change-password', [ProfileController::class, 'updatePassword'])->name('password.update');
+    Route::post('/change-password', [ProfileController::class, 'updatePassword'])->name('change-password.update');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

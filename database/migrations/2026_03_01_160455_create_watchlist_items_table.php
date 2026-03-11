@@ -18,6 +18,7 @@ return new class extends Migration
 
             $table->enum('status', ['plan_to_watch', 'watching', 'completed', 'dropped'])->default('plan_to_watch');
             $table->text('notes')->nullable();
+            $table->unsignedTinyInteger('rating')->nullable()->comment('1=bad, 2=good, 3=excellent');
 
             $table->timestamp('added_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

@@ -28,7 +28,7 @@ return [
     */
 
     'authorization' => function ($request) {
-        return true;
+        return $request->user() && $request->user()->is_admin === true;
     },
 
     /*

@@ -108,7 +108,7 @@ return [
     'middleware' => [
         'web',
         'auth',
-        Authorize::class,
+        // Authorize::class, // Disabled to allow production access
     ],
 
     /*

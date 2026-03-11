@@ -68,38 +68,6 @@
         <script>
             window.i18n = @json($i18n);
         </script>
-
-        <!-- Google Consent Mode Toolbar Repositioning -->
-        <script>
-            function repositionGoogleConsentToolbar() {
-                const toolbar = document.getElementById('ft-floating-toolbar');
-                if (toolbar) {
-                    toolbar.style.right = '10px';
-                    toolbar.style.left = 'auto';
-                    return true;
-                }
-                return false;
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                repositionGoogleConsentToolbar();
-
-                // Watch for toolbar appearing dynamically
-                const observer = new MutationObserver(repositionGoogleConsentToolbar);
-                if (document.body) {
-                    observer.observe(document.body, { childList: true, subtree: true });
-                }
-
-                // Fallback: Polling in case toolbar loads very late
-                let attempts = 0;
-                const pollInterval = setInterval(function() {
-                    if (repositionGoogleConsentToolbar() || attempts > 50) {
-                        clearInterval(pollInterval);
-                    }
-                    attempts++;
-                }, 200);
-            });
-        </script>
     </head>
     <body class="font-sans antialiased overflow-x-hidden">
         <div class="min-h-screen w-full bg-slate-800">

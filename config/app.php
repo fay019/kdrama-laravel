@@ -135,6 +135,6 @@ return [
     |
     */
 
-    'admin_email' => env('ADMIN_EMAIL', 'admin@kdrama.local'),
+    'admin_email' => env('MAIL_ADMIN_EMAIL', 'admin@moussouni.dev'),
 
 ];

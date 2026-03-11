@@ -9,8 +9,8 @@ class IconHelper
      */
     public static function getSvg(string $iconName, array $attributes = []): string
     {
-        // Try Tabler first (if available)
-        $tablerPath = base_path('node_modules/@tabler/icons/icons/outline/' . $iconName . '.svg');
+        // Try Tabler first (from Composer package)
+        $tablerPath = base_path('vendor/secondnetwork/blade-tabler-icons/resources/svg/' . $iconName . '.svg');
         if (file_exists($tablerPath)) {
             $svgContent = file_get_contents($tablerPath);
             if (!empty($attributes)) {
@@ -136,8 +136,8 @@ class IconHelper
      */
     public static function getIconWithFallback(string $iconName): array
     {
-        // Check Tabler Icons first (if available)
-        $tablerPath = base_path('node_modules/@tabler/icons/icons/outline/' . $iconName . '.svg');
+        // Check Tabler Icons first (from Composer package)
+        $tablerPath = base_path('vendor/secondnetwork/blade-tabler-icons/resources/svg/' . $iconName . '.svg');
         if (file_exists($tablerPath)) {
             return [
                 'name' => $iconName,

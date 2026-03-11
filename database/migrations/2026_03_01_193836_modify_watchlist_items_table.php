@@ -17,9 +17,13 @@ return new class extends Migration
                 $table->dropColumn('status');
             }
 
-            // Add new boolean columns
-            $table->boolean('is_in_watchlist')->default(true);
-            $table->boolean('is_watched')->default(false);
+            // Add new boolean columns if they don't exist
+            if (!Schema::hasColumn('watchlist_items', 'is_in_watchlist')) {
+                $table->boolean('is_in_watchlist')->default(true);
+            }
+            if (!Schema::hasColumn('watchlist_items', 'is_watched')) {
+                $table->boolean('is_watched')->default(false);
+            }
         });
     }
 

@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('watchlist_items', function (Blueprint $table) {
-            $table->unsignedBigInteger('tmdb_id')->nullable()->after('content_id');
-        });
+        // Only add tmdb_id column if it doesn't exist
+        if (!Schema::hasColumn('watchlist_items', 'tmdb_id')) {
+            Schema::table('watchlist_items', function (Blueprint $table) {
+                $table->unsignedBigInteger('tmdb_id')->nullable()->after('content_id');
+            });
+        }
 
         // Migrer les données
         $items = DB::table('watchlist_items')

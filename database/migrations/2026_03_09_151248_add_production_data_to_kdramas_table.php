@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('kdramas', function (Blueprint $table) {
-            $table->json('production_companies')->nullable()->after('credits');
-            $table->json('networks')->nullable()->after('production_companies');
+            if (!Schema::hasColumn('kdramas', 'production_companies')) {
+                $table->json('production_companies')->nullable()->after('credits');
+            }
+            if (!Schema::hasColumn('kdramas', 'networks')) {
+                $table->json('networks')->nullable()->after('production_companies');
+            }
         });
     }
 
@@ -23,7 +27,16 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('kdramas', function (Blueprint $table) {
-            $table->dropColumn(['production_companies', 'networks']);
+            $columns = [];
+            if (Schema::hasColumn('kdramas', 'production_companies')) {
+                $columns[] = 'production_companies';
+            }
+            if (Schema::hasColumn('kdramas', 'networks')) {
+                $columns[] = 'networks';
+            }
+            if (!empty($columns)) {
+                $table->dropColumn($columns);
+            }
         });
     }
 };

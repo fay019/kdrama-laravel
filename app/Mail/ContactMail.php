@@ -38,7 +38,7 @@ class ContactMail extends Mailable
     {
         // Get site name from settings, fallback to APP_NAME
         $fromName = Setting::get('site_name') ?? env('APP_NAME', 'KDrama Hub');
-        $fromAddress = env('MAIL_FROM_ADDRESS');
+        $fromAddress = env('MAIL_FROM_ADDRESS') ?? 'admin@moussouni.dev';
 
         return new Envelope(
             subject: 'Nouveau message de contact : ' . $this->subject_text,

@@ -318,6 +318,13 @@ table th {
     background: #475569;
 }
 
+/* Google AdSense */
+.google-auto-placed,
+.adsbygoogle-noablate {
+    left: auto !important;
+    right: 0 !important;
+}
+
 /* Print styles */
 @media print {
     body {

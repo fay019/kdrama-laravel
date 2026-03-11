@@ -80,11 +80,15 @@
             }
 
             // Run on page load
-            document.addEventListener('DOMContentLoaded', repositionGoogleConsentToolbar);
+            document.addEventListener('DOMContentLoaded', function() {
+                repositionGoogleConsentToolbar();
 
-            // Also watch for toolbar appearing dynamically
-            const observer = new MutationObserver(repositionGoogleConsentToolbar);
-            observer.observe(document.body, { childList: true, subtree: true });
+                // Watch for toolbar appearing dynamically
+                const observer = new MutationObserver(repositionGoogleConsentToolbar);
+                if (document.body) {
+                    observer.observe(document.body, { childList: true, subtree: true });
+                }
+            });
         </script>
     </head>
     <body class="font-sans antialiased overflow-x-hidden">

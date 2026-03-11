@@ -8,11 +8,11 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- About Section -->
             <div>
-                <h3 class="text-lg font-semibold text-white mb-4">{{ $metadata->site_name ?? 'Moussouni' }}</h3>
+                <h3 class="text-lg font-semibold text-white mb-4">{{ $metadata?->site_name ?? 'Moussouni' }}</h3>
                 <p class="text-slate-400 text-sm mb-4">
-                    {{ $metadata->site_tagline ?? 'Discover & Rate Korean Dramas' }}
+                    {{ $metadata?->site_tagline ?? 'Discover & Rate Korean Dramas' }}
                 </p>
-                @if($metadata->author_name)
+                @if($metadata?->author_name)
                     <p class="text-slate-500 text-xs">
                         Created with ❤️ by {{ $metadata->author_name }}
                     </p>
@@ -93,9 +93,9 @@
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <p class="text-slate-500 text-sm">
-                        {{ $metadata->site_copyright ?? '© 2026 Moussouni. All rights reserved.' }}
+                        {{ $metadata?->site_copyright ?? '© 2026 Moussouni. All rights reserved.' }}
                     </p>
-                    @if($metadata->site_footer_text)
+                    @if($metadata?->site_footer_text)
                         <p class="text-slate-500 text-sm">
                             {{ $metadata->site_footer_text }}
                         </p>

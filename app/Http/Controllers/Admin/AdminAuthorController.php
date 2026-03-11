@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SiteMetadata;
 use App\Models\SocialLink;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminAuthorController extends Controller
 {
@@ -50,8 +51,8 @@ class AdminAuthorController extends Controller
 
         // Handle avatar upload
         if ($request->hasFile('author_avatar')) {
-            if ($metadata->author_avatar && file_exists(public_path($metadata->author_avatar))) {
-                unlink(public_path($metadata->author_avatar));
+            if ($metadata->author_avatar && Storage::disk('public')->exists($metadata->author_avatar)) {
+                Storage::disk('public')->delete($metadata->author_avatar);
             }
             $path = $request->file('author_avatar')->store('avatars', 'public');
             $validated['author_avatar'] = $path;
@@ -59,8 +60,8 @@ class AdminAuthorController extends Controller
 
         // Handle OG image upload
         if ($request->hasFile('og_image')) {
-            if ($metadata->og_image && file_exists(public_path($metadata->og_image))) {
-                unlink(public_path($metadata->og_image));
+            if ($metadata->og_image && Storage::disk('public')->exists($metadata->og_image)) {
+                Storage::disk('public')->delete($metadata->og_image);
             }
             $path = $request->file('og_image')->store('og-images', 'public');
             $validated['og_image'] = $path;

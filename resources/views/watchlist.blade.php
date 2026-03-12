@@ -68,24 +68,24 @@
                             @endif
 
                             <!-- Action buttons overlay -->
-                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex gap-2 items-center justify-center backdrop-blur-sm p-3">
+                            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-6 items-center justify-center px-6 py-3">
                                 <!-- Watchlist Toggle -->
-                                <button type="button" class="toggle-watchlist-btn {{ $item->is_in_watchlist ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-600 hover:bg-slate-700' }} text-white font-bold py-2 px-3 rounded-lg shadow-lg transform transition hover:scale-105 text-sm" data-content-id="{{ $item->tmdb_id }}" title="{{ __('watchlist.title_watchlist_toggle') }}">
-                                    {{ __('watchlist.btn_list') }}
+                                <button type="button" class="card-icon-btn toggle-watchlist-btn {{ $item->is_in_watchlist ? 'active' : '' }}" data-content-id="{{ $item->tmdb_id }}" data-label="{{ __('watchlist.btn_list') }}" title="{{ __('watchlist.title_watchlist_toggle') }}">
+                                    📺
                                 </button>
 
                                 <!-- Watching Toggle -->
-                                <button type="button" class="toggle-watching-btn {{ $item->is_watching ? 'bg-amber-500 hover:bg-amber-600' : 'bg-slate-600 hover:bg-slate-700' }} text-white font-bold py-2 px-3 rounded-lg shadow-lg transform transition hover:scale-105 text-sm" data-content-id="{{ $item->tmdb_id }}" title="{{ __('watchlist.title_watching_toggle') }}">
-                                    {{ __('watchlist.btn_watching') }}
+                                <button type="button" class="card-icon-btn toggle-watching-btn {{ $item->is_watching ? 'active' : '' }}" data-content-id="{{ $item->tmdb_id }}" data-label="{{ __('watchlist.btn_watching') }}" title="{{ __('watchlist.title_watching_toggle') }}">
+                                    🎬
                                 </button>
 
                                 <!-- Watched Toggle -->
-                                <button type="button" class="toggle-watched-btn {{ $item->is_watched ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-600 hover:bg-slate-700' }} text-white font-bold py-2 px-3 rounded-lg shadow-lg transform transition hover:scale-105 text-sm" data-content-id="{{ $item->tmdb_id }}" title="{{ __('watchlist.title_watched_toggle') }}">
-                                    {{ __('watchlist.btn_watched') }}
+                                <button type="button" class="card-icon-btn toggle-watched-btn {{ $item->is_watched ? 'active' : '' }}" data-content-id="{{ $item->tmdb_id }}" data-label="{{ __('watchlist.btn_watched') }}" title="{{ __('watchlist.title_watched_toggle') }}">
+                                    ✅
                                 </button>
 
                                 <!-- Delete Button -->
-                                <button type="button" class="delete-btn bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-3 rounded-lg shadow-lg transform transition hover:scale-105 text-sm" data-content-id="{{ $item->tmdb_id }}" title="{{ __('watchlist.title_delete') }}">
+                                <button type="button" class="card-icon-btn delete-btn" data-content-id="{{ $item->tmdb_id }}" data-label="{{ __('watchlist.title_delete') }}" title="{{ __('watchlist.title_delete') }}">
                                     🗑️
                                 </button>
                             </div>

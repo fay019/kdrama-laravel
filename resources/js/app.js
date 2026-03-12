@@ -1,4 +1,5 @@
 import './bootstrap';
+import './action-buttons';
 
 import Alpine from 'alpinejs';
 

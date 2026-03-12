@@ -18,6 +18,7 @@ return [
     'empty_ratings' => 'Sie haben noch keine K-Dramen bewertet',
     'see_catalog' => 'Katalog anzeigen →',
     'discover_and_rate' => 'K-Dramen entdecken und bewerten',
+    'btn_view' => 'Ansicht',
     'js' => [
         'removed_watched' => '❌ Aus gesehen entfernt',
         'error_delete' => 'Fehler beim Löschen',

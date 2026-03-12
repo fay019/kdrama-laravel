@@ -69,6 +69,12 @@
                 'watchlist_badge_watched' => __('watchlist.js.badge_watched'),
                 'watchlist_badge_watching' => __('watchlist.js.badge_watching'),
                 'watchlist_badge_to_watch' => __('watchlist.js.badge_to_watch'),
+                'btn_list' => __('watchlist.btn_list'),
+                'btn_watching' => __('watchlist.btn_watching'),
+                'btn_watched' => __('watchlist.btn_watched'),
+                'removed_from_watchlist_suffix' => __('watchlist.removed_from_watchlist_suffix'),
+                'removed_from_watching_suffix' => __('watchlist.removed_from_watching_suffix'),
+                'removed_from_watched_suffix' => __('watchlist.removed_from_watched_suffix'),
             ];
         @endphp
         <script>

@@ -17,8 +17,9 @@
         return;
     }
 @endphp
-<a href="{{ route('kdrams.show', ['id' => $kdramaId, 'actor_id' => $actorId]) }}" class="content-card group fade-in">
-    <div class="content-image">
+<div class="content-card group fade-in">
+    <a href="{{ route('kdrams.show', ['id' => $kdramaId, 'actor_id' => $actorId]) }}" class="block">
+        <div class="content-image">
         @php
             $posterPath = is_array($kdrama) ? ($kdrama['poster_path'] ?? null) : ($kdrama->poster_path ?? null);
             $name = is_array($kdrama) ? ($kdrama['name'] ?? ($kdrama['title'] ?? '')) : ($kdrama->name ?? '');
@@ -52,63 +53,91 @@
                 }
             @endphp
 
-            @if($userStatusForItem)
-                @php
-                    $isWatched = is_array($userStatusForItem) ? $userStatusForItem['is_watched'] : $userStatusForItem->is_watched;
-                    $isInWatchlist = is_array($userStatusForItem) ? $userStatusForItem['is_in_watchlist'] : $userStatusForItem->is_in_watchlist;
-                    $isWatching = is_array($userStatusForItem) ? $userStatusForItem['is_watching'] : $userStatusForItem->is_watching;
-                    $rating = is_array($userStatusForItem) ? ($userStatusForItem['rating'] ?? null) : ($userStatusForItem->rating ?? null);
-                @endphp
-                @if($isWatched)
-                    <span class="bg-green-500/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg flex items-center gap-1">
-                        ✅ VU
-                    </span>
-                    @if($rating)
-                        <span class="badge-rating shadow-lg text-base">
-                            @if($rating == 1) 👎
-                            @elseif($rating == 2) 👍
-                            @else 👍👍
-                            @endif
+            <div class="status-badges-container">
+                @if($userStatusForItem)
+                    @php
+                        $isWatched = is_array($userStatusForItem) ? $userStatusForItem['is_watched'] : $userStatusForItem->is_watched;
+                        $isInWatchlist = is_array($userStatusForItem) ? $userStatusForItem['is_in_watchlist'] : $userStatusForItem->is_in_watchlist;
+                        $isWatching = is_array($userStatusForItem) ? $userStatusForItem['is_watching'] : $userStatusForItem->is_watching;
+                        $rating = is_array($userStatusForItem) ? ($userStatusForItem['rating'] ?? null) : ($userStatusForItem->rating ?? null);
+                    @endphp
+                    @if($isWatched)
+                        <span class="status-badge bg-green-500/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                            {{ __('watchlist.status_watched') }}
+                        </span>
+                        @if($rating)
+                            <span class="badge-rating shadow-lg text-base">
+                                @if($rating == 1) 👎
+                                @elseif($rating == 2) 👍
+                                @else 👍👍
+                                @endif
+                            </span>
+                        @endif
+                    @elseif($isWatching)
+                        <span class="status-badge bg-amber-500/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                            {{ __('watchlist.status_watching') }}
+                        </span>
+                    @elseif($isInWatchlist)
+                        <span class="status-badge bg-red-500/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                            {{ __('watchlist.status_to_watch') }}
                         </span>
                     @endif
-                @elseif($isWatching)
-                    <span class="bg-amber-500/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg flex items-center gap-1">
-                        🎬 EN COURS
-                    </span>
-                @elseif($isInWatchlist)
-                    <span class="bg-red-500/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg flex items-center gap-1">
-                        📺 À VOIR
-                    </span>
                 @endif
-            @endif
+            </div>
         </div>
     </div>
-    <div class="p-4">
-        @php
-            $frName = is_array($kdrama) ? ($kdrama['name'] ?? ($kdrama['title'] ?? null)) : ($kdrama->name ?? null);
-            $enName = is_array($kdrama) ? ($kdrama['en_name'] ?? null) : ($kdrama->en_name ?? null);
-            $originalName = is_array($kdrama) ? ($kdrama['original_name'] ?? null) : ($kdrama->original_name ?? null);
 
-            // Déterminer le titre principal
-            // On veut FR en priorité, puis EN, puis OR
-            $displayTitle = $frName;
-            if (empty($displayTitle)) {
-                $displayTitle = $enName ?? $originalName;
-            }
+    <!-- Action buttons -->
+    <div class="flex justify-around items-center py-2 px-2 bg-slate-800/70 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out max-h-0 group-hover:max-h-12 overflow-visible">
+        @php
+            $isInWatchlist = isset($userStatusForItem) && is_array($userStatusForItem) && ($userStatusForItem['is_in_watchlist'] ?? false);
+            $isWatching = isset($userStatusForItem) && is_array($userStatusForItem) && ($userStatusForItem['is_watching'] ?? false);
+            $isWatched = isset($userStatusForItem) && is_array($userStatusForItem) && ($userStatusForItem['is_watched'] ?? false);
         @endphp
 
-        <h3 class="font-bold text-slate-100 group-hover:text-red-400 transition line-clamp-2">
-            {{ $displayTitle }}
-        </h3>
+        <!-- Watchlist Toggle -->
+        <button type="button" class="card-icon-btn toggle-watchlist-btn {{ $isInWatchlist ? 'active' : '' }}" data-content-id="{{ $kdramaId }}" data-label="{{ $isInWatchlist ? __('watchlist.removed_from_watchlist_suffix') : __('watchlist.btn_list') }}" title="{{ __('watchlist.title_watchlist_toggle') }}">
+            📺
+        </button>
 
-        <div class="flex flex-col gap-0.5 mt-1">
-            @if(!empty($enName) && $enName !== $displayTitle)
-                <p class="text-xs text-slate-500 italic line-clamp-1">EN: {{ $enName }}</p>
-            @endif
+        <!-- Watching Toggle -->
+        <button type="button" class="card-icon-btn toggle-watching-btn {{ $isWatching ? 'active' : '' }}" data-content-id="{{ $kdramaId }}" data-label="{{ $isWatching ? __('watchlist.removed_from_watching_suffix') : __('watchlist.btn_watching') }}" title="{{ __('watchlist.title_watching_toggle') }}">
+            🎬
+        </button>
 
-            @if(!empty($originalName) && $originalName !== $displayTitle && $originalName !== $enName)
-                <p class="text-xs text-slate-500 line-clamp-1">OR: {{ $originalName }}</p>
-            @endif
-        </div>
+        <!-- Watched Toggle -->
+        <button type="button" class="card-icon-btn toggle-watched-btn {{ $isWatched ? 'active' : '' }}" data-content-id="{{ $kdramaId }}" data-label="{{ $isWatched ? __('watchlist.removed_from_watched_suffix') : __('watchlist.btn_watched') }}" title="{{ __('watchlist.title_watched_toggle') }}">
+            ✅
+        </button>
     </div>
-</a>
+    <a href="{{ route('kdrams.show', ['id' => $kdramaId, 'actor_id' => $actorId]) }}" class="block">
+        <div class="p-4">
+            @php
+                $frName = is_array($kdrama) ? ($kdrama['name'] ?? ($kdrama['title'] ?? null)) : ($kdrama->name ?? null);
+                $enName = is_array($kdrama) ? ($kdrama['en_name'] ?? null) : ($kdrama->en_name ?? null);
+                $originalName = is_array($kdrama) ? ($kdrama['original_name'] ?? null) : ($kdrama->original_name ?? null);
+
+                // Déterminer le titre principal
+                // On veut FR en priorité, puis EN, puis OR
+                $displayTitle = $frName;
+                if (empty($displayTitle)) {
+                    $displayTitle = $enName ?? $originalName;
+                }
+            @endphp
+
+            <h3 class="font-bold text-slate-100 group-hover:text-red-400 transition line-clamp-2">
+                {{ $displayTitle }}
+            </h3>
+
+            <div class="flex flex-col gap-0.5 mt-1">
+                @if(!empty($enName) && $enName !== $displayTitle)
+                    <p class="text-xs text-slate-500 italic line-clamp-1">EN: {{ $enName }}</p>
+                @endif
+
+                @if(!empty($originalName) && $originalName !== $displayTitle && $originalName !== $enName)
+                    <p class="text-xs text-slate-500 line-clamp-1">OR: {{ $originalName }}</p>
+                @endif
+            </div>
+        </div>
+    </a>
+</div>

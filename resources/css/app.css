@@ -49,7 +49,19 @@
     }
 
     input, textarea, select {
-        @apply bg-slate-800 border border-slate-600 text-white placeholder-slate-400 rounded focus:ring-2 focus:ring-red-500 focus:border-red-500;
+        @apply bg-slate-800 border border-slate-600 text-white placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 hover:border-slate-500;
+    }
+
+    input::placeholder {
+        @apply text-slate-500;
+    }
+
+    select {
+        @apply cursor-pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        padding-right: 2.5rem;
     }
 
     button {
@@ -96,7 +108,7 @@
     }
 
     .content-grid {
-        @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4;
+        @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-5;
     }
 
     .recommendations-grid {
@@ -105,7 +117,6 @@
 
     .content-card {
         @apply relative bg-slate-800 rounded-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full;
-        aspect-ratio: 2 / 3;
     }
 
     .content-card:hover {
@@ -125,7 +136,7 @@
     }
 
     .content-image {
-        @apply relative bg-gradient-to-br from-slate-700 to-slate-900 overflow-hidden flex-grow;
+        @apply relative bg-gradient-to-br from-slate-700 to-slate-900 overflow-hidden h-96;
     }
 
     .recommendations-image {
@@ -141,15 +152,15 @@
     }
 
     .content-card:hover .content-image img {
-        @apply scale-110;
+        @apply scale-110 blur-sm;
     }
 
     .content-card h3 {
-        @apply text-xs sm:text-sm font-semibold;
+        @apply text-xs sm:text-sm font-semibold text-slate-100;
     }
 
     .content-card > div:last-child {
-        @apply p-2 sm:p-3;
+        @apply py-1 px-4 sm:py-2 sm:px-5 min-h-max flex flex-col;
     }
 
     .badge {
@@ -187,6 +198,11 @@
     @keyframes float {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-8px); }
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
     }
 
     .section-title-text {
@@ -301,6 +317,47 @@ table th {
 /* Toast notifications */
 .toast {
     @apply animate-in fade-in slide-in-from-top;
+}
+
+/* Icon buttons in cards */
+.card-icon-btn {
+    @apply relative transition-all duration-300 hover:scale-125 cursor-pointer opacity-100;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 26.4px;
+}
+
+.card-icon-btn.active {
+    @apply opacity-40 hover:opacity-100;
+}
+
+.card-icon-btn::after {
+    content: attr(data-label);
+    @apply absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-900/95 text-white text-xs px-2 py-1 rounded-md whitespace-nowrap opacity-0 transition-opacity duration-300 backdrop-blur-lg border border-white/30 pointer-events-none;
+}
+
+.card-icon-btn:hover::after {
+    @apply opacity-100;
+}
+
+
+/* Filter form styles */
+.filter-form-group {
+    @apply space-y-1;
+}
+
+.filter-form-label {
+    @apply block text-xs font-semibold text-slate-200 mb-1;
+}
+
+.filter-form-group input,
+.filter-form-group select {
+    @apply w-full px-2 py-1.5 bg-slate-800/50;
+}
+
+.filter-form-hint {
+    @apply text-xs text-slate-400 italic mt-0.5;
 }
 
 /* Filter buttons */

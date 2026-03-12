@@ -4,391 +4,298 @@
     <meta charset="UTF-8">
     <title>Watchlist Export</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        @page {
+            header: page-header;
+            footer: page-footer;
+            margin-top: 35mm; /* Espace pour le header */
+            margin-bottom: 15mm;
+            margin-left: 10mm;
+            margin-right: 10mm;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #0f172a;
-            color: #e2e8f0;
-            line-height: 1.5;
-        }
-
-        .page {
-            page-break-after: always;
-            padding: 30px;
-            background-color: #0f172a;
-        }
-
-        .page:last-child {
-            page-break-after: avoid;
-        }
-
-        .page:not(:first-child) .header {
-            display: none;
-        }
-
-        .page:not(:first-child) .stats-line {
-            display: none;
-        }
-
-        .page:not(:first-child) .options-box {
-            display: none;
-        }
-
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            padding: 20px 25px;
-            margin: -30px -30px 20px -30px;
-            border-bottom: 5px solid #991b1b;
-            border-radius: 0;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .header .subtitle {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        /* Stats - UNE LIGNE COLOREE */
-        .stats-line {
-            background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
-            border-left: 5px solid #ef4444;
-            border-radius: 0;
-            padding: 12px 15px;
-            margin-bottom: 15px;
-            font-size: 12px;
-            color: #cbd5e1;
-            line-height: 1.6;
-        }
-
-        .stats-line strong {
-            color: #ef4444;
-            font-weight: bold;
-            font-size: 13px;
-        }
-
-        /* Options */
-        .options-box {
-            background-color: #1e293b;
-            border-left: 4px solid #8b5cf6;
-            border-radius: 0;
-            padding: 12px 15px;
-            margin-bottom: 15px;
+            font-family: 'DejaVu Sans', sans-serif; /* Meilleur support Unicode pour mPDF */
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
             font-size: 11px;
-            line-height: 1.5;
         }
 
-        .options-box .title {
+        /* Tables for layout (mPDF compatible) */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        td {
+            vertical-align: top;
+            padding: 0;
+        }
+
+        /* --- HEADER --- */
+        .header-bg {
+            background-color: #7f1d1d; /* Red 900 */
+            border-bottom: 4px solid #ef4444; /* Red 500 */
+            padding: 20px;
+            color: white;
+        }
+
+        .header-title {
+            font-size: 26px;
             font-weight: bold;
-            color: #8b5cf6;
-            margin-bottom: 6px;
-            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .options-box .option {
-            color: #cbd5e1;
-            margin-bottom: 3px;
+        .header-meta {
+            margin-top: 5px;
+            font-size: 10px;
+            color: #fca5a5; /* Red 200 */
         }
 
-        /* Item Card */
-        .item-row {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border-left: 4px solid #ef4444;
-            margin-bottom: 18px;
-            border-radius: 0;
+        /* --- STATS BAR --- */
+        .stats-container {
+            background-color: #1e293b; /* Slate 800 */
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+
+        .stat-badge {
+            font-weight: bold;
+            color: #fff;
+            background-color: #334155;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-right: 10px;
+        }
+
+        .stat-value {
+            color: #38bdf8; /* Sky 400 */
+        }
+
+        /* --- DRAMA CARD --- */
+        .card {
+            background-color: #1e293b; /* Slate 800 */
+            border: 1px solid #334155; /* Slate 700 */
+            border-radius: 8px;
+            margin-bottom: 15px;
             padding: 15px;
-            page-break-inside: avoid;
         }
 
-        .item-content {
-            display: flex;
-            gap: 15px;
-        }
-
-        .item-poster {
-            flex-shrink: 0;
-            width: 135px;
+        /* Poster */
+        .poster-cell {
+            width: 100px; /* Fixed width */
+            padding-right: 15px;
         }
 
         .poster-img {
-            width: 135px;
-            height: 203px;
+            width: 100px;
+            height: 150px;
+            border-radius: 6px;
             object-fit: cover;
-            border: 2px solid #ef4444;
-            border-radius: 4px;
-            display: block;
+            border: 1px solid #475569;
         }
 
         .no-poster {
-            width: 135px;
-            height: 203px;
-            background-color: #334155;
-            border: 2px solid #475569;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #64748b;
-            font-size: 24px;
-        }
-
-        .item-info {
-            flex: 1;
-        }
-
-        .item-title {
-            font-weight: bold;
-            color: #f1f5f9;
-            font-size: 14px;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .item-meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .meta-item {
-            font-size: 11px;
-            color: #cbd5e1;
-        }
-
-        .meta-label {
-            color: #fbbf24;
-            font-weight: bold;
-            display: inline-block;
-            margin-right: 4px;
-            font-size: 12px;
-        }
-
-        .meta-value {
-            color: #f1f5f9;
-        }
-
-        .genres-section {
-            font-size: 11px;
-            color: #a78bfa;
-            margin-bottom: 8px;
-            padding-top: 6px;
-            border-top: 1px solid #334155;
-        }
-
-        .genres-label {
-            font-weight: bold;
-            color: #a78bfa;
-            display: inline-block;
-            margin-right: 4px;
-            font-size: 12px;
-        }
-
-        .item-synopsis {
-            font-size: 11px;
-            color: #cbd5e1;
-            font-style: italic;
-            margin-top: 8px;
-            padding: 8px 10px;
+            width: 100px;
+            height: 150px;
             background-color: #0f172a;
-            border-left: 3px solid #8b5cf6;
-            border-radius: 2px;
-            line-height: 1.4;
-            page-break-inside: avoid;
-        }
-
-        .synopsis-label {
-            font-weight: bold;
-            color: #8b5cf6;
-            font-style: normal;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        /* Page number */
-        .page-number {
-            text-align: right;
-            font-size: 10px;
-            color: #64748b;
-            margin-top: 20px;
-            padding-top: 10px;
-            border-top: 1px solid #334155;
-        }
-
-        /* Empty state */
-        .empty {
             text-align: center;
-            padding: 60px 20px;
-            color: #94a3b8;
-            font-size: 14px;
+            line-height: 150px;
+            color: #64748b;
+            font-size: 30px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+
+        /* Content */
+        .title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        /* Badges Row */
+        .badges-row {
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+            color: white;
+            margin-right: 5px;
+            text-transform: uppercase;
+        }
+
+        .badge-status-watched { background-color: #16a34a; } /* Green 600 */
+        .badge-status-watching { background-color: #ea580c; } /* Orange 600 */
+        .badge-status-towatch { background-color: #475569; } /* Slate 600 */
+
+        .badge-rating { background-color: #8b5cf6; } /* Violet 500 */
+        .badge-score { background-color: #f59e0b; color: #000; } /* Amber 500 */
+        .badge-year { background-color: #0f172a; border: 1px solid #334155; }
+
+        /* Genres */
+        .genres {
+            font-size: 10px;
+            color: #94a3b8; /* Slate 400 */
+            margin-bottom: 8px;
+        }
+
+        .genre-tag {
+            color: #cbd5e1;
+        }
+
+        /* Synopsis */
+        .synopsis {
+            font-size: 10px;
+            line-height: 1.5;
+            color: #cbd5e1; /* Slate 300 */
+            background-color: #0f172a;
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid #334155;
+            text-align: justify;
+        }
+
+        /* Footer */
+        .footer-text {
+            text-align: center;
+            font-size: 8px;
+            color: #475569;
+            border-top: 1px solid #334155;
+            padding-top: 10px;
         }
     </style>
 </head>
 <body>
-    @forelse($pages as $pageIndex => $pageItems)
-        <div class="page">
-            <!-- Header (page 1 only) -->
-            @if($pageIndex === 0)
-                <div class="header">
-                    <h1>🍿 KDrama Hub - {{ __('pdf.title') }}</h1>
-                    <div class="subtitle">{{ __('pdf.export_date') }} {{ $user->name }} • {{ now()->format('d/m/Y H:i') }}</div>
-                </div>
 
-                <!-- Stats -->
-                <div class="stats-line">
-                    📊 <strong>{{ __('pdf.total') }}: {{ $totalItems }}</strong> | 📺 <strong>{{ __('pdf.to_watch') }}: {{ $toWatchCount }}</strong> | 🎬 <strong>{{ __('pdf.watching') }}: {{ $watchingCount }}</strong> | ✅ <strong>{{ __('pdf.watched') }}: {{ $watchedCount }}</strong>
-                </div>
+    <!-- Header definition -->
+    <htmlpageheader name="page-header">
+        <div class="header-bg">
+            <div class="header-title">🍿 KDrama Watchlist</div>
+            <div class="header-meta">
+                Exporté par <b>{{ $user->name }}</b> • {{ now()->format('d/m/Y') }}
+            </div>
+        </div>
+    </htmlpageheader>
 
-                <!-- Options -->
-                <div class="options-box">
-                    <div class="title">⚙️ Options selected</div>
-                    <div class="option">• {{ __('pdf.filters') }}: {{ $displayOptions['filters'] }}</div>
-                    <div class="option">• {{ __('pdf.columns') }}: {{ $displayOptions['columns'] }}</div>
-                    <div class="option">• {{ __('pdf.sort') }}: {{ $displayOptions['sort'] }}</div>
-                </div>
-            @endif
+    <htmlpagefooter name="page-footer">
+        <div class="footer-text">
+            Page {PAGENO} sur {nbpg} • Généré par KDrama Laravel
+        </div>
+    </htmlpagefooter>
 
-            <!-- Items -->
-            @if(count($pageItems) > 0)
-                @foreach($pageItems as $item)
-                    @php
-                        $frName = $item['name'] ?? null;
-                        $enName = $item['en_name'] ?? null;
-                        $originalName = $item['original_name'] ?? null;
+    <!-- Stats Block (Page 1) -->
+    <div class="stats-container">
+        <span class="stat-badge">TOTAL <span class="stat-value">{{ $totalItems }}</span></span>
+        <span class="stat-badge">REGARDÉS <span class="stat-value">{{ $watchedCount }}</span></span>
+        <span class="stat-badge">EN COURS <span class="stat-value">{{ $watchingCount }}</span></span>
+        <span class="stat-badge">À VOIR <span class="stat-value">{{ $toWatchCount }}</span></span>
+    </div>
 
-                        if (!empty($frName)) {
-                            $displayTitle = $frName;
-                        } elseif (!empty($enName)) {
-                            $displayTitle = $enName;
-                        } else {
-                            $displayTitle = $originalName ?? 'N/A';
-                        }
+    <!-- Content Loop -->
+    @foreach($pages as $pageItems)
+        @foreach($pageItems as $item)
+            @php
+                // Data Logic
+                $displayTitle = $item['display_title'] ?? $item['name'] ?? 'Titre Inconnu';
+                $year = !empty($item['first_air_date']) ? \Carbon\Carbon::parse($item['first_air_date'])->year : '';
 
-                        $year = $item['first_air_date'] ? \Carbon\Carbon::parse($item['first_air_date'])->year : 'N/A';
-                        if ($item['is_watched']) {
-                            $status = __('pdf.status_watched');
-                        } elseif ($item['is_watching'] ?? false) {
-                            $status = __('pdf.status_watching');
-                        } else {
-                            $status = __('pdf.status_to_watch');
-                        }
-                        $rating = '';
-                        if ($item['rating'] ?? false) {
-                            $rating = match($item['rating']) {
-                                1 => __('pdf.rating_1'),
-                                2 => __('pdf.rating_2'),
-                                3 => __('pdf.rating_3'),
-                                default => ''
-                            };
-                        }
-                        $vote = number_format($item['vote_average'] ?? 0, 1);
-                    @endphp
+                // Status Logic
+                $statusClass = 'badge-status-towatch';
+                $statusText = 'À VOIR';
+                if (!empty($item['is_watched'])) {
+                    $statusClass = 'badge-status-watched';
+                    $statusText = 'VU';
+                } elseif (!empty($item['is_watching'])) {
+                    $statusClass = 'badge-status-watching';
+                    $statusText = 'EN COURS';
+                }
 
-                    <div class="item-row">
-                        <div class="item-content">
-                            <!-- Poster -->
-                            @if(($selectedColumns['poster'] ?? false))
-                                <div class="item-poster">
-                                    @if($item['poster_url'] ?? false)
-                                        <img src="{{ $item['poster_url'] }}" alt="Poster" class="poster-img">
-                                    @else
-                                        <div class="no-poster">-</div>
-                                    @endif
+                // Rating Logic
+                $userRating = !empty($item['rating']) ? str_repeat('★', $item['rating']) : '';
+                $tmdbScore = !empty($item['vote_average']) ? number_format($item['vote_average'], 1) : '';
+
+                // Genres
+                $genres = [];
+                if(!empty($item['genres']) && is_array($item['genres'])) {
+                    foreach($item['genres'] as $g) $genres[] = is_array($g) ? $g['name'] : $g;
+                }
+                $genresStr = implode(' • ', $genres);
+
+                $synopsis = $item['overview'] ?? '';
+            @endphp
+
+            <div class="card">
+                <table>
+                    <tr>
+                        <!-- Left: Poster -->
+                        <td class="poster-cell">
+                            @if(!empty($selectedColumns['poster']))
+                                @if(!empty($item['poster_url']))
+                                    <img src="{{ $item['poster_url'] }}" class="poster-img">
+                                @else
+                                    <div class="no-poster">?</div>
+                                @endif
+                            @endif
+                        </td>
+
+                        <!-- Right: Info -->
+                        <td>
+                            <!-- Title -->
+                            <div class="title">{{ $displayTitle }}</div>
+
+                            <!-- Badges Row -->
+                            <div class="badges-row">
+                                @if(!empty($selectedColumns['status']))
+                                    <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
+                                @endif
+
+                                @if(!empty($selectedColumns['year']) && $year)
+                                    <span class="badge badge-year">{{ $year }}</span>
+                                @endif
+
+                                @if(!empty($selectedColumns['vote_average']) && $tmdbScore)
+                                    <span class="badge badge-score">TMDB {{ $tmdbScore }}</span>
+                                @endif
+
+                                @if(!empty($selectedColumns['rating']) && $userRating)
+                                    <span class="badge badge-rating">{{ $userRating }}</span>
+                                @endif
+                            </div>
+
+                            <!-- Genres -->
+                            @if(!empty($selectedColumns['genres']) && $genresStr)
+                                <div class="genres">
+                                    🎭 <span class="genre-tag">{{ $genresStr }}</span>
                                 </div>
                             @endif
 
-                            <!-- Info -->
-                            <div class="item-info">
-                                <div class="item-title">{{ $displayTitle }}</div>
-
-                                <div class="item-meta">
-                                    @if($selectedColumns['status'] ?? true)
-                                        <div class="meta-item">
-                                            <span class="meta-label">📌</span>
-                                            <span class="meta-value">{{ $status }}</span>
-                                        </div>
-                                    @endif
-                                    @if($selectedColumns['year'] ?? true)
-                                        <div class="meta-item">
-                                            <span class="meta-label">📅</span>
-                                            <span class="meta-value">{{ $year }}</span>
-                                        </div>
-                                    @endif
-                                    @if($selectedColumns['vote_average'] ?? true)
-                                        <div class="meta-item">
-                                            <span class="meta-label">⭐</span>
-                                            <span class="meta-value">{{ $vote }}/10</span>
-                                        </div>
-                                    @endif
-                                    @if($selectedColumns['rating'] ?? true && !empty($rating))
-                                        <div class="meta-item">
-                                            <span class="meta-label">💭</span>
-                                            <span class="meta-value">{{ $rating }}</span>
-                                        </div>
-                                    @endif
+                            <!-- Synopsis -->
+                            @if(!empty($selectedColumns['synopsis']) && $synopsis)
+                                <div class="synopsis">
+                                    {{ \Illuminate\Support\Str::limit($synopsis, 280) }}
                                 </div>
-
-                                @php
-                                    $genres = $item['genres'] ?? [];
-                                    $genres = is_array($genres) ? $genres : [];
-                                @endphp
-                                @if($selectedColumns['genres'] ?? true && !empty($genres))
-                                    <div class="genres-section">
-                                        <span class="genres-label">🎭</span>
-                                        {{ implode(', ', array_map(fn($g) => $g['name'] ?? '', $genres)) }}
-                                    </div>
-                                @endif
-
-                                @php
-                                    $networks = $item['networks'] ?? [];
-                                    $networks = is_array($networks) ? $networks : [];
-                                @endphp
-                                @if($selectedColumns['networks'] ?? false && !empty($networks))
-                                    <div class="genres-section">
-                                        <span class="genres-label">📺</span>
-                                        {{ implode(', ', array_map(fn($n) => $n['name'] ?? '', $networks)) }}
-                                    </div>
-                                @endif
-
-                                @if($selectedColumns['synopsis'] ?? false && !empty($item['overview']))
-                                    <div class="item-synopsis">
-                                        <span class="synopsis-label">📖 Synopsis</span>
-                                        {{ Str::limit($item['overview'], 180, '...') }}
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            @else
-                <div class="empty">
-                    📭 Aucun element a afficher
-                </div>
-            @endif
-
-            <!-- Page number -->
-            <div class="page-number">Page {{ $pageIndex + 1 }} of {{ count($pages) }}</div>
-        </div>
-    @empty
-        <div class="page">
-            <div class="header">
-                <h1>🍿 KDrama Hub - Watchlist</h1>
+                            @endif
+                        </td>
+                    </tr>
+                </table>
             </div>
-            <div class="empty">
-                📭 Votre watchlist est vide
-            </div>
-        </div>
-    @endforelse
+        @endforeach
+
+        @if(!$loop->last)
+            <pagebreak />
+        @endif
+    @endforeach
+
 </body>
 </html>

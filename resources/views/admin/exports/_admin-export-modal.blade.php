@@ -120,6 +120,27 @@
                     </div>
                 </div>
 
+                <!-- Langue du PDF -->
+                <div>
+                    <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <span>🌐</span> Langue du PDF
+                    </h4>
+                    <div class="space-y-3 bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="radio" name="locale" value="fr" checked class="w-5 h-5 text-purple-500 cursor-pointer">
+                            <span class="text-slate-200 group-hover:text-white transition">🇫🇷 Français</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="radio" name="locale" value="en" class="w-5 h-5 text-purple-500 cursor-pointer">
+                            <span class="text-slate-200 group-hover:text-white transition">🇬🇧 English</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="radio" name="locale" value="de" class="w-5 h-5 text-purple-500 cursor-pointer">
+                            <span class="text-slate-200 group-hover:text-white transition">🇩🇪 Deutsch</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Format -->
                 <div>
                     <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -223,6 +244,7 @@ document.getElementById('adminExportForm').addEventListener('submit', async (e) 
     const userId = formData.get('user_id');
     const data = {
         format: formData.get('format'),
+        locale: formData.get('locale'),
         filters: {
             watched: formData.has('filters[watched]'),
             to_watch: formData.has('filters[to_watch]'),

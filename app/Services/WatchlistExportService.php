@@ -28,11 +28,22 @@ class WatchlistExportService
         // Log pour déboguer
         Log::info("Export PDF - User {$userId}: " . count($items) . " items récupérés");
 
-        // Calculer stats
+        // Calculer stats - compter par status (plus fiable)
         $totalItems = count($items);
-        $watchedCount = count(array_filter($items, fn($i) => !empty($i['is_watched'])));
-        $watchingCount = count(array_filter($items, fn($i) => !empty($i['is_watching'])));
-        $toWatchCount = $totalItems - $watchedCount - $watchingCount;
+        $watchedCount = 0;
+        $watchingCount = 0;
+        $toWatchCount = 0;
+
+        foreach ($items as $item) {
+            $status = $item['status'] ?? null;
+            if ($status === 'watched') {
+                $watchedCount++;
+            } elseif ($status === 'watching') {
+                $watchingCount++;
+            } elseif ($status === 'to_watch') {
+                $toWatchCount++;
+            }
+        }
 
         // Formater les options pour l'affichage
         $displayOptions = $this->formatOptionsForDisplay($options);
@@ -165,7 +176,6 @@ class WatchlistExportService
 
             // Vérifier si on a déjà vu cette combinaison
             if (isset($seenKeys[$uniqueKey])) {
-                Log::info("Duplicate skipped: TMDB ID {$kdrama->tmdb_id} with status {$status}");
                 continue;
             }
 

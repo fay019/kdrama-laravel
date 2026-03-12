@@ -187,6 +187,7 @@ class AdminExportController extends Controller
         $validated = $request->validate([
             'format' => 'required|in:csv,pdf',
             'filters.watched' => 'sometimes|boolean',
+            'filters.watching' => 'sometimes|boolean',
             'filters.to_watch' => 'sometimes|boolean',
             'columns' => 'sometimes|array',
             'sort' => 'sometimes|in:added_at,title,rating,vote_average',
@@ -199,6 +200,7 @@ class AdminExportController extends Controller
         $options = [
             'filters' => [
                 'watched' => $request->boolean('filters.watched', true),
+                'watching' => $request->boolean('filters.watching', true),
                 'to_watch' => $request->boolean('filters.to_watch', true),
             ],
             'columns' => $request->input('columns', [

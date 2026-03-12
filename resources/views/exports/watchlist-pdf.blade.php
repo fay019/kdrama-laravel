@@ -7,7 +7,7 @@
         @page {
             header: page-header;
             footer: page-footer;
-            margin-top: 35mm; /* Espace pour le header */
+            margin-top: 45mm; /* Espace pour le header - augmenté */
             margin-bottom: 15mm;
             margin-left: 10mm;
             margin-right: 10mm;
@@ -17,7 +17,7 @@
             font-family: 'DejaVu Sans', sans-serif; /* Meilleur support Unicode pour mPDF */
             background-color: #0f172a; /* Slate 900 */
             color: #e2e8f0; /* Slate 200 */
-            font-size: 11px;
+            font-size: 12px;
         }
 
         /* Tables for layout (mPDF compatible) */
@@ -113,25 +113,27 @@
 
         /* Content */
         .title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             color: #fff;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         /* Badges Row */
         .badges-row {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            line-height: 1.8;
         }
 
         .badge {
             display: inline-block;
-            padding: 3px 8px;
+            padding: 5px 12px;
             border-radius: 4px;
-            font-size: 9px;
+            font-size: 10px;
             font-weight: bold;
             color: white;
-            margin-right: 5px;
+            margin-right: 8px;
+            margin-bottom: 4px;
             text-transform: uppercase;
         }
 
@@ -145,9 +147,15 @@
 
         /* Genres */
         .genres {
-            font-size: 10px;
+            font-size: 9px;
             color: #94a3b8; /* Slate 400 */
             margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .genres strong {
+            color: #cbd5e1;
+            font-weight: bold;
         }
 
         .genre-tag {
@@ -156,14 +164,21 @@
 
         /* Synopsis */
         .synopsis {
-            font-size: 10px;
-            line-height: 1.5;
+            font-size: 9px;
+            line-height: 1.6;
             color: #cbd5e1; /* Slate 300 */
             background-color: #0f172a;
-            padding: 8px;
+            padding: 10px;
+            margin-top: 8px;
             border-radius: 4px;
-            border-left: 3px solid #334155;
+            border-left: 3px solid #8b5cf6;
             text-align: justify;
+        }
+
+        .synopsis strong {
+            color: #a78bfa;
+            display: block;
+            margin-bottom: 4px;
         }
 
         /* Footer */
@@ -183,7 +198,13 @@
         <div class="header-bg">
             <div class="header-title">🍿 KDrama Watchlist</div>
             <div class="header-meta">
-                Exporté par <b>{{ $user->name }}</b> • {{ now()->format('d/m/Y') }}
+                Exporté par <b>{{ $user->name }}</b> • {{ now()->format('d/m/Y') }} •
+                @switch($locale)
+                    @case('fr') Français @break
+                    @case('en') English @break
+                    @case('de') Deutsch @break
+                    @default {{ strtoupper($locale) }}
+                @endswitch
             </div>
         </div>
     </htmlpageheader>
@@ -256,34 +277,47 @@
 
                             <!-- Badges Row -->
                             <div class="badges-row">
-                                @if(!empty($selectedColumns['status']))
-                                    <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
-                                @endif
-
-                                @if(!empty($selectedColumns['year']) && $year)
-                                    <span class="badge badge-year">{{ $year }}</span>
-                                @endif
+                                <!-- Status badge - toujours afficher -->
+                                <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
 
                                 @if(!empty($selectedColumns['vote_average']) && $tmdbScore)
-                                    <span class="badge badge-score">TMDB {{ $tmdbScore }}</span>
+                                    <span class="badge badge-score">⭐ {{ $tmdbScore }}</span>
                                 @endif
 
                                 @if(!empty($selectedColumns['rating']) && $userRating)
-                                    <span class="badge badge-rating">{{ $userRating }}</span>
+                                    <span class="badge badge-rating">★ {{ $userRating }}</span>
+                                @endif
+
+                                @if(!empty($selectedColumns['year']) && $year)
+                                    <span class="badge badge-year" style="float: right;">Sortie: {{ $year }}</span>
                                 @endif
                             </div>
 
                             <!-- Genres -->
                             @if(!empty($selectedColumns['genres']) && $genresStr)
                                 <div class="genres">
-                                    🎭 <span class="genre-tag">{{ $genresStr }}</span>
+                                    <strong>Genres:</strong> <span class="genre-tag">{{ $genresStr }}</span>
+                                </div>
+                            @endif
+
+                            <!-- Networks -->
+                            @php
+                                $networks = [];
+                                if(!empty($item['networks']) && is_array($item['networks'])) {
+                                    foreach($item['networks'] as $n) $networks[] = is_array($n) ? $n['name'] : $n;
+                                }
+                                $networksStr = implode(' • ', $networks);
+                            @endphp
+                            @if(!empty($selectedColumns['networks']) && $networksStr)
+                                <div class="genres">
+                                    <strong>Réseaux:</strong> <span class="genre-tag">{{ $networksStr }}</span>
                                 </div>
                             @endif
 
                             <!-- Synopsis -->
                             @if(!empty($selectedColumns['synopsis']) && $synopsis)
                                 <div class="synopsis">
-                                    {{ \Illuminate\Support\Str::limit($synopsis, 280) }}
+                                    <strong>Résumé:</strong><br>{{ \Illuminate\Support\Str::limit($synopsis, 280) }}
                                 </div>
                             @endif
                         </td>

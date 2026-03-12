@@ -42,7 +42,7 @@
     @if(isset($featured) && count($featured) > 0)
         <div class="content-grid">
             @foreach($featured as $item)
-                <a href="{{ route('kdrams.show', $item['id']) }}" class="content-card group fade-in">
+                <a href="{{ route('kdrams.show', $item['tmdb_id'] ?? $item['id']) }}" class="content-card group fade-in">
                     <div class="content-image">
                         @if(isset($item['poster_path']))
                             <img
@@ -100,7 +100,7 @@
     @if(isset($newest) && count($newest) > 0)
         <div class="content-grid">
             @foreach($newest as $item)
-                <a href="{{ route('kdrams.show', $item['id']) }}" class="content-card group fade-in">
+                <a href="{{ route('kdrams.show', $item['tmdb_id'] ?? $item['id']) }}" class="content-card group fade-in">
                     <div class="content-image">
                         @if($item['poster_path'] ?? false)
                             <img
@@ -148,7 +148,7 @@
     @if(isset($upcoming) && count($upcoming) > 0)
         <div class="content-grid">
             @foreach($upcoming as $item)
-                <a href="{{ route('kdrams.show', $item['id']) }}" class="content-card group fade-in">
+                <a href="{{ route('kdrams.show', $item['tmdb_id'] ?? $item['id']) }}" class="content-card group fade-in">
                     <div class="content-image">
                         @if($item['poster_path'] ?? false)
                             <img

@@ -40,6 +40,10 @@
                             <span class="text-slate-200 group-hover:text-white transition">📺 À regarder</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="checkbox" name="filters[watching]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-purple-500 cursor-pointer">
+                            <span class="text-slate-200 group-hover:text-white transition">🎬 En train de voir</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="filters[watched]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-purple-500 cursor-pointer">
                             <span class="text-slate-200 group-hover:text-white transition">✅ Regardés</span>
                         </label>
@@ -222,6 +226,7 @@ document.getElementById('adminExportForm').addEventListener('submit', async (e) 
         filters: {
             watched: formData.has('filters[watched]'),
             to_watch: formData.has('filters[to_watch]'),
+            watching: formData.has('filters[watching]'),
         },
         columns: {
             poster: formData.has('columns[poster]'),

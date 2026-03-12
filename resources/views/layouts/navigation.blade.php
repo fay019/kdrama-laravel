@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-slate-800 border-b border-slate-700 relative z-40">
+<nav x-data="{ open: false }" class="bg-slate-950 border-b border-slate-700 relative z-40">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -82,78 +82,85 @@
             </div>
             @endauth
 
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none focus:bg-slate-800 focus:text-white transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <!-- Hamburger Menu -->
+            <div class="flex items-center sm:hidden">
+                <button @click="open = !open" class="relative inline-flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none transition-all duration-200">
+                    <svg class="h-6 w-6 transition-transform duration-300" :class="open ? 'rotate-90' : ''" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': open, 'inline-flex': !open}" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': !open, 'inline-flex': open}" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('kdrams.catalog')" :active="request()->routeIs('kdrams.*')">
-                {{ __('common.nav_kdrams') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('contact.show')" :active="request()->routeIs('contact.*')">
-                {{ __('common.nav_contact') }}
-            </x-responsive-nav-link>
+    <!-- Mobile Menu Backdrop -->
+    <div class="fixed inset-0 bg-black/40 z-20 sm:hidden transition-opacity duration-300"
+         :class="open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
+         @click="open = false"></div>
+
+    <!-- Responsive Drawer Navigation Menu -->
+    <div class="fixed left-0 top-16 h-screen w-64 z-30 sm:hidden transition-transform duration-300 ease-out"
+         :class="open ? 'translate-x-0' : '-translate-x-full'"
+         style="background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);">
+        <div class="overflow-y-auto h-full flex flex-col">
+            <!-- User Menu (Top) -->
             @auth
-                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                    {{ __('common.nav_dashboard') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('watchlist.index')" :active="request()->routeIs('watchlist.*')">
-                    {{ __('common.nav_watchlist') }}
-                </x-responsive-nav-link>
-                @if(auth()->user()->is_admin)
-                    <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
-                        {{ __('common.nav_admin') }}
-                    </x-responsive-nav-link>
-                @endif
+            <div class="py-3 px-3 border-b border-slate-700/50">
+                <div class="px-2 py-3 mb-2 bg-slate-800/50 rounded-lg">
+                    <div class="font-medium text-sm text-white truncate">👤 {{ Auth::user()->name }}</div>
+                    <div class="text-xs text-slate-400 truncate">{{ Auth::user()->email }}</div>
+                </div>
+
+                <div class="space-y-1">
+                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 rounded-lg text-sm text-slate-200 hover:text-white hover:bg-slate-800 transition-colors duration-200">
+                        ⚡ {{ __('common.nav_profile') }}
+                    </a>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full text-left px-4 py-2 rounded-lg text-sm text-slate-200 hover:text-white hover:bg-red-500/20 transition-colors duration-200">
+                            🚪 {{ __('common.nav_logout') }}
+                        </button>
+                    </form>
+                </div>
+            </div>
             @endauth
-        </div>
 
-        <!-- Responsive Settings Options -->
-        @auth
-        <div class="pt-4 pb-1 border-t border-slate-700">
-            <div class="px-4">
-                <div class="font-medium text-base text-white">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-white">{{ Auth::user()->email }}</div>
-            </div>
+            <!-- Navigation Links -->
+            <div class="py-4 space-y-1 px-3">
+                <a href="{{ route('kdrams.catalog') }}" class="block px-4 py-3 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition-colors duration-200 {{ request()->routeIs('kdrams.*') ? 'bg-red-500/20 text-red-400' : '' }}">
+                    🎬 {{ __('common.nav_kdrams') }}
+                </a>
+                <a href="{{ route('contact.show') }}" class="block px-4 py-3 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition-colors duration-200 {{ request()->routeIs('contact.*') ? 'bg-red-500/20 text-red-400' : '' }}">
+                    ✉️ {{ __('common.nav_contact') }}
+                </a>
+                @auth
+                    <a href="{{ route('dashboard') }}" class="block px-4 py-3 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'bg-red-500/20 text-red-400' : '' }}">
+                        📊 {{ __('common.nav_dashboard') }}
+                    </a>
+                    <a href="{{ route('watchlist.index') }}" class="block px-4 py-3 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition-colors duration-200 {{ request()->routeIs('watchlist.*') ? 'bg-red-500/20 text-red-400' : '' }}">
+                        ❤️ {{ __('common.nav_watchlist') }}
+                    </a>
+                    @if(auth()->user()->is_admin)
+                        <a href="{{ route('admin.dashboard') }}" class="block px-4 py-3 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition-colors duration-200 {{ request()->routeIs('admin.*') ? 'bg-red-500/20 text-red-400' : '' }}">
+                            ⚙️ {{ __('common.nav_admin') }}
+                        </a>
+                    @endif
+                @endauth
 
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('common.nav_profile') }}
-                </x-responsive-nav-link>
-
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('common.nav_logout') }}
-                    </x-responsive-nav-link>
-                </form>
-            </div>
-        </div>
-        @else
-        <div class="pt-4 pb-1 border-t border-slate-700">
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('login')">
-                    {{ __('auth.log_in') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('register')">
-                    {{ __('auth.register') }}
-                </x-responsive-nav-link>
+                <!-- Login/Register (In main nav) -->
+                @guest
+                    <div class="border-t border-slate-700 mt-3 pt-3 space-y-1">
+                        <a href="{{ route('login') }}" class="block px-4 py-3 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition-colors duration-200">
+                            🔑 {{ __('auth.log_in') }}
+                        </a>
+                        <a href="{{ route('register') }}" class="block px-4 py-3 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition-colors duration-200">
+                            ✍️ {{ __('auth.register') }}
+                        </a>
+                    </div>
+                @endguest
             </div>
         </div>
-        @endauth
     </div>
 </nav>

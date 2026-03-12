@@ -16,13 +16,6 @@
             </div>
         </div>
 
-        <!-- FAB Filtre (Mobile uniquement) -->
-        <button @click="showFilters = !showFilters"
-                class="fixed bottom-6 right-6 lg:hidden z-20 w-14 h-14 rounded-full bg-slate-800/90 backdrop-blur-sm border border-slate-700 hover:border-slate-600 hover:bg-slate-700/90 shadow-lg flex items-center justify-center text-xl transition-all duration-200"
-                :class="showFilters ? 'scale-110' : 'scale-100'">
-            <span x-text="showFilters ? '✕' : '🔍'"></span>
-        </button>
-
         <!-- Mobile backdrop pour le filtre overlay -->
         <div class="fixed inset-0 bg-black/50 z-30 lg:hidden transition-opacity"
              :class="{ 'opacity-0 pointer-events-none': !showFilters, 'opacity-100': showFilters }"
@@ -33,6 +26,16 @@
             <!-- Sidebar Filtres: Modal sur mobile, Static sur desktop -->
             <aside class="fixed top-0 right-0 h-screen w-64 sm:w-72 z-40 lg:static lg:h-auto flex-shrink-0 transition-transform duration-300 ease-out overflow-y-auto"
                    :class="{ 'translate-x-full lg:translate-x-0': !showFilters, 'translate-x-0': showFilters }">
+                <!-- Close button (Mobile only) -->
+                <div class="lg:hidden sticky top-0 flex items-center justify-between p-3 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 z-10">
+                    <h3 class="text-sm font-bold text-white">{{ __('catalog.show_filters') }}</h3>
+                    <button @click="showFilters = false" class="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors duration-200">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
                 <form method="GET" action="{{ route('kdrams.catalog') }}"
                       class="card-dark p-3 border-slate-700/50 shadow-2xl sticky top-20">
                     <!-- Page number input (hidden) -->
@@ -179,6 +182,12 @@
 
                     <!-- Pagination Simple -->
                     <div id="pagination-container" class="flex justify-center items-center gap-4 mt-16"></div>
+
+                    <!-- Mobile Filter Open Button (when filter is closed) -->
+                    <button @click="showFilters = true" v-show="!showFilters"
+                            class="lg:hidden fixed bottom-6 right-6 z-20 w-14 h-14 rounded-full bg-slate-800/90 backdrop-blur-sm border border-slate-700 hover:border-slate-600 hover:bg-slate-700/90 shadow-lg flex items-center justify-center text-xl transition-all duration-200 hover:scale-110">
+                        🔍
+                    </button>
         @else
             <div class="card-dark py-24 text-center">
                 <div class="text-6xl mb-6">🔍</div>

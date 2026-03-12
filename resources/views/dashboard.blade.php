@@ -5,53 +5,53 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-3 sm:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-                <div class="card p-5 hover:border-red-500/50 transition">
-                    <div class="flex items-center justify-between">
+            <div class="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-5 gap-1 sm:gap-3 mb-8">
+                <div class="card p-2 sm:p-5 hover:border-red-500/50 transition">
+                    <div class="flex items-center justify-between gap-1 sm:gap-2">
                         <div>
-                            <p class="text-slate-400 text-sm font-medium">{{ __('dashboard.stat_to_watch') }}</p>
-                            <p class="text-3xl font-bold text-red-400 mt-1">{{ $stats['total_watchlist'] }}</p>
+                            <p class="text-slate-400 text-xs sm:text-sm font-medium">{{ __('dashboard.stat_to_watch') }}</p>
+                            <p class="text-lg sm:text-3xl font-bold text-red-400 mt-1">{{ $stats['total_watchlist'] }}</p>
                         </div>
-                        <div class="text-5xl opacity-15">📺</div>
+                        <div class="text-xl sm:text-5xl opacity-15 flex-shrink-0">📺</div>
                     </div>
                 </div>
-                <div class="card p-5 hover:border-amber-500/50 transition">
-                    <div class="flex items-center justify-between">
+                <div class="card p-2 sm:p-5 hover:border-amber-500/50 transition">
+                    <div class="flex items-center justify-between gap-1 sm:gap-2">
                         <div>
-                            <p class="text-slate-400 text-sm font-medium">{{ __('dashboard.stat_watching') }}</p>
-                            <p class="text-3xl font-bold text-amber-400 mt-1">{{ $stats['total_watching'] }}</p>
+                            <p class="text-slate-400 text-xs sm:text-sm font-medium">{{ __('dashboard.stat_watching') }}</p>
+                            <p class="text-lg sm:text-3xl font-bold text-amber-400 mt-1">{{ $stats['total_watching'] }}</p>
                         </div>
-                        <div class="text-5xl opacity-15">🎬</div>
+                        <div class="text-xl sm:text-5xl opacity-15 flex-shrink-0">🎬</div>
                     </div>
                 </div>
-                <div class="card p-5 hover:border-green-500/50 transition">
-                    <div class="flex items-center justify-between">
+                <div class="card p-2 sm:p-5 hover:border-green-500/50 transition">
+                    <div class="flex items-center justify-between gap-1 sm:gap-2">
                         <div>
-                            <p class="text-slate-400 text-sm font-medium">{{ __('dashboard.stat_watched') }}</p>
-                            <p class="text-3xl font-bold text-green-400 mt-1">{{ $stats['total_watched'] }}</p>
+                            <p class="text-slate-400 text-xs sm:text-sm font-medium">{{ __('dashboard.stat_watched') }}</p>
+                            <p class="text-lg sm:text-3xl font-bold text-green-400 mt-1">{{ $stats['total_watched'] }}</p>
                         </div>
-                        <div class="text-5xl opacity-15">✅</div>
+                        <div class="text-xl sm:text-5xl opacity-15 flex-shrink-0">✅</div>
                     </div>
                 </div>
-                <div class="card p-5 hover:border-purple-500/50 transition">
-                    <div class="flex items-center justify-between">
+                <div class="card p-2 sm:p-5 hover:border-purple-500/50 transition">
+                    <div class="flex items-center justify-between gap-1 sm:gap-2">
                         <div>
-                            <p class="text-slate-400 text-sm font-medium">{{ __('dashboard.stat_rated') }}</p>
-                            <p class="text-3xl font-bold text-purple-400 mt-1">{{ $stats['total_rated'] }}</p>
+                            <p class="text-slate-400 text-xs sm:text-sm font-medium">{{ __('dashboard.stat_rated') }}</p>
+                            <p class="text-lg sm:text-3xl font-bold text-purple-400 mt-1">{{ $stats['total_rated'] }}</p>
                         </div>
-                        <div class="text-5xl opacity-15">⭐</div>
+                        <div class="text-xl sm:text-5xl opacity-15 flex-shrink-0">⭐</div>
                     </div>
                 </div>
-                <div class="card p-5 hover:border-yellow-500/50 transition">
-                    <div class="flex items-center justify-between">
+                <div class="card p-2 sm:p-5 hover:border-yellow-500/50 transition">
+                    <div class="flex items-center justify-between gap-1 sm:gap-2">
                         <div>
-                            <p class="text-slate-400 text-sm font-medium">{{ __('dashboard.stat_average') }}</p>
-                            <p class="text-3xl font-bold text-yellow-400 mt-1">{{ $stats['avg_rating'] }}{{ __('dashboard.stat_average_suffix') }}</p>
+                            <p class="text-slate-400 text-xs sm:text-sm font-medium">{{ __('dashboard.stat_average') }}</p>
+                            <p class="text-lg sm:text-3xl font-bold text-yellow-400 mt-1">{{ $stats['avg_rating'] }}{{ __('dashboard.stat_average_suffix') }}</p>
                         </div>
-                        <div class="text-5xl opacity-15">📊</div>
+                        <div class="text-xl sm:text-5xl opacity-15 flex-shrink-0">📊</div>
                     </div>
                 </div>
             </div>
@@ -71,17 +71,22 @@
                 @else
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                         @foreach($watchlist as $item)
-                            <div class="group relative rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition">
+                            <div class="group relative rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition ring-2 ring-red-500/50 bg-gradient-to-br from-red-900/40 to-red-950/60">
                                 <!-- Poster Image -->
                                 @if($item->kdrama->poster_path)
                                     <img src="https://image.tmdb.org/t/p/w342{{ $item->kdrama->poster_path }}"
                                          alt="{{ $item->kdrama->name }}"
                                          class="w-full h-auto object-cover group-hover:brightness-50 transition duration-300">
                                 @else
-                                    <div class="w-full aspect-[2/3] bg-slate-700 flex items-center justify-center">
+                                    <div class="w-full aspect-[2/3] bg-red-900/50 flex items-center justify-center">
                                         <span class="text-4xl">📺</span>
                                     </div>
                                 @endif
+
+                                <!-- Watchlist Badge -->
+                                <div class="absolute top-2 right-2 bg-white/5 backdrop-blur-lg shadow-lg text-white rounded-full w-9 h-9 flex items-center justify-center text-base font-bold hover:scale-110 transition-all duration-200">
+                                    📺
+                                </div>
 
                                 <!-- Hover Info -->
                                 <div class="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-between p-3">
@@ -145,20 +150,20 @@
                 @else
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                         @foreach($watching as $item)
-                            <div class="group relative rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition ring-2 ring-amber-500/50">
+                            <div class="group relative rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition ring-2 ring-amber-500/50 bg-gradient-to-br from-amber-900/40 to-amber-950/60">
                                 <!-- Poster Image -->
                                 @if($item->kdrama->poster_path)
                                     <img src="https://image.tmdb.org/t/p/w342{{ $item->kdrama->poster_path }}"
                                          alt="{{ $item->kdrama->name }}"
                                          class="w-full h-auto object-cover group-hover:brightness-50 transition duration-300">
                                 @else
-                                    <div class="w-full aspect-[2/3] bg-slate-700 flex items-center justify-center">
+                                    <div class="w-full aspect-[2/3] bg-amber-900/50 flex items-center justify-center">
                                         <span class="text-4xl">📺</span>
                                     </div>
                                 @endif
 
                                 <!-- Playing Badge -->
-                                <div class="absolute top-2 right-2 bg-amber-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">
+                                <div class="absolute top-2 right-2 bg-white/15 backdrop-blur-lg shadow-lg text-white rounded-full w-9 h-9 flex items-center justify-center text-base font-bold hover:scale-110 transition-all duration-200">
                                     🎬
                                 </div>
 
@@ -222,7 +227,7 @@
                                 @endif
 
                                 <!-- Checkmark Badge -->
-                                <div class="absolute top-2 right-2 bg-green-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">
+                                <div class="absolute top-2 right-2 bg-green-400/60 backdrop-blur-xl shadow-lg text-white rounded-full w-9 h-9 flex items-center justify-center text-base font-bold hover:scale-110 transition-all duration-200">
                                     ✓
                                 </div>
 

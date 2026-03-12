@@ -875,31 +875,106 @@ Voici une liste des idées et améliorations envisagées pour les prochaines pha
 
 ---
 
-## ✅ Corrections Récentes (2026-03-12)
+## ✅ Corrections & Améliorations Récentes
 
-### 🐛 Fix: PDF Export "Watching" Filter
+### 🐛 2026-03-12: Deux Fixes Critiques
+
+#### 1. Fix: PDF Export "Watching" Filter
 **Problème:** Le modal d'export admin ne prenait pas en compte le filtre "En train de voir", affichant "EN COURS 0" au lieu de 12 items
+
+**Cause Racine:** AdminExportController manquait la validation `filters.watching`
+- Laravel silencieusement supprimait le filtre `watching`
+- Options contenait seulement watched + to_watch
+- PDF récupérait 33 items au lieu de 45
+- Stats affichaient: "TOTAL 33 REGARDÉS 19 EN COURS 0 À VOIR 14"
+
 **Solution:**
-- Ajout de la validation `'filters.watching' => 'sometimes|boolean'` dans AdminExportController
-- Extraction correcte du filtre: `'watching' => $request->boolean('filters.watching', true)`
-- Suppression des logs de debug inutiles dans WatchlistExportService
-- Alignement du endpoint admin avec le endpoint utilisateur
+- ✅ Ajout validation: `'filters.watching' => 'sometimes|boolean'`
+- ✅ Extraction du filtre: `'watching' => $request->boolean('filters.watching', true)`
+- ✅ Suppression logs debug de WatchlistExportService
+- ✅ Alignement du endpoint admin avec user endpoint
 
-**Impact:** Les exports PDF affichent maintenant correctement tous les items avec statut "En train de voir"
+**Commit:** `2ada0c3` - Fix: Add missing 'watching' filter to admin export endpoint
 
-### 🐛 Fix: Home Page Drama Links
-**Problème:** Les liens sur la page d'accueil utilisaient l'ID local au lieu du TMDB ID, menant vers de mauvais dramas
+#### 2. Fix: Home Page Drama Links
+**Problème:** Les liens sur la page d'accueil utilisaient l'ID local au lieu du TMDB ID
+
+**Cause Racine:** Deux sources de données différentes:
+- Featured depuis base de données → utilise `tmdb_id`
+- Newest/Upcoming depuis API TMDB → utilise `id`
+
 **Solution:**
-- Utilisation d'un fallback pour gérer les deux sources de données: `$item['tmdb_id'] ?? $item['id']`
-- Featured section: données depuis la base (tmdb_id)
-- Newest/Upcoming: données depuis l'API TMDB (id)
-- Correction des 3 sections: Featured, Newest Releases, Upcoming Releases
+- ✅ Fallback operator: `$item['tmdb_id'] ?? $item['id']`
+- ✅ Correction des 3 sections: Featured, Newest Releases, Upcoming Releases
+- ✅ Maintenant tous les liens utilisent le bon TMDB ID
 
-**Impact:** Cliquer sur un drama depuis la page d'accueil redirige maintenant vers le bon contenu
+**Commit:** `334cfe8` - Fix: Use correct ID field in home page drama links
 
-**Commits:**
-- `2ada0c3` - Fix: Add missing 'watching' filter to admin export endpoint
-- `334cfe8` - Fix: Use correct ID field in home page drama links
+---
+
+### ✨ 2026-03-10: Système d'Icônes Complet + Localisations + Force Password Change
+
+#### Complete Icon System Upgrade
+- ✅ **8,377 total icons** accessible: 5,021 Tabler + 3,356 Simple Icons
+- ✅ **Admin Icon Browser** (`/admin/icons`) avec:
+  - Recherche live sur tous les 8,377 icons
+  - Pagination: 100 icons + "Load More"
+  - Labels en bleu pour meilleure info
+  - Type badges (Tabler vs Simple Icons)
+  - Copy to clipboard avec préfixe `si-`
+  - Compteur dynamique recalculé depuis filesystem
+- ✅ **Fallback System:** Simple Icons manquants = Tabler fallback automatique
+- ✅ **Icon Picker Modal** avec recherche pour sélection icônes admin
+
+#### Actor Modal - Social Media Integration
+- ✅ **7 réseaux sociaux** intégrés:
+  - 📸 Instagram | 📘 Facebook | 𝕏 Twitter
+  - 🎵 TikTok | 📺 YouTube | 🎬 IMDb | 📚 Wikidata
+- ✅ **Traductions complètes** FR/EN/DE pour tous les labels
+- ✅ **URL generation** fixée avec Blade string concatenation
+- ✅ **Icônes professionnelles** depuis Simple Icons package
+
+#### Hero Title Placeholder
+- ✅ Changé de hardcoded "K-Dramas" à placeholder `{dramas}`
+- ✅ Injected dynamiquement avec `str_replace()` dans index.blade.php
+- ✅ Préserve styling gradient tout en restant translatable
+- ✅ Élimine duplication de texte
+
+#### Complete Laravel Localization (FR/EN/DE)
+- ✅ **3 langues complètes:** Français (défaut) | English | Deutsch
+- ✅ **9 fichiers traduction** par langue
+- ✅ **48+ clés admin-spécifiques**
+- ✅ **Language Switcher Footer:** 🇫🇷 FR | 🇬🇧 EN | 🇩🇪 DE
+- ✅ **Admin Sidebar Selector:** Changement instantané
+- ✅ **User Profile Preference:** Sauvegardé dans `user.preferred_language`
+- ✅ **Tous les admin pages traduits:** settings, users, author, icons, contact
+- ✅ **Primary Button** changé en `bg-red-600` pour meilleure visibilité
+- ✅ **Dropdown & Z-index fixes** pour layering correct
+
+#### Force Password Change System
+- ✅ **Admin Panel:** Bouton "🔑 Generate & Send New Password"
+  - Génère mot de passe temporaire sécurisé (12 chars)
+  - Envoi email automatique (PasswordResetMail)
+  - Set `password_must_change=true` flag
+- ✅ **Middleware Enforcement:** `CheckPasswordMustChange`
+  - S'applique à TOUS les routes
+  - Redirige vers `/change-password`
+  - Utilisateur DOIT changer avant accès
+- ✅ **Password Change Page:** `/change-password`
+  - Vérification password courant requise
+  - Affichage requirements force
+  - Confirmation password
+  - Clears flag et redirige
+- ✅ **Database:** Colonne `password_must_change` ajoutée
+- ✅ **Sidebar Integration:** Lien Telescope 🔍 sécurisé pour admins
+
+---
+
+### 🔄 2026-03-09: Netflix-style Rating + Admin Sidebar + Icon Picker
+
+1. ✅ **Rating System Consolidé** - watchlist_items.rating
+2. ✅ **Admin Sidebar Dropdowns** - localStorage persistence
+3. ✅ **Icon Picker Fixes** - event delegation + clipboard API
 
 ---
 

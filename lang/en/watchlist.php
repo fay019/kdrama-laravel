@@ -7,6 +7,8 @@ return [
     'filter_to_watch' => '⏳ To Watch',
     'filter_watching' => '🎬 Watching',
     'filter_watched' => '✅ Watched',
+    'all_statuses' => 'All statuses',
+    'filter_by_status' => 'Filter by status',
     'status_watched' => '✅ Watched',
     'status_to_watch' => '⏳ To Watch',
     'status_watching' => '🎬 Watching',

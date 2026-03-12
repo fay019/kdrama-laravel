@@ -10,6 +10,8 @@ return [
     'filter_to_watch' => '⏳ À regarder',
     'filter_watching' => '🎬 En cours',
     'filter_watched' => '✅ Regardés',
+    'all_statuses' => 'Tous les statuts',
+    'filter_by_status' => 'Filtrer par statut',
 
     // Status badges
     'status_watched' => '✅ Regardé',

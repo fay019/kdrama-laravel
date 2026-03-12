@@ -108,7 +108,7 @@
     }
 
     .content-grid {
-        @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-5;
+        @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5;
     }
 
     .recommendations-grid {

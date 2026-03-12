@@ -10,7 +10,7 @@
             <p class="text-slate-400">{{ count($items) }} {{ count($items) != 1 ? __('watchlist.js.drama_plural') : __('watchlist.js.drama_singular') }}</p>
         </div>
         @if(count($items) > 0)
-            <button onclick="openExportModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-lg transition shadow-lg">
+            <button onclick="openExportModal()" class="flex items-center gap-1 px-2 sm:px-6 py-1 sm:py-3 text-xs sm:text-base bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-lg transition shadow-lg">
                 {{ __('watchlist.export_button') }}
             </button>
         @endif
@@ -18,19 +18,32 @@
 
     @if(count($items) > 0)
         <!-- Filter Buttons -->
-        <div class="mb-8 flex gap-3 flex-wrap">
-            <button class="filter-btn active px-6 py-2 rounded-lg font-semibold transition" data-filter="all" id="filterAll">
-                {{ __('watchlist.filter_all') }} (<span id="countAll">{{ count($items) }}</span>)
-            </button>
-            <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="towatch" id="filterToWatch">
-                {{ __('watchlist.filter_to_watch') }} (<span id="countToWatch">{{ count($toWatch) }}</span>)
-            </button>
-            <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="watching" id="filterWatching">
-                {{ __('watchlist.filter_watching') }} (<span id="countWatching">{{ count($watching) }}</span>)
-            </button>
-            <button class="filter-btn px-6 py-2 rounded-lg font-semibold transition" data-filter="watched" id="filterWatched">
-                {{ __('watchlist.filter_watched') }} (<span id="countWatched">{{ count($watched) }}</span>)
-            </button>
+        <div class="mb-8 flex flex-col gap-4">
+            <!-- All Statuses Section -->
+            <div>
+                <p class="text-xs sm:text-sm text-slate-400 font-semibold mb-2 px-2">{{ __('watchlist.all_statuses') }}</p>
+                <div class="flex gap-1 sm:gap-3 flex-wrap">
+                    <button class="filter-btn active px-2 sm:px-6 py-1 sm:py-2 text-xs sm:text-base rounded-lg font-semibold transition" data-filter="all" id="filterAll">
+                        {{ __('watchlist.filter_all') }} (<span id="countAll">{{ count($items) }}</span>)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter by Status Section -->
+            <div>
+                <p class="text-xs sm:text-sm text-slate-400 font-semibold mb-2 px-2">{{ __('watchlist.filter_by_status') }}</p>
+                <div class="flex gap-1 sm:gap-3 flex-wrap">
+                    <button class="filter-btn px-2 sm:px-6 py-1 sm:py-2 text-xs sm:text-base rounded-lg font-semibold transition" data-filter="towatch" id="filterToWatch">
+                        {{ __('watchlist.filter_to_watch') }} (<span id="countToWatch">{{ count($toWatch) }}</span>)
+                    </button>
+                    <button class="filter-btn px-2 sm:px-6 py-1 sm:py-2 text-xs sm:text-base rounded-lg font-semibold transition" data-filter="watching" id="filterWatching">
+                        {{ __('watchlist.filter_watching') }} (<span id="countWatching">{{ count($watching) }}</span>)
+                    </button>
+                    <button class="filter-btn px-2 sm:px-6 py-1 sm:py-2 text-xs sm:text-base rounded-lg font-semibold transition" data-filter="watched" id="filterWatched">
+                        {{ __('watchlist.filter_watched') }} (<span id="countWatched">{{ count($watched) }}</span>)
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="content-grid" id="watchlistGrid">

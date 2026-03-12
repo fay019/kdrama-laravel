@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'title' => 'Merkliste',
+    'export_date' => 'Export vom',
+    'total' => 'Gesamt',
+    'to_watch' => 'Zum Anschauen',
+    'watching' => 'Wird angeschaut',
+    'watched' => 'Angeschaut',
+    'filters' => 'Filter',
+    'columns' => 'Spalten',
+    'sort' => 'Sortierung',
+    'status' => 'Status',
+    'rating' => 'Bewertung',
+    'year' => 'Jahr',
+    'vote_average' => 'TMDB Abstimmung',
+    'genres' => 'Genres',
+    'networks' => 'Networks',
+    'synopsis' => 'Zusammenfassung',
+    'page' => 'Seite',
+    'of' => 'von',
+    'status_watched' => 'Angeschaut',
+    'status_watching' => 'Wird angeschaut',
+    'status_to_watch' => 'Zum Anschauen',
+    'rating_1' => 'Nicht gut',
+    'rating_2' => 'Gut',
+    'rating_3' => 'Sehr gut',
+];

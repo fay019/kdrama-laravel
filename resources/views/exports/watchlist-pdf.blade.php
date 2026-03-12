@@ -241,21 +241,21 @@
             <!-- Header (page 1 only) -->
             @if($pageIndex === 0)
                 <div class="header">
-                    <h1>🍿 KDrama Hub - Watchlist</h1>
-                    <div class="subtitle">Export de {{ $user->name }} • {{ now()->format('d/m/Y H:i') }}</div>
+                    <h1>🍿 KDrama Hub - {{ __('pdf.title') }}</h1>
+                    <div class="subtitle">{{ __('pdf.export_date') }} {{ $user->name }} • {{ now()->format('d/m/Y H:i') }}</div>
                 </div>
 
                 <!-- Stats -->
                 <div class="stats-line">
-                    📊 <strong>Total: {{ $totalItems }}</strong> | 📺 <strong>A regarder: {{ $toWatchCount }}</strong> | 🎬 <strong>En cours: {{ $watchingCount }}</strong> | ✅ <strong>Regardes: {{ $watchedCount }}</strong>
+                    📊 <strong>{{ __('pdf.total') }}: {{ $totalItems }}</strong> | 📺 <strong>{{ __('pdf.to_watch') }}: {{ $toWatchCount }}</strong> | 🎬 <strong>{{ __('pdf.watching') }}: {{ $watchingCount }}</strong> | ✅ <strong>{{ __('pdf.watched') }}: {{ $watchedCount }}</strong>
                 </div>
 
                 <!-- Options -->
                 <div class="options-box">
-                    <div class="title">⚙️ Options selectionnees</div>
-                    <div class="option">• Filtres: {{ $displayOptions['filters'] }}</div>
-                    <div class="option">• Colonnes: {{ $displayOptions['columns'] }}</div>
-                    <div class="option">• Tri: {{ $displayOptions['sort'] }}</div>
+                    <div class="title">⚙️ Options selected</div>
+                    <div class="option">• {{ __('pdf.filters') }}: {{ $displayOptions['filters'] }}</div>
+                    <div class="option">• {{ __('pdf.columns') }}: {{ $displayOptions['columns'] }}</div>
+                    <div class="option">• {{ __('pdf.sort') }}: {{ $displayOptions['sort'] }}</div>
                 </div>
             @endif
 
@@ -277,18 +277,18 @@
 
                         $year = $item['first_air_date'] ? \Carbon\Carbon::parse($item['first_air_date'])->year : 'N/A';
                         if ($item['is_watched']) {
-                            $status = 'Vu';
+                            $status = __('pdf.status_watched');
                         } elseif ($item['is_watching'] ?? false) {
-                            $status = 'En cours';
+                            $status = __('pdf.status_watching');
                         } else {
-                            $status = 'A voir';
+                            $status = __('pdf.status_to_watch');
                         }
                         $rating = '';
                         if ($item['rating'] ?? false) {
                             $rating = match($item['rating']) {
-                                1 => 'Pas bien',
-                                2 => 'Bien',
-                                3 => 'Tres bien',
+                                1 => __('pdf.rating_1'),
+                                2 => __('pdf.rating_2'),
+                                3 => __('pdf.rating_3'),
                                 default => ''
                             };
                         }
@@ -300,8 +300,8 @@
                             <!-- Poster -->
                             @if(($selectedColumns['poster'] ?? false))
                                 <div class="item-poster">
-                                    @if($item['poster_base64'] ?? false)
-                                        <img src="{{ $item['poster_base64'] }}" alt="Poster" class="poster-img">
+                                    @if($item['poster_url'] ?? false)
+                                        <img src="{{ $item['poster_url'] }}" alt="Poster" class="poster-img">
                                     @else
                                         <div class="no-poster">-</div>
                                     @endif

@@ -4,8 +4,7 @@ namespace App\Services;
 
 use App\Models\WatchlistItem;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Http;
-use Spatie\Browsershot\Browsershot;
+use Mpdf\Mpdf;
 
 class WatchlistExportService
 {
@@ -87,6 +86,11 @@ class WatchlistExportService
     public function exportToPDF(int $userId, array $options = []): string
     {
         $user = \App\Models\User::findOrFail($userId);
+
+        // Get locale from options or use user's preferred language
+        $locale = $options['locale'] ?? ($user->preferred_language ?? 'fr');
+        app()->setLocale($locale);
+
         $items = $this->getFilteredWatchlist($userId, $options);
 
         // Calculer stats
@@ -114,13 +118,52 @@ class WatchlistExportService
             'selectedColumns' => $options['columns'] ?? [],
         ])->render();
 
-        // Utiliser Browsershot (Headless Chrome) pour générer le PDF
-        $pdf = Browsershot::html($html)
-            ->paperSize(210, 297) // A4 in mm
-            ->margins(10, 10, 10, 10)
-            ->pdf();
+        // Replace emojis with text for better PDF compatibility
+        $html = $this->replaceEmojisForPDF($html);
 
-        return $pdf;
+        // Utiliser mPDF pour générer le PDF (pur PHP, pas besoin de Node.js)
+        try {
+            $tempDir = storage_path('app/temp');
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+
+            $mpdf = new Mpdf([
+                'tempDir' => $tempDir,
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'margin_left' => 10,
+                'margin_right' => 10,
+                'margin_top' => 10,
+                'margin_bottom' => 10,
+                'default_font' => 'DejaVuSans',
+                'fontdata' => [
+                    'dejavusans' => [
+                        'R' => 'DejaVuSans.ttf',
+                        'B' => 'DejaVuSans-Bold.ttf',
+                    ],
+                ],
+            ]);
+
+            // Enable Unicode and symbols
+            $mpdf->useAdobeCJK = true;
+
+            // Write HTML in chunks to avoid pcre.backtrack_limit issues
+            $chunkSize = 500000; // 500KB chunks
+            $length = strlen($html);
+
+            for ($i = 0; $i < $length; $i += $chunkSize) {
+                $chunk = substr($html, $i, $chunkSize);
+                $mpdf->WriteHTML($chunk);
+            }
+
+            $pdf = $mpdf->Output('', 'S'); // Return as string
+
+            return $pdf;
+        } catch (\Exception $e) {
+            \Log::error("PDF generation failed: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
@@ -160,9 +203,9 @@ class WatchlistExportService
         $formatted = $items->map(function ($item) use ($columns) {
             $kdrama = $item->kdrama ? $item->kdrama->toArray() : [];
 
-            // Convertir poster en base64 si images sont activées
+            // Utiliser URL TMDB directement pour les images (mPDF gère mieux les URLs que base64)
             if (($columns['poster'] ?? false) && ($kdrama['poster_path'] ?? false)) {
-                $kdrama['poster_base64'] = $this->getPosterAsBase64($kdrama['poster_path']);
+                $kdrama['poster_url'] = "https://image.tmdb.org/t/p/w200{$kdrama['poster_path']}";
             }
 
             return array_merge($kdrama, [
@@ -180,25 +223,6 @@ class WatchlistExportService
         return $formatted;
     }
 
-    /**
-     * Get poster as base64
-     */
-    private function getPosterAsBase64(string $posterPath): string
-    {
-        try {
-            $url = "https://image.tmdb.org/t/p/w200{$posterPath}";
-            $response = Http::timeout(5)->get($url);
-
-            if ($response->successful()) {
-                $base64 = base64_encode($response->body());
-                return "data:image/jpeg;base64,{$base64}";
-            }
-        } catch (\Exception $e) {
-            // Retourner vide si erreur
-        }
-
-        return '';
-    }
 
     /**
      * Sort items by selected criteria
@@ -411,5 +435,38 @@ class WatchlistExportService
         $this->cachePDF($userId, $options, $pdf);
 
         return $pdf;
+    }
+
+    /**
+     * Replace emojis with text for PDF compatibility (mPDF doesn't support emojis well)
+     */
+    private function replaceEmojisForPDF(string $html): string
+    {
+        $emojiMap = [
+            '✅' => '[OK]',
+            '👎' => '[NOT OK]',
+            '👍' => '[OK]',
+            '👍👍' => '[VERY GOOD]',
+            '📅' => '[DATE]',
+            '⭐' => '[STAR]',
+            '📺' => '[TV]',
+            '👤' => '[USER]',
+            '🌟' => '[POPULAR]',
+            '🎬' => '[MOVIE]',
+            '📧' => '[EMAIL]',
+            '⚙' => '[SETTINGS]',
+            '🍿' => '[POPCORN]',
+            '🎭' => '[THEATER]',
+            '💭' => '[COMMENT]',
+            '📊' => '[STATS]',
+            '📌' => '[PIN]',
+            '📖' => '[BOOK]',
+            '📭' => '[MAILBOX]',
+            '️' => '', // Remove zero-width joiner
+        ];
+
+        $html = str_replace(array_keys($emojiMap), array_values($emojiMap), $html);
+
+        return $html;
     }
 }

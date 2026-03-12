@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'title' => 'Watchlist',
+    'export_date' => 'Export du',
+    'total' => 'Total',
+    'to_watch' => 'À regarder',
+    'watching' => 'En cours',
+    'watched' => 'Vu',
+    'filters' => 'Filtres',
+    'columns' => 'Colonnes',
+    'sort' => 'Tri',
+    'status' => 'Statut',
+    'rating' => 'Note',
+    'year' => 'Année',
+    'vote_average' => 'Vote TMDB',
+    'genres' => 'Genres',
+    'networks' => 'Networks',
+    'synopsis' => 'Synopsis',
+    'page' => 'Page',
+    'of' => 'de',
+    'status_watched' => 'Vu',
+    'status_watching' => 'En cours',
+    'status_to_watch' => 'À voir',
+    'rating_1' => 'Pas bien',
+    'rating_2' => 'Bien',
+    'rating_3' => 'Très bien',
+];

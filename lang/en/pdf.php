@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'title' => 'Watchlist',
+    'export_date' => 'Export from',
+    'total' => 'Total',
+    'to_watch' => 'To Watch',
+    'watching' => 'Watching',
+    'watched' => 'Watched',
+    'filters' => 'Filters',
+    'columns' => 'Columns',
+    'sort' => 'Sort',
+    'status' => 'Status',
+    'rating' => 'Rating',
+    'year' => 'Year',
+    'vote_average' => 'TMDB Vote',
+    'genres' => 'Genres',
+    'networks' => 'Networks',
+    'synopsis' => 'Synopsis',
+    'page' => 'Page',
+    'of' => 'of',
+    'status_watched' => 'Watched',
+    'status_watching' => 'Watching',
+    'status_to_watch' => 'To Watch',
+    'rating_1' => 'Not Good',
+    'rating_2' => 'Good',
+    'rating_3' => 'Very Good',
+];

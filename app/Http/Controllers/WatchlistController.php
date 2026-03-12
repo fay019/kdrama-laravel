@@ -362,6 +362,7 @@ class WatchlistController extends Controller
     {
         $validated = $request->validate([
             'format' => 'required|in:csv,pdf',
+            'locale' => 'sometimes|in:fr,en,de',
             'filters.watched' => 'sometimes|boolean',
             'filters.watching' => 'sometimes|boolean',
             'filters.to_watch' => 'sometimes|boolean',
@@ -376,6 +377,7 @@ class WatchlistController extends Controller
         $sendEmail = $validated['send_email'] ?? false;
 
         $options = [
+            'locale' => $validated['locale'] ?? auth()->user()->preferred_language ?? 'fr',
             'filters' => [
                 'watched' => $request->boolean('filters.watched', true),
                 'watching' => $request->boolean('filters.watching', true),

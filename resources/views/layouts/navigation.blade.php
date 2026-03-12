@@ -8,11 +8,11 @@
                     @php
                         $metadata = \App\Models\SiteMetadata::first();
                     @endphp
-                    <a href="{{ route('home') }}">
+                    <a href="{{ route('home') }}" class="hover:opacity-80 transition-opacity duration-200">
                         @if($metadata && $metadata->favicon_path)
-                            <img src="{{ asset('storage/' . $metadata->favicon_path) }}" alt="Logo" class="h-9 w-9 rounded-lg object-cover" />
+                            <img src="{{ asset('storage/' . $metadata->favicon_path) }}" alt="Logo" class="h-14 sm:h-14 lg:h-16 w-14 sm:w-14 lg:w-16 rounded-full object-cover shadow-lg" />
                         @else
-                            <x-application-logo class="block h-9 w-auto fill-current text-white" />
+                            <x-application-logo class="block h-14 sm:h-14 lg:h-16 w-auto fill-current text-white shadow-lg rounded-full" />
                         @endif
                     </a>
                 </div>

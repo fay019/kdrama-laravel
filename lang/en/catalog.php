@@ -32,6 +32,7 @@ return [
     'filter_all_years' => 'All',
 
     'filter_watched' => 'Hide watched',
+    'filter_watching' => 'Hide currently watching',
     'filter_watchlist' => 'Hide my watchlist',
     'filter_clear' => 'Reset',
     'filter_search_btn' => '🔍 Search',

@@ -32,6 +32,7 @@ return [
     'filter_all_years' => 'Toutes',
 
     'filter_watched' => 'Masquer les regardés',
+    'filter_watching' => 'Masquer en train de regarder',
     'filter_watchlist' => 'Masquer ma watchlist',
     'filter_clear' => 'Réinitialiser',
     'filter_search_btn' => '🔍 Rechercher',

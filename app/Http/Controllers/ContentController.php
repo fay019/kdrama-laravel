@@ -193,6 +193,7 @@ class ContentController extends Controller
             'actor' => $request->get('actor'),
             'actor_id' => $request->get('actor_id'),
             'hide_watched' => $request->boolean('hide_watched'),
+            'hide_watching' => $request->boolean('hide_watching'),
             'hide_watchlist' => $request->boolean('hide_watchlist'),
         ];
 
@@ -260,12 +261,13 @@ class ContentController extends Controller
             })->toArray();
 
             // Appliquer les filtres de masquage
-            if ($filters['hide_watched'] || $filters['hide_watchlist']) {
+            if ($filters['hide_watched'] || $filters['hide_watching'] || $filters['hide_watchlist']) {
                 $results['results'] = array_filter($results['results'], function ($item) use ($userStatus, $filters) {
                     $tmdbId = $item['id'] ?? null;
                     if (!$tmdbId || !isset($userStatus[$tmdbId])) return true;
 
                     if ($filters['hide_watched'] && $userStatus[$tmdbId]['is_watched']) return false;
+                    if ($filters['hide_watching'] && $userStatus[$tmdbId]['is_watching']) return false;
                     if ($filters['hide_watchlist'] && $userStatus[$tmdbId]['is_in_watchlist']) return false;
 
                     return true;
@@ -289,6 +291,8 @@ class ContentController extends Controller
                 'next_page' => $filters['page'] + 1,
                 'has_more' => ($filters['page'] < ($results['total_pages'] ?? 1)),
                 'total_results' => (int) ($results['total_results'] ?? 0),
+                'total_pages' => (int) ($results['total_pages'] ?? 1),
+                'current_page' => (int) $filters['page'],
                 'current_count' => count($results['results'] ?? [])
             ]);
         }

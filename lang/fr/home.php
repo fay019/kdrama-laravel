@@ -10,7 +10,11 @@ return [
     'hero_cta' => '📺 Parcourir le catalogue',
 
     // Featured section
-    'featured_title' => '🌟 Populaires en ce moment',
+    'featured_title' => 'Populaires en ce moment',
+    'featured_title_admin' => 'Recommandations de l\'admin',
+    'newest_releases_title' => 'Dernières sorties',
+    'upcoming_releases_title' => 'À venir prochainement',
+    'date_format' => 'd M Y',
     'no_image' => 'Pas d\'image',
 
     // No content

@@ -10,7 +10,11 @@ return [
     'hero_cta' => '📺 Browse Catalog',
 
     // Featured section
-    'featured_title' => '🌟 Popular Now',
+    'featured_title' => 'Popular Now',
+    'featured_title_admin' => 'Admin Recommendations',
+    'newest_releases_title' => 'Newest Releases',
+    'upcoming_releases_title' => 'Coming Soon',
+    'date_format' => 'M d, Y',
     'no_image' => 'No image',
 
     // No content

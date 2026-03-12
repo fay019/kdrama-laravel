@@ -22,16 +22,162 @@ class ContentController extends Controller
 
     public function index()
     {
-        // Afficher les K-Dramas populaires
-        $featured = $this->tmdbService->discoverAsianContent([
-            'origins' => ['KR'],
-            'sort' => 'popularity.desc',
-            'page' => 1
-        ]);
+        $featured = [];
+        $isAdminList = false;
+        $newest = [];
+
+        // Check if first admin has rated dramas
+        $firstAdmin = \App\Models\User::where('is_admin', true)->first();
+
+        if ($firstAdmin) {
+            // Get admin's rated dramas (with rating != null)
+            $ratedDramas = WatchlistItem::where('user_id', $firstAdmin->id)
+                ->whereNotNull('rating')
+                ->with('kdrama')
+                ->get()
+                ->pluck('kdrama')
+                ->filter();
+
+            // If admin has rated dramas, use them
+            if ($ratedDramas->isNotEmpty()) {
+                // Start with rated dramas, max 12 total
+                $itemsToDisplay = $ratedDramas->shuffle();
+
+                // If less than 12, add watching items
+                if ($itemsToDisplay->count() < 12) {
+                    $watchingDramas = WatchlistItem::where('user_id', $firstAdmin->id)
+                        ->where('is_watching', true)
+                        ->with('kdrama')
+                        ->get()
+                        ->pluck('kdrama')
+                        ->filter();
+
+                    $itemsToDisplay = $itemsToDisplay->merge($watchingDramas)->unique('tmdb_id')->shuffle();
+                }
+
+                // If still less than 12, add to_watch items
+                if ($itemsToDisplay->count() < 12) {
+                    $toWatchDramas = WatchlistItem::where('user_id', $firstAdmin->id)
+                        ->where('is_in_watchlist', true)
+                        ->where('is_watching', false)
+                        ->with('kdrama')
+                        ->get()
+                        ->pluck('kdrama')
+                        ->filter();
+
+                    $itemsToDisplay = $itemsToDisplay->merge($toWatchDramas)->unique('tmdb_id')->shuffle();
+                }
+
+                // Take max 12
+                $featured = $itemsToDisplay->take(12)->map(function($kdrama) {
+                    return $this->formatKdramaForDisplay($kdrama);
+                })->values()->toArray();
+
+                $isAdminList = true;
+            }
+        }
+
+        // If no admin dramas found, use API for featured
+        if (empty($featured)) {
+            $apiResult = $this->tmdbService->discoverAsianContent([
+                'origins' => ['KR'],
+                'sort' => 'popularity.desc',
+                'page' => 1
+            ]);
+            $featured = $apiResult['results'] ?? [];
+            $isAdminList = false;
+        }
+
+        // Get releases sorted by date (newest first)
+        // Fetch pages 1-2 to get enough results
+        $allReleases = [];
+        for ($page = 1; $page <= 2; $page++) {
+            $pageResult = $this->tmdbService->discoverAsianContent([
+                'origins' => ['KR'],
+                'sort' => 'first_air_date.desc',
+                'page' => $page
+            ]);
+            $allReleases = array_merge($allReleases, $pageResult['results'] ?? []);
+        }
+
+        // Get today's date for comparison
+        $today = \Carbon\Carbon::today();
+
+        // Separate into past and upcoming, filter by poster_path
+        $newest = [];
+        $upcoming = [];
+
+        foreach ($allReleases as $item) {
+            if (empty($item['poster_path'])) {
+                continue; // Skip items without images
+            }
+
+            $airDate = isset($item['first_air_date']) ? \Carbon\Carbon::parse($item['first_air_date']) : null;
+
+            if ($airDate && $airDate->lte($today)) {
+                // Past releases
+                $newest[] = $item;
+            } elseif ($airDate && $airDate->gt($today)) {
+                // Upcoming releases
+                $upcoming[] = $item;
+            }
+        }
+
+        // Limit to 8 items each
+        $newest = array_slice($newest, 0, 8);
+
+        // Sort upcoming by date ascending (closest first)
+        usort($upcoming, function($a, $b) {
+            $dateA = \Carbon\Carbon::parse($a['first_air_date']);
+            $dateB = \Carbon\Carbon::parse($b['first_air_date']);
+            return $dateA->getTimestamp() - $dateB->getTimestamp();
+        });
+        $upcoming = array_slice($upcoming, 0, 8);
 
         return view('index', [
-            'featured' => $featured['results'] ?? []
+            'featured' => $featured,
+            'isAdminList' => $isAdminList,
+            'newest' => $newest,
+            'upcoming' => $upcoming
         ]);
+    }
+
+    /**
+     * Format kdrama for display with language fallback
+     */
+    private function formatKdramaForDisplay($kdrama)
+    {
+        $locale = app()->getLocale();
+        $data = $kdrama->toArray();
+
+        // Set 'name' to localized version based on current locale with fallback
+        $data['name'] = $this->getLocalizedTitle($kdrama, $locale);
+
+        return $data;
+    }
+
+    /**
+     * Get localized title with fallback: current locale → EN → FR → original
+     */
+    private function getLocalizedTitle($kdrama, $locale)
+    {
+        // Prefer current locale
+        if ($locale === 'de' && !empty($kdrama->translations['de']['name'] ?? null)) {
+            return $kdrama->translations['de']['name'];
+        } elseif ($locale === 'en' && !empty($kdrama->en_name)) {
+            return $kdrama->en_name;
+        } elseif ($locale === 'fr' && !empty($kdrama->name)) {
+            return $kdrama->name;
+        }
+
+        // Fallback: EN → FR → original
+        if (!empty($kdrama->en_name)) {
+            return $kdrama->en_name;
+        }
+        if (!empty($kdrama->name)) {
+            return $kdrama->name;
+        }
+        return $kdrama->original_name ?? 'Unknown';
     }
 
     public function catalog(Request $request)

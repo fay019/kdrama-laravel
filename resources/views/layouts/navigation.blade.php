@@ -5,8 +5,15 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
+                    @php
+                        $metadata = \App\Models\SiteMetadata::first();
+                    @endphp
                     <a href="{{ route('home') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-white" />
+                        @if($metadata && $metadata->favicon_path)
+                            <img src="{{ asset('storage/' . $metadata->favicon_path) }}" alt="Logo" class="h-9 w-9 rounded-lg object-cover" />
+                        @else
+                            <x-application-logo class="block h-9 w-auto fill-current text-white" />
+                        @endif
                     </a>
                 </div>
 

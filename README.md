@@ -875,6 +875,34 @@ Voici une liste des idées et améliorations envisagées pour les prochaines pha
 
 ---
 
+## ✅ Corrections Récentes (2026-03-12)
+
+### 🐛 Fix: PDF Export "Watching" Filter
+**Problème:** Le modal d'export admin ne prenait pas en compte le filtre "En train de voir", affichant "EN COURS 0" au lieu de 12 items
+**Solution:**
+- Ajout de la validation `'filters.watching' => 'sometimes|boolean'` dans AdminExportController
+- Extraction correcte du filtre: `'watching' => $request->boolean('filters.watching', true)`
+- Suppression des logs de debug inutiles dans WatchlistExportService
+- Alignement du endpoint admin avec le endpoint utilisateur
+
+**Impact:** Les exports PDF affichent maintenant correctement tous les items avec statut "En train de voir"
+
+### 🐛 Fix: Home Page Drama Links
+**Problème:** Les liens sur la page d'accueil utilisaient l'ID local au lieu du TMDB ID, menant vers de mauvais dramas
+**Solution:**
+- Utilisation d'un fallback pour gérer les deux sources de données: `$item['tmdb_id'] ?? $item['id']`
+- Featured section: données depuis la base (tmdb_id)
+- Newest/Upcoming: données depuis l'API TMDB (id)
+- Correction des 3 sections: Featured, Newest Releases, Upcoming Releases
+
+**Impact:** Cliquer sur un drama depuis la page d'accueil redirige maintenant vers le bon contenu
+
+**Commits:**
+- `2ada0c3` - Fix: Add missing 'watching' filter to admin export endpoint
+- `334cfe8` - Fix: Use correct ID field in home page drama links
+
+---
+
 ## 🚀 TODO / Améliorations Futures (En Cours)
 - [ ] Tests de bout en bout avec Laravel Dusk
 - [ ] Recommandations basées sur les ratings

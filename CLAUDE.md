@@ -1,7 +1,7 @@
 # 🎬 KDrama Laravel - Documentation Complète
 
-**Date de mise à jour:** 2026-03-10
-**Dernier développement:** Simple Icons + Tabler Icons integration with fallback system + Icon picker modal with si- prefix support + Admin icon browser with pagination (5000+ icons) + Social links footer with dual-icon support
+**Date de mise à jour:** 2026-03-12
+**Dernier développement:** Fixed PDF export watching filter + Fixed home page drama links (tmdb_id vs id)
 
 ---
 
@@ -1345,6 +1345,43 @@ php artisan exports:cleanup
 | `resources/views/admin/contact/` | Contact management pages |
 | `database/migrations/` | All schema including ratings consolidation |
 | `.env` | Config API keys (TMDB_API_KEY, RAPIDAPI_KEY), DB, mail |
+
+---
+
+## 🔄 Recent Changes (2026-03-12)
+
+### Fixed PDF Export "Watching" Filter Issue
+- ✅ **Root Cause Found:** AdminExportController was missing `filters.watching` validation rule
+- ✅ **Impact:** Admin export modal showed "EN COURS 0" instead of 12 items with is_watching=true
+- ✅ **Fix Applied:**
+  - Added `'filters.watching' => 'sometimes|boolean'` to validation rules
+  - Added `'watching' => $request->boolean('filters.watching', true)` to filters array
+  - Removed debug logging from WatchlistExportService
+  - Now admin export aligns with user export endpoint which already had correct implementation
+
+**What was happening:**
+- Validation rules didn't include 'filters.watching'
+- Laravel silently stripped out the watching filter
+- Options array only contained watched + to_watch filters
+- PDF retrieved 33 items instead of 45 (missing 12 "watching" items)
+- Stats showed "TOTAL 33 REGARDÉS 19 EN COURS 0 À VOIR 14"
+
+**Commits:**
+- `2ada0c3` - Fix: Add missing 'watching' filter to admin export endpoint
+
+### Fixed Home Page Drama Links
+- ✅ **Issue:** Home page links were using local database `id` instead of TMDB ID
+- ✅ **Solution:** Use fallback operator to handle both data sources:
+  - Database data (featured from admin): uses `tmdb_id`
+  - API data (newest/upcoming): uses `id`
+  - Fixed all 3 sections: Featured, Newest Releases, Upcoming Releases
+  - Using `$item['tmdb_id'] ?? $item['id']` in route parameters
+
+**Files Modified:**
+- `resources/views/index.blade.php` - Updated 3 kdrams.show route links
+
+**Commits:**
+- `334cfe8` - Fix: Use correct ID field in home page drama links
 
 ---
 

@@ -9,15 +9,15 @@
 @if($hasData)
 <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
     <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-        🎬 Production & Diffusion
+        {{ __('show.production_diffusion') }}
     </h3>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Studios de Production -->
         @if(count($productionCompanies) > 0)
         <div>
-            <h4 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-                <span>🏢</span> Studios
+            <h4 class="text-sm font-semibold text-slate-300 mb-3">
+                {{ __('show.production_studios') }}
             </h4>
             <div class="space-y-2">
                 @foreach($productionCompanies as $company)
@@ -40,8 +40,8 @@
         <!-- Réseaux de Diffusion -->
         @if(count($networks) > 0)
         <div>
-            <h4 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-                <span>📡</span> Réseaux
+            <h4 class="text-sm font-semibold text-slate-300 mb-3">
+                {{ __('show.production_networks') }}
             </h4>
             <div class="space-y-3">
                 @foreach($networks as $network)

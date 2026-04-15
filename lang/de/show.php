@@ -17,6 +17,7 @@ return [
     // Info sections
     'air_date' => 'Ausstrahlungsdatum',
     'status' => 'Status',
+    'season' => 'Staffel',
     'seasons' => 'Staffeln',
     'episodes' => 'Episoden',
     'genres' => 'Genres',
@@ -37,6 +38,9 @@ return [
     'rating_bad' => '👎 Nicht gut',
     'rating_good' => '👍 Gut',
     'rating_excellent' => '👍👍 Hervorragend',
+    'rating_bad_title' => 'Nicht gut',
+    'rating_good_title' => 'Gut',
+    'rating_excellent_title' => 'Hervorragend',
     'rating_saved' => '✅ Bewertung gespeichert',
 
     // Messages
@@ -44,6 +48,12 @@ return [
     'removed_watchlist' => '❌ Aus Ihrer Watchlist entfernt',
     'marked_watched' => '✅ Als angesehen markiert',
     'marked_unwatched' => '🔄 Als nicht angesehen markiert',
+
+    // Cast
+    'cast' => 'Besetzung',
+    'character' => 'Charakter',
+    'show_full_cast' => 'Vollständige Besetzung anzeigen',
+    'collapse_cast' => 'Besetzung minimieren',
 
     // Actor Modal
     'actor_real_name' => 'Richtiger Name',
@@ -62,4 +72,24 @@ return [
     'social_youtube' => 'YouTube',
     'social_imdb' => 'IMDb',
     'social_wikidata' => 'Wikidata',
+
+    // Language Buttons
+    'lang_fr' => 'FR',
+    'lang_en' => 'EN',
+    'lang_de' => 'DE',
+
+    // Admin Actions
+    'admin_refresh_streaming' => 'Aktualisieren',
+
+    // Streaming Section
+    'watch_now_link' => 'JETZT ANSCHAUEN',
+    'streaming_not_available' => '💡 Obwohl derzeit nicht verfügbar, können Sie auf den Plattformen, die es produzieren, suchen:',
+    'streaming_search_platform' => 'Auf Plattform suchen',
+    'streaming_unavailable' => '🕵️ Derzeit auf offiziellen Plattformen nicht verfügbar',
+    'streaming_last_checked' => 'Zuletzt überprüft:',
+    'streaming_never_checked' => 'Noch keine Überprüfungen durchgeführt',
+
+    // Catalog Filters
+    'filter_toggle_active' => 'Aktiv',
+    'catalog_page_info' => 'Seite :current / :total — Anzeige von :count Ergebnissen aus :total gesamt',
 ];

@@ -9,6 +9,8 @@ return [
     // Filters
     'show_filters' => '🔍 Show search and filters',
     'hide_filters' => '❌ Hide filters',
+    'filters_basic' => '🔍 Essential Filters',
+    'filters_advanced' => '⚙️ Advanced Filters',
 
     // Filter Labels
     'filter_search' => 'Search',
@@ -41,4 +43,10 @@ return [
     'no_results' => 'No results found',
     'no_results_message' => 'Try with different search criteria',
     'results_count' => 'results found',
+
+    // Toggles
+    'filter_toggle_active' => 'Active',
+
+    // Pagination
+    'page_info' => 'Page :current / :total — Displaying :count results out of :total total',
 ];

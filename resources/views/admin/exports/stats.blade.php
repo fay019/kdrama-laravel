@@ -12,9 +12,9 @@
             <div class="px-3 sm:px-6 lg:px-8 py-4">
                 <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2 sm:gap-3">
                     <span class="text-3xl sm:text-4xl">📊</span>
-                    <span>Export Statistics</span>
+                    <span>{{ __('admin.exports_stats_title') }}</span>
                 </h1>
-                <p class="text-slate-400 mt-1">Monitor export usage and performance metrics</p>
+                <p class="text-slate-400 mt-1">{{ __('admin.exports_stats_subtitle') }}</p>
             </div>
         </div>
 
@@ -23,21 +23,21 @@
     <div class="w-full max-w-6xl mx-auto">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2">📊 Statistiques des Exports</h1>
-            <p class="text-slate-400">Analysez l'utilisation des exports et la performance du système</p>
+            <h1 class="text-3xl font-bold text-white mb-2">{{ __('admin.exports_stats_header') }}</h1>
+            <p class="text-slate-400">{{ __('admin.exports_stats_subtitle') }}</p>
         </div>
 
         <!-- Date Filter -->
         <div class="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-8">
             <form method="GET" action="{{ route('admin.exports.stats') }}" class="flex items-center gap-4">
-                <label for="days" class="text-slate-300 font-semibold">Afficher les 30 derniers jours:</label>
-                <select name="days" id="days" class="bg-slate-700 text-white px-4 py-2 rounded-lg border border-slate-600">
-                    <option value="7" @selected($days == 7)>7 jours</option>
-                    <option value="30" @selected($days == 30)>30 jours</option>
-                    <option value="90" @selected($days == 90)>90 jours</option>
+                <label for="days" class="text-slate-300 font-semibold">{{ __('admin.exports_stats_filter_label') }} <span id="daysLabel">30</span> {{ __('admin.exports_stats_filter_days') }}</label>
+                <select name="days" id="days" class="bg-slate-700 text-white px-4 py-2 rounded-lg border border-slate-600" onchange="document.getElementById('daysLabel').textContent = this.value">
+                    <option value="7" @selected($days == 7)>7</option>
+                    <option value="30" @selected($days == 30)>30</option>
+                    <option value="90" @selected($days == 90)>90</option>
                 </select>
                 <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
-                    Filtrer
+                    {{ __('admin.exports_stats_filter_btn') }}
                 </button>
             </form>
         </div>
@@ -45,28 +45,28 @@
         <!-- Main Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div class="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <p class="text-slate-400 text-sm mb-2">Total des exports</p>
+                <p class="text-slate-400 text-sm mb-2">{{ __('admin.exports_stats_total') }}</p>
                 <p class="text-3xl font-bold text-white">{{ $totalExports }}</p>
-                <p class="text-slate-500 text-xs mt-2">tous formats confondus</p>
+                <p class="text-slate-500 text-xs mt-2">{{ __('admin.exports_stats_all_formats') }}</p>
             </div>
             <div class="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <p class="text-slate-400 text-sm mb-2">Formats</p>
+                <p class="text-slate-400 text-sm mb-2">{{ __('admin.exports_stats_formats') }}</p>
                 <div class="space-y-1">
-                    <p class="text-white">📄 PDF: <span class="font-bold">{{ $pdfExports }}</span></p>
-                    <p class="text-white">📋 CSV: <span class="font-bold">{{ $csvExports }}</span></p>
+                    <p class="text-white">{{ __('admin.exports_stats_pdf') }} <span class="font-bold">{{ $pdfExports }}</span></p>
+                    <p class="text-white">{{ __('admin.exports_stats_csv') }} <span class="font-bold">{{ $csvExports }}</span></p>
                 </div>
             </div>
             <div class="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <p class="text-slate-400 text-sm mb-2">Cache</p>
+                <p class="text-slate-400 text-sm mb-2">{{ __('admin.exports_stats_cache_title') }}</p>
                 <div class="space-y-1">
-                    <p class="text-white">✅ Cachés: <span class="font-bold">{{ $cachedExports }}</span></p>
+                    <p class="text-white">{{ __('admin.exports_stats_cached') }} <span class="font-bold">{{ $cachedExports }}</span></p>
                     <p class="text-slate-300 text-xs">
                         ({{ $totalExports > 0 ? round(($cachedExports / $totalExports) * 100) : 0 }}%)
                     </p>
                 </div>
             </div>
             <div class="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <p class="text-slate-400 text-sm mb-2">Espace disque utilisé</p>
+                <p class="text-slate-400 text-sm mb-2">{{ __('admin.exports_stats_disk_space') }}</p>
                 <p class="text-3xl font-bold text-white">{{ $totalDiskSizeMb }} MB</p>
             </div>
         </div>
@@ -74,20 +74,20 @@
         <!-- Performance Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <div class="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <h3 class="text-lg font-semibold text-white mb-4">⚡ Temps de génération</h3>
+                <h3 class="text-lg font-semibold text-white mb-4">{{ __('admin.exports_stats_generation_time') }}</h3>
                 <div class="space-y-3">
                     <div>
-                        <p class="text-slate-400 text-sm">Non-cachés (moyenne)</p>
+                        <p class="text-slate-400 text-sm">{{ __('admin.exports_stats_not_cached') }}</p>
                         <p class="text-2xl font-bold text-white">{{ $avgTimeNotCached }}ms</p>
                     </div>
                     <div>
-                        <p class="text-slate-400 text-sm">Cachés (moyenne)</p>
+                        <p class="text-slate-400 text-sm">{{ __('admin.exports_stats_cached_time') }}</p>
                         <p class="text-2xl font-bold text-green-400">{{ $avgTimeCached }}ms</p>
                     </div>
                     @if($avgTimeNotCached > 0 && $avgTimeCached > 0)
                         <div class="pt-2 border-t border-slate-700">
                             <p class="text-slate-300 text-xs">
-                                💨 Gain de cache: <span class="font-bold">{{ round((($avgTimeNotCached - $avgTimeCached) / $avgTimeNotCached) * 100) }}%</span>
+                                {{ __('admin.exports_stats_cache_gain') }} <span class="font-bold">{{ round((($avgTimeNotCached - $avgTimeCached) / $avgTimeNotCached) * 100) }}%</span>
                             </p>
                         </div>
                     @endif
@@ -95,7 +95,7 @@
             </div>
 
             <div class="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <h3 class="text-lg font-semibold text-white mb-4">👥 Top 5 utilisateurs</h3>
+                <h3 class="text-lg font-semibold text-white mb-4">{{ __('admin.exports_stats_top_users') }}</h3>
                 @if(count($topUsers) > 0)
                     <div class="space-y-3">
                         @foreach($topUsers as $index => $user)
@@ -105,26 +105,26 @@
                                         {{ $index + 1 }}
                                     </span>
                                     <div>
-                                        <p class="text-white font-semibold">{{ $user->user->name ?? 'Utilisateur supprimé' }}</p>
+                                        <p class="text-white font-semibold">{{ $user->user->name ?? __('admin.exports_stats_deleted_user') }}</p>
                                         <p class="text-slate-400 text-xs">{{ $user->user->email ?? '' }}</p>
                                     </div>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-white font-bold">{{ $user->export_count }}</p>
-                                    <p class="text-slate-400 text-xs">exports</p>
+                                    <p class="text-slate-400 text-xs">{{ __('admin.exports_stats_user_exports') }}</p>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <p class="text-slate-400 text-sm">Aucune donnée disponible</p>
+                    <p class="text-slate-400 text-sm">{{ __('admin.exports_stats_no_data') }}</p>
                 @endif
             </div>
         </div>
 
         <!-- Daily Chart Data -->
         <div class="bg-slate-800 rounded-lg p-6 border border-slate-700">
-            <h3 class="text-lg font-semibold text-white mb-6">📈 Exports par jour</h3>
+            <h3 class="text-lg font-semibold text-white mb-6">{{ __('admin.exports_stats_per_day') }}</h3>
             @if(count($exportsPerDay) > 0)
                 <div class="space-y-3">
                     @foreach($exportsPerDay as $day)
@@ -154,7 +154,7 @@
                     @endforeach
                 </div>
             @else
-                <p class="text-slate-400 text-center py-8">Aucun export durant cette période</p>
+                <p class="text-slate-400 text-center py-8">{{ __('admin.exports_stats_no_exports') }}</p>
             @endif
         </div>
         </div>

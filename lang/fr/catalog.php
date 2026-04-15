@@ -9,6 +9,8 @@ return [
     // Filters
     'show_filters' => '🔍 Afficher la recherche et les filtres',
     'hide_filters' => '❌ Masquer les filtres',
+    'filters_basic' => '🔍 Filtres essentiels',
+    'filters_advanced' => '⚙️ Filtres avancés',
 
     // Filter Labels
     'filter_search' => 'Recherche',
@@ -41,4 +43,10 @@ return [
     'no_results' => 'Aucun résultat trouvé',
     'no_results_message' => 'Essayez avec d\'autres critères de recherche',
     'results_count' => 'résultats trouvés',
+
+    // Toggles
+    'filter_toggle_active' => 'Actif',
+
+    // Pagination
+    'page_info' => 'Page :current / :total — Affichage de :count résultats sur :total total',
 ];

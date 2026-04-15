@@ -296,7 +296,7 @@
                             <!-- Genres -->
                             @if(!empty($selectedColumns['genres']) && $genresStr)
                                 <div class="genres">
-                                    <strong>Genres:</strong> <span class="genre-tag">{{ $genresStr }}</span>
+                                    <strong>{{ __('pdf.genres') }}:</strong> <span class="genre-tag">{{ $genresStr }}</span>
                                 </div>
                             @endif
 

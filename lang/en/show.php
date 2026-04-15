@@ -17,6 +17,7 @@ return [
     // Info sections
     'air_date' => 'Air date',
     'status' => 'Status',
+    'season' => 'season',
     'seasons' => 'Seasons',
     'episodes' => 'Episodes',
     'genres' => 'Genres',
@@ -37,6 +38,9 @@ return [
     'rating_bad' => '👎 Not good',
     'rating_good' => '👍 Good',
     'rating_excellent' => '👍👍 Excellent',
+    'rating_bad_title' => 'Not good',
+    'rating_good_title' => 'Good',
+    'rating_excellent_title' => 'Excellent',
     'rating_saved' => '✅ Rating saved',
 
     // Messages
@@ -44,6 +48,12 @@ return [
     'removed_watchlist' => '❌ Removed from your watchlist',
     'marked_watched' => '✅ Marked as watched',
     'marked_unwatched' => '🔄 Marked as unwatched',
+
+    // Cast
+    'cast' => 'Cast',
+    'character' => 'Character',
+    'show_full_cast' => 'View full cast',
+    'collapse_cast' => 'Collapse cast',
 
     // Actor Modal
     'actor_real_name' => 'Real Name',
@@ -62,4 +72,24 @@ return [
     'social_youtube' => 'YouTube',
     'social_imdb' => 'IMDb',
     'social_wikidata' => 'Wikidata',
+
+    // Language Buttons
+    'lang_fr' => 'FR',
+    'lang_en' => 'EN',
+    'lang_de' => 'DE',
+
+    // Admin Actions
+    'admin_refresh_streaming' => 'Refresh',
+
+    // Streaming Section
+    'watch_now_link' => 'WATCH NOW',
+    'streaming_not_available' => '💡 Although currently unavailable, you can search on the platforms that produce it:',
+    'streaming_search_platform' => 'Search on platform',
+    'streaming_unavailable' => '🕵️ Unavailable on official platforms currently',
+    'streaming_last_checked' => 'Last checked:',
+    'streaming_never_checked' => 'No checks performed yet',
+
+    // Catalog Filters
+    'filter_toggle_active' => 'Active',
+    'catalog_page_info' => 'Page :current / :total — Displaying :count results out of :total total',
 ];

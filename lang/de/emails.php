@@ -44,4 +44,20 @@ return [
         'automated_notice' => 'Dies ist eine automatische Nachricht. Bitte antworten Sie nicht auf diese E-Mail.',
         'copyright' => 'KDrama Hub © :year - Alle Rechte vorbehalten',
     ],
+
+    'contact' => [
+        'tab_title' => 'Neue Kontaktnachricht',
+        'header_title' => '📧 Neue Kontaktnachricht',
+        'intro' => 'Sie haben eine neue Nachricht über das Kontaktformular auf der KDrama Hub-Website erhalten.',
+        'sender_info_title' => '👤 Absenderinformationen',
+        'sender_name' => 'Name:',
+        'sender_email' => 'Email:',
+        'subject_title' => '📌 Betreff',
+        'message_title' => '💬 Nachricht',
+        'reply_text' => 'Um zu antworten: Klicken Sie auf',
+        'reply_link' => 'Per E-Mail antworten',
+        'reply_or' => 'oder verwenden Sie die Adresse',
+        'footer_notice' => 'Automatische Nachricht - KDrama Hub',
+        'footer_warning' => 'Antworten Sie nicht auf diese E-Mail. Verwenden Sie die Funktion "Antworten" Ihres E-Mail-Clients.',
+    ],
 ];

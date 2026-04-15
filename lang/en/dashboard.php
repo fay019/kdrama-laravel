@@ -18,7 +18,11 @@ return [
     'empty_ratings' => 'You haven\'t rated any K-Dramas yet',
     'see_catalog' => 'See catalog →',
     'discover_and_rate' => 'Discover and rate K-Dramas',
+    'rating_bad' => 'Not good',
+    'rating_good' => 'Good',
+    'rating_very_good' => 'Very good',
     'btn_view' => 'View',
+    'btn_discover' => 'Discover',
     'js' => [
         'removed_watched' => '❌ Removed from watched',
         'error_delete' => 'Error deleting',

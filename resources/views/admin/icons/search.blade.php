@@ -259,7 +259,7 @@ function loadMoreIcons() {
         console.error('Load error:', error);
         button.disabled = false;
         button.innerHTML = '📥 Charger plus';
-        showToast('❌ Erreur lors du chargement', 'error');
+        showToast('❌ {{ __('errors.error_loading') }}', 'error');
     });
 }
 

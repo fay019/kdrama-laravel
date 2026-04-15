@@ -38,4 +38,14 @@ return [
     'language_french' => 'Français',
     'language_english' => 'English',
     'language_german' => 'Deutsch',
+
+    // Footer
+    'footer_quick_links' => 'Schnelllinks',
+    'footer_home' => 'Startseite',
+    'footer_catalog' => 'Katalog',
+    'footer_watchlist' => 'Merkliste',
+    'footer_dashboard' => 'Dashboard',
+    'footer_connect' => 'Verbinden',
+    'footer_coming_soon' => 'Bald verfügbar...',
+    'footer_created_by' => 'Erstellt mit ❤️ von',
 ];

@@ -4,7 +4,7 @@
     <div class="p-6 border-b border-slate-700 flex-shrink-0">
         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 text-white font-bold text-lg hover:text-red-400 transition">
             <span class="text-2xl">⚙️</span>
-            <span>Admin Panel</span>
+            <span>{{ __('admin.sidebar_admin_panel') }}</span>
         </a>
     </div>
 
@@ -213,7 +213,7 @@
         <div class="p-6 border-b border-slate-700">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 text-white font-bold text-lg">
                 <span class="text-2xl">⚙️</span>
-                <span>Admin</span>
+                <span>{{ __('admin.section_admin') }}</span>
             </a>
         </div>
 

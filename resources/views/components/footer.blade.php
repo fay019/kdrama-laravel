@@ -14,27 +14,27 @@
                 </p>
                 @if($metadata?->author_name)
                     <p class="text-slate-500 text-xs">
-                        Created with ❤️ by {{ $metadata->author_name }}
+                        {{ __('common.footer_created_by') }} {{ $metadata->author_name }}
                     </p>
                 @endif
             </div>
 
             <!-- Quick Links -->
             <div>
-                <h3 class="text-lg font-semibold text-white mb-4">Quick Links</h3>
+                <h3 class="text-lg font-semibold text-white mb-4">{{ __('common.footer_quick_links') }}</h3>
                 <ul class="space-y-2 text-sm">
                     <li>
-                        <a href="{{ route('home') }}" class="text-slate-400 hover:text-white transition">Home</a>
+                        <a href="{{ route('home') }}" class="text-slate-400 hover:text-white transition">{{ __('common.footer_home') }}</a>
                     </li>
                     <li>
-                        <a href="{{ route('kdrams.catalog') }}" class="text-slate-400 hover:text-white transition">Catalog</a>
+                        <a href="{{ route('kdrams.catalog') }}" class="text-slate-400 hover:text-white transition">{{ __('common.footer_catalog') }}</a>
                     </li>
                     @auth
                         <li>
-                            <a href="{{ route('watchlist.index') }}" class="text-slate-400 hover:text-white transition">Watchlist</a>
+                            <a href="{{ route('watchlist.index') }}" class="text-slate-400 hover:text-white transition">{{ __('common.footer_watchlist') }}</a>
                         </li>
                         <li>
-                            <a href="{{ route('dashboard') }}" class="text-slate-400 hover:text-white transition">Dashboard</a>
+                            <a href="{{ route('dashboard') }}" class="text-slate-400 hover:text-white transition">{{ __('common.footer_dashboard') }}</a>
                         </li>
                     @endauth
                 </ul>
@@ -42,7 +42,7 @@
 
             <!-- Social Links -->
             <div>
-                <h3 class="text-lg font-semibold text-white mb-4">Connect</h3>
+                <h3 class="text-lg font-semibold text-white mb-4">{{ __('common.footer_connect') }}</h3>
                 @if($socialLinks->count() > 0)
                     <div class="flex gap-4">
                         @foreach($socialLinks as $link)
@@ -83,7 +83,7 @@
                         @endforeach
                     </div>
                 @else
-                    <p class="text-slate-500 text-sm">Coming soon...</p>
+                    <p class="text-slate-500 text-sm">{{ __('common.footer_coming_soon') }}</p>
                 @endif
             </div>
         </div>

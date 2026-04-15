@@ -12,9 +12,9 @@
             <div class="px-3 sm:px-6 lg:px-8 py-4">
                 <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2 sm:gap-3">
                     <span class="text-3xl sm:text-4xl">📦</span>
-                    <span>Cache Management</span>
+                    <span>{{ __('admin.exports_cache_title') }}</span>
                 </h1>
-                <p class="text-slate-400 mt-1">Manage and clean up PDF export files</p>
+                <p class="text-slate-400 mt-1">{{ __('admin.exports_cache_subtitle') }}</p>
             </div>
         </div>
 
@@ -23,8 +23,8 @@
     <div class="w-full max-w-6xl mx-auto">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2">📦 Gestion du Cache PDF</h1>
-            <p class="text-slate-400">Gérez les fichiers PDF en cache et libérez de l'espace disque</p>
+            <h1 class="text-3xl font-bold text-white mb-2">{{ __('admin.exports_cache_header') }}</h1>
+            <p class="text-slate-400">{{ __('admin.exports_cache_description') }}</p>
         </div>
 
         <!-- Stats Cards -->
@@ -32,7 +32,7 @@
             <div class="bg-slate-800 rounded-lg p-6 border border-slate-700">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-slate-400 text-sm mb-1">Fichiers en cache</p>
+                        <p class="text-slate-400 text-sm mb-1">{{ __('admin.exports_cache_files_label') }}</p>
                         <p class="text-3xl font-bold text-white">{{ $fileCount }}</p>
                     </div>
                     <div class="text-4xl">📄</div>
@@ -41,7 +41,7 @@
             <div class="bg-slate-800 rounded-lg p-6 border border-slate-700">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-slate-400 text-sm mb-1">Espace utilisé</p>
+                        <p class="text-slate-400 text-sm mb-1">{{ __('admin.exports_cache_space_label') }}</p>
                         <p class="text-3xl font-bold text-white">{{ $totalSizeMb }} MB</p>
                     </div>
                     <div class="text-4xl">💾</div>
@@ -50,8 +50,8 @@
             <div class="bg-slate-800 rounded-lg p-6 border border-slate-700">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-slate-400 text-sm mb-1">Période de rétention</p>
-                        <p class="text-3xl font-bold text-white">7 jours</p>
+                        <p class="text-slate-400 text-sm mb-1">{{ __('admin.exports_cache_retention_label') }}</p>
+                        <p class="text-3xl font-bold text-white">{{ __('admin.exports_cache_retention_value') }}</p>
                     </div>
                     <div class="text-4xl">⏰</div>
                 </div>
@@ -60,22 +60,22 @@
 
         <!-- Action Buttons -->
         <div class="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-8">
-            <h2 class="text-lg font-semibold text-white mb-4">Actions</h2>
+            <h2 class="text-lg font-semibold text-white mb-4">{{ __('admin.exports_cache_actions_title') }}</h2>
             <div class="flex flex-wrap gap-3">
                 <form method="POST" action="{{ route('admin.exports.cache.purge-all') }}" class="inline">
                     @csrf
                     <button type="submit"
-                            onclick="return confirm('⚠️ Êtes-vous sûr? Cela supprimera TOUS les fichiers en cache.')"
+                            onclick="return confirm('{{ __('admin.exports_cache_delete_all_confirm') }}')"
                             class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition">
-                        🗑️ Supprimer tout le cache
+                        {{ __('admin.exports_cache_delete_all_btn') }}
                     </button>
                 </form>
                 <form method="POST" action="{{ route('admin.exports.cache.purge-expired') }}" class="inline">
                     @csrf
                     <button type="submit"
-                            onclick="return confirm('Supprimer les fichiers expirés (> 7 jours)?')"
+                            onclick="return confirm('{{ __('admin.exports_cache_delete_expired_confirm') }}')"
                             class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold transition">
-                        ⏰ Supprimer fichiers expirés
+                        {{ __('admin.exports_cache_delete_expired_btn') }}
                     </button>
                 </form>
             </div>
@@ -87,11 +87,11 @@
                 <table class="w-full">
                     <thead class="bg-slate-700 border-b border-slate-600">
                         <tr>
-                            <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300">Nom du fichier</th>
-                            <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300">Taille</th>
-                            <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300">Créé le</th>
-                            <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300">Statut</th>
-                            <th class="px-6 py-3 text-right text-sm font-semibold text-slate-300">Actions</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300">{{ __('admin.exports_cache_table_name') }}</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300">{{ __('admin.exports_cache_table_size') }}</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300">{{ __('admin.exports_cache_table_created') }}</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300">{{ __('admin.exports_cache_table_status') }}</th>
+                            <th class="px-6 py-3 text-right text-sm font-semibold text-slate-300">{{ __('admin.exports_cache_table_actions') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-700">
@@ -109,11 +109,11 @@
                                 <td class="px-6 py-4 text-sm">
                                     @if($file['is_expired'])
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-900/30 text-red-400">
-                                            ❌ Expiré
+                                            {{ __('admin.exports_cache_status_expired') }}
                                         </span>
                                     @else
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-900/30 text-green-400">
-                                            ✅ Actif ({{ $file['days_remaining'] }}j)
+                                            {{ __('admin.exports_cache_status_active') }} ({{ $file['days_remaining'] }}j)
                                         </span>
                                     @endif
                                 </td>
@@ -121,9 +121,9 @@
                                     <form method="POST" action="{{ route('admin.exports.cache.delete', $file['name']) }}" class="inline">
                                         @csrf
                                         <button type="submit"
-                                                onclick="return confirm('Supprimer ce fichier?')"
+                                                onclick="return confirm('{{ __('admin.exports_cache_delete_confirm') }}')"
                                                 class="text-red-400 hover:text-red-300 font-semibold transition">
-                                            🗑️ Supprimer
+                                            {{ __('admin.exports_cache_delete_btn') }}
                                         </button>
                                     </form>
                                 </td>
@@ -133,7 +133,7 @@
                 </table>
             @else
                 <div class="p-8 text-center">
-                    <p class="text-slate-400 text-lg">📭 Aucun fichier en cache pour le moment</p>
+                    <p class="text-slate-400 text-lg">{{ __('admin.exports_cache_empty') }}</p>
                 </div>
             @endif
         </div>

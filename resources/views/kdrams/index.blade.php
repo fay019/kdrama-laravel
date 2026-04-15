@@ -44,7 +44,7 @@
             <!-- Section 1: Basic Filters -->
             <div>
                 <h3 class="text-sm font-bold text-slate-200 mb-2 flex items-center gap-2">
-                    <span class="text-red-500">🔍</span> Filtres essentiels
+                    {{ __('catalog.filters_basic') }}
                 </h3>
                 <div class="grid grid-cols-1 gap-4 mb-5">
                     <!-- Recherche -->
@@ -89,7 +89,7 @@
             <!-- Section 2: Advanced Filters -->
             <div class="border-t border-slate-700/50 pt-4">
                 <h3 class="text-sm font-bold text-slate-200 mb-2 flex items-center gap-2">
-                    <span class="text-amber-500">⚙️</span> Filtres avancés
+                    {{ __('catalog.filters_advanced') }}
                 </h3>
                 <div class="grid grid-cols-1 gap-4">
                     <!-- Année De -->
@@ -125,7 +125,7 @@
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" name="hide_watched" value="1" {{ $filters['hide_watched'] ? 'checked' : '' }} class="sr-only peer">
                                 <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-green-500 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                <span class="ml-3 text-xs font-medium text-slate-400">Actif</span>
+                                <span class="ml-3 text-xs font-medium text-slate-400">{{ __('catalog.filter_toggle_active') }}</span>
                             </label>
                         </div>
 
@@ -135,7 +135,7 @@
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" name="hide_watching" value="1" {{ $filters['hide_watching'] ?? false ? 'checked' : '' }} class="sr-only peer">
                                 <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-amber-500 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                <span class="ml-3 text-xs font-medium text-slate-400">Actif</span>
+                                <span class="ml-3 text-xs font-medium text-slate-400">{{ __('catalog.filter_toggle_active') }}</span>
                             </label>
                         </div>
 
@@ -145,7 +145,7 @@
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" name="hide_watchlist" value="1" {{ $filters['hide_watchlist'] ? 'checked' : '' }} class="sr-only peer">
                                 <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-red-500 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                <span class="ml-3 text-xs font-medium text-slate-400">Actif</span>
+                                <span class="ml-3 text-xs font-medium text-slate-400">{{ __('catalog.filter_toggle_active') }}</span>
                             </label>
                         </div>
                     @endauth
@@ -165,8 +165,16 @@
                 @if(count($kdrams) > 0)
                     <div class="mb-6 flex items-center justify-between">
                         <p class="text-slate-400 text-sm">
-                            Page <span id="current-page-display" class="text-red-400 font-bold">{{ $current_page }}</span> / <span id="total-pages-display" class="text-red-400 font-bold">{{ $total_pages }}</span>
-                            — Affichage de <span id="current-count" class="text-red-400 font-bold">{{ count($kdrams) }}</span> résultats sur <span id="total-results-display" class="text-red-400 font-bold">{{ $total_results }}</span> total
+                            @php
+                                $pageInfo = str_replace(
+                                    [':current', ':total', ':count'],
+                                    [$current_page, $total_pages, count($kdrams)],
+                                    __('catalog.page_info')
+                                );
+                                // Also replace the second :total with total_results
+                                $pageInfo = str_replace(':total', $total_results, $pageInfo);
+                            @endphp
+                            {!! preg_replace('/(\d+)/', '<span class="text-red-400 font-bold">$1</span>', $pageInfo) !!}
                         </p>
                     </div>
 
@@ -615,7 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Erreur:', error);
                 this.disabled = false;
                 spinner.classList.add('hidden');
-                if (btnText) btnText.textContent = '❌ Erreur, réessayez';
+                if (btnText) btnText.textContent = '{{ __('errors.error_retry') }}';
             });
         });
     }

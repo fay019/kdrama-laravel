@@ -157,7 +157,7 @@
 
                         <!-- 🔍 SEO SETTINGS -->
                         <div class="mb-8">
-                            <h3 class="font-semibold text-lg text-white mb-4">🔍 SEO Settings</h3>
+                            <h3 class="font-semibold text-lg text-white mb-4">{{ __('admin.dashboard_seo_settings') }}</h3>
 
                             <div class="mb-4">
                                 <label class="block text-slate-200 font-semibold mb-2">Meta Description <span class="text-xs text-slate-400">(160 chars max)</span></label>

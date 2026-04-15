@@ -65,23 +65,23 @@
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[status]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-red-500 cursor-pointer">
-                            <span class="text-slate-200 group-hover:text-white transition">Statut</span>
+                            <span class="text-slate-200 group-hover:text-white transition">{{ __('export.col_status') }}</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[rating]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-red-500 cursor-pointer">
-                            <span class="text-slate-200 group-hover:text-white transition">⭐ Rating personnel</span>
+                            <span class="text-slate-200 group-hover:text-white transition">{{ __('export.col_rating') }}</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[year]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-red-500 cursor-pointer">
-                            <span class="text-slate-200 group-hover:text-white transition">📅 Année</span>
+                            <span class="text-slate-200 group-hover:text-white transition">{{ __('export.col_year') }}</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[vote_average]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-red-500 cursor-pointer">
-                            <span class="text-slate-200 group-hover:text-white transition">🎯 Vote TMDB</span>
+                            <span class="text-slate-200 group-hover:text-white transition">{{ __('export.col_vote') }}</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[genres]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-red-500 cursor-pointer">
-                            <span class="text-slate-200 group-hover:text-white transition">🎭 Genres</span>
+                            <span class="text-slate-200 group-hover:text-white transition">{{ __('export.col_genres') }}</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[synopsis]" value="1" class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-red-500 cursor-pointer">
@@ -311,7 +311,7 @@ document.getElementById('exportForm').addEventListener('submit', async (e) => {
     } catch (error) {
         console.error('Error:', error);
         hideExportSpinner();
-        showToast('❌ Erreur lors de l\'export', 'error');
+        showToast('❌ {{ __('errors.error_export') }}', 'error');
     }
 });
 

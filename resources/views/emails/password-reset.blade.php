@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset</title>
+    <title>{{ __('emails.password_reset.tab_title') }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -82,46 +82,46 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 Password Reset</h1>
+            <h1>{{ __('emails.password_reset.header_title') }}</h1>
         </div>
 
         <div class="content">
-            <p>Hi <strong>{{ $user->name }}</strong>,</p>
+            <p>{{ __('emails.password_reset.greeting', ['name' => $user->name]) }}</p>
 
-            <p>An administrator has reset your password for security purposes. Here is your new temporary password:</p>
+            <p>{{ __('emails.password_reset.intro') }}</p>
 
             <div class="password-box">
                 {{ $newPassword }}
             </div>
 
             <div class="instructions">
-                <h3>🔑 What You Need To Do:</h3>
+                <h3>{{ __('emails.password_reset.instructions_title') }}</h3>
                 <ol>
-                    <li>Log in to your account with the temporary password above</li>
-                    <li>You will be redirected to change your password</li>
-                    <li>Create a <span class="important">strong and unique password</span></li>
-                    <li>Confirm the new password</li>
-                    <li>You'll then have access to all features</li>
+                    <li>{{ __('emails.password_reset.step_1') }}</li>
+                    <li>{{ __('emails.password_reset.step_2') }}</li>
+                    <li>{{ __('emails.password_reset.step_3') }}</li>
+                    <li>{{ __('emails.password_reset.step_4') }}</li>
+                    <li>{{ __('emails.password_reset.step_5') }}</li>
                 </ol>
             </div>
 
-            <p><span class="important">⚠️ Important:</span></p>
+            <p><span class="important">{{ __('emails.password_reset.important_title') }}</span></p>
             <ul>
-                <li>This temporary password is valid for your next login only</li>
-                <li>You <strong>must change</strong> your password when prompted</li>
-                <li>Do not share this password with anyone</li>
-                <li>Keep this email secure or delete it after logging in</li>
+                <li>{{ __('emails.password_reset.warning_1') }}</li>
+                <li>{{ __('emails.password_reset.warning_2') }}</li>
+                <li>{{ __('emails.password_reset.warning_3') }}</li>
+                <li>{{ __('emails.password_reset.warning_4') }}</li>
             </ul>
 
-            <p>If you didn't request this password reset or have any questions, please contact the administrator immediately.</p>
+            <p>{{ __('emails.password_reset.contact_admin') }}</p>
 
-            <p>Best regards,<br>
-            The KDrama Hub Team 🎬</p>
+            <p>{{ __('emails.password_reset.regards') }}<br>
+            {{ __('emails.password_reset.team_name') }}</p>
         </div>
 
         <div class="footer">
-            <p>This is an automated message. Please do not reply to this email.</p>
-            <p>KDrama Hub © {{ date('Y') }} - All rights reserved</p>
+            <p>{{ __('emails.password_reset.automated_notice') }}</p>
+            <p>{{ __('emails.password_reset.copyright', ['year' => date('Y')]) }}</p>
         </div>
     </div>
 </body>

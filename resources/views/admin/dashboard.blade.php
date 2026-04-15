@@ -10,9 +10,9 @@
                 <div class="px-3 sm:px-6 lg:px-8 py-4">
                     <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2 sm:gap-3">
                         <span class="text-3xl sm:text-4xl">📊</span>
-                        <span>Admin Dashboard</span>
+                        <span>{{ __('admin.dashboard_title') }}</span>
                     </h1>
-                    <p class="text-slate-400 mt-1">Welcome back, {{ auth()->user()->name }}!</p>
+                    <p class="text-slate-400 mt-1">{{ __('admin.dashboard_welcome', ['name' => auth()->user()->name]) }}</p>
                 </div>
             </div>
 
@@ -25,10 +25,10 @@
                 <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 border border-blue-500/20 hover:border-blue-500/40 transition shadow-lg">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-blue-100 text-sm font-semibold mb-1">👥 Total Users</p>
+                            <p class="text-blue-100 text-sm font-semibold mb-1">{{ __('admin.dashboard_stats_users') }}</p>
                             <p class="text-4xl font-bold text-white">{{ $totalUsers }}</p>
                             <a href="{{ route('admin.users.index') }}" class="text-blue-200 hover:text-white text-sm font-semibold mt-3 inline-block transition">
-                                View All →
+                                {{ __('admin.dashboard_stats_users_view') }} →
                             </a>
                         </div>
                         <div class="text-6xl opacity-20">👥</div>
@@ -39,9 +39,9 @@
                 <div class="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-6 border border-purple-500/20 hover:border-purple-500/40 transition shadow-lg">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-purple-100 text-sm font-semibold mb-1">📺 Total Contents</p>
+                            <p class="text-purple-100 text-sm font-semibold mb-1">{{ __('admin.dashboard_stats_contents') }}</p>
                             <p class="text-4xl font-bold text-white">{{ $totalContents }}</p>
-                            <p class="text-purple-200 text-xs mt-3">KDramas in database</p>
+                            <p class="text-purple-200 text-xs mt-3">{{ __('admin.dashboard_stats_contents_desc') }}</p>
                         </div>
                         <div class="text-6xl opacity-20">📺</div>
                     </div>
@@ -51,9 +51,9 @@
                 <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 border border-green-500/20 hover:border-green-500/40 transition shadow-lg">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-green-100 text-sm font-semibold mb-1">🔄 RapidAPI Cache</p>
+                            <p class="text-green-100 text-sm font-semibold mb-1">{{ __('admin.dashboard_rapidapi_cache') }}</p>
                             <p class="text-2xl font-bold text-white">{{ $cacheDuration }}h</p>
-                            <p class="text-green-200 text-xs mt-3">Cache Duration</p>
+                            <p class="text-green-200 text-xs mt-3">{{ __('admin.dashboard_cache_duration') }}</p>
                         </div>
                         <div class="text-6xl opacity-20">🔄</div>
                     </div>
@@ -66,11 +66,11 @@
                 <div class="bg-slate-800 rounded-2xl p-8 border border-slate-700 hover:border-slate-600 transition shadow-lg">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="text-3xl sm:text-4xl">👥</span>
-                        <h3 class="text-2xl font-bold text-white">User Management</h3>
+                        <h3 class="text-2xl font-bold text-white">{{ __('admin.dashboard_user_management') }}</h3>
                     </div>
-                    <p class="text-slate-400 mb-6">Manage all users, view activities, and control access permissions</p>
+                    <p class="text-slate-400 mb-6">{{ __('admin.dashboard_user_management_desc') }}</p>
                     <a href="{{ route('admin.users.index') }}" class="inline-block px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition">
-                        Manage Users →
+                        {{ __('admin.dashboard_manage_users_btn') }}
                     </a>
                 </div>
 
@@ -78,11 +78,11 @@
                 <div class="bg-slate-800 rounded-2xl p-8 border border-slate-700 hover:border-slate-600 transition shadow-lg">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="text-3xl sm:text-4xl">⚙️</span>
-                        <h3 class="text-2xl font-bold text-white">Settings & Config</h3>
+                        <h3 class="text-2xl font-bold text-white">{{ __('admin.dashboard_settings_title') }}</h3>
                     </div>
-                    <p class="text-slate-400 mb-6">Configure system settings, API keys, and application preferences</p>
+                    <p class="text-slate-400 mb-6">{{ __('admin.dashboard_settings_desc') }}</p>
                     <a href="{{ route('admin.settings.index') }}" class="inline-block px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition">
-                        Edit Settings →
+                        {{ __('admin.dashboard_edit_settings_btn') }}
                     </a>
                 </div>
 
@@ -90,11 +90,11 @@
                 <div class="bg-slate-800 rounded-2xl p-8 border border-slate-700 hover:border-slate-600 transition shadow-lg">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="text-3xl sm:text-4xl">📝</span>
-                        <h3 class="text-2xl font-bold text-white">Author & SEO</h3>
+                        <h3 class="text-2xl font-bold text-white">{{ __('admin.dashboard_author_title') }}</h3>
                     </div>
-                    <p class="text-slate-400 mb-6">Manage author profile, social links, and SEO metadata</p>
+                    <p class="text-slate-400 mb-6">{{ __('admin.dashboard_author_desc') }}</p>
                     <a href="{{ route('admin.author.edit') }}" class="inline-block px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition">
-                        Edit Author →
+                        {{ __('admin.dashboard_edit_author_btn') }}
                     </a>
                 </div>
 
@@ -102,11 +102,11 @@
                 <div class="bg-slate-800 rounded-2xl p-8 border border-slate-700 hover:border-slate-600 transition shadow-lg">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="text-3xl sm:text-4xl">📧</span>
-                        <h3 class="text-2xl font-bold text-white">Messages</h3>
+                        <h3 class="text-2xl font-bold text-white">{{ __('admin.dashboard_messages_title') }}</h3>
                     </div>
-                    <p class="text-slate-400 mb-6">View and manage contact form submissions from visitors</p>
+                    <p class="text-slate-400 mb-6">{{ __('admin.dashboard_messages_desc') }}</p>
                     <a href="{{ route('admin.contact.index') }}" class="inline-block px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition">
-                        View Messages →
+                        {{ __('admin.dashboard_view_messages_btn') }}
                     </a>
                 </div>
 
@@ -114,11 +114,11 @@
                 <div class="bg-slate-800 rounded-2xl p-8 border border-slate-700 hover:border-slate-600 transition shadow-lg">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="text-3xl sm:text-4xl">📊</span>
-                        <h3 class="text-2xl font-bold text-white">Export Statistics</h3>
+                        <h3 class="text-2xl font-bold text-white">{{ __('admin.dashboard_export_stats_title') }}</h3>
                     </div>
-                    <p class="text-slate-400 mb-6">Monitor export usage, cache performance, and user analytics</p>
+                    <p class="text-slate-400 mb-6">{{ __('admin.dashboard_export_stats_desc') }}</p>
                     <a href="{{ route('admin.exports.stats') }}" class="inline-block px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition">
-                        View Stats →
+                        {{ __('admin.dashboard_view_stats_btn') }}
                     </a>
                 </div>
 
@@ -126,11 +126,11 @@
                 <div class="bg-slate-800 rounded-2xl p-8 border border-slate-700 hover:border-slate-600 transition shadow-lg">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="text-3xl sm:text-4xl">📦</span>
-                        <h3 class="text-2xl font-bold text-white">Cache Management</h3>
+                        <h3 class="text-2xl font-bold text-white">{{ __('admin.dashboard_cache_management_title') }}</h3>
                     </div>
-                    <p class="text-slate-400 mb-6">Manage PDF cache, monitor storage usage, and cleanup old files</p>
+                    <p class="text-slate-400 mb-6">{{ __('admin.dashboard_cache_management_desc') }}</p>
                     <a href="{{ route('admin.exports.cache') }}" class="inline-block px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition">
-                        Manage Cache →
+                        {{ __('admin.dashboard_manage_cache_btn') }}
                     </a>
                 </div>
             </div>
@@ -139,11 +139,11 @@
             <div class="bg-gradient-to-r from-amber-600 to-amber-700 rounded-2xl p-8 border border-amber-500/20 shadow-lg">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="text-4xl">📥</span>
-                    <h3 class="text-2xl font-bold text-white">Export Your Watchlist</h3>
+                    <h3 class="text-2xl font-bold text-white">{{ __('admin.dashboard_export_watchlist_title') }}</h3>
                 </div>
-                <p class="text-amber-100 mb-6">Download your personal watchlist with custom filters, columns, and format options</p>
+                <p class="text-amber-100 mb-6">{{ __('admin.dashboard_export_watchlist_desc') }}</p>
                 <button onclick="openAdminExportModal({{ auth()->id() }}, '{{ auth()->user()->name }}')" class="px-8 py-4 bg-white hover:bg-amber-50 text-amber-700 font-bold rounded-lg transition shadow-md">
-                    📥 Export with Options
+                    {{ __('admin.dashboard_export_watchlist_btn') }}
                 </button>
             </div>
         </div>

@@ -71,9 +71,9 @@
             <div class="flex justify-between items-start mb-2">
                 <h1 id="drama-title" class="text-4xl font-bold">{{ $kdrama['name'] ?? 'N/A' }}</h1>
                 <div class="flex gap-2">
-                    <button onclick="switchLang('fr')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-xs transition">FR</button>
-                    <button onclick="switchLang('en')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-xs transition">EN</button>
-                    <button onclick="switchLang('de')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-xs transition">DE</button>
+                    <button onclick="switchLang('fr')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-xs transition">{{ __('show.lang_fr') }}</button>
+                    <button onclick="switchLang('en')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-xs transition">{{ __('show.lang_en') }}</button>
+                    <button onclick="switchLang('de')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-xs transition">{{ __('show.lang_de') }}</button>
                 </div>
             </div>
 
@@ -94,7 +94,7 @@
                     @endif
                     <span>⭐ {{ $kdrama['vote_average'] ?? 'N/A' }}/10</span>
                     @if($kdrama['number_of_seasons'] ?? false)
-                        <span>{{ $kdrama['number_of_seasons'] }} saison(s)</span>
+                        <span>{{ $kdrama['number_of_seasons'] }} {{ \Illuminate\Support\Str::plural(__('show.season'), $kdrama['number_of_seasons']) }}</span>
                     @endif
                 </div>
 
@@ -104,13 +104,13 @@
                         @php
                             $currentRating = $userStatus?->rating ?? null;
                         @endphp
-                        <button data-rating="1" class="rating-btn px-2 py-2 rounded font-bold text-sm transition flex items-center justify-center {{ $currentRating === 1 ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-700 hover:bg-slate-600' }}" title="Pas bien">
+                        <button data-rating="1" class="rating-btn px-2 py-2 rounded font-bold text-sm transition flex items-center justify-center {{ $currentRating === 1 ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-700 hover:bg-slate-600' }}" title="{{ __('show.rating_bad_title') }}">
                             👎
                         </button>
-                        <button data-rating="2" class="rating-btn px-2 py-2 rounded font-bold text-sm transition flex items-center justify-center {{ $currentRating === 2 ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-700 hover:bg-slate-600' }}" title="Bien">
+                        <button data-rating="2" class="rating-btn px-2 py-2 rounded font-bold text-sm transition flex items-center justify-center {{ $currentRating === 2 ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-700 hover:bg-slate-600' }}" title="{{ __('show.rating_good_title') }}">
                             👍
                         </button>
-                        <button data-rating="3" class="rating-btn px-2 py-2 rounded font-bold text-sm transition flex items-center justify-center {{ $currentRating === 3 ? 'bg-purple-600 hover:bg-purple-700' : 'bg-slate-700 hover:bg-slate-600' }}" title="Très bien">
+                        <button data-rating="3" class="rating-btn px-2 py-2 rounded font-bold text-sm transition flex items-center justify-center {{ $currentRating === 3 ? 'bg-purple-600 hover:bg-purple-700' : 'bg-slate-700 hover:bg-slate-600' }}" title="{{ __('show.rating_excellent_title') }}">
                             👍👍
                         </button>
                     </div>
@@ -166,7 +166,7 @@
                             @csrf
                             <button type="submit" class="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1 group bg-slate-800/50 px-2 py-1 rounded border border-slate-700 hover:border-red-500/50">
                                 <span class="group-hover:rotate-180 transition-transform duration-500 inline-block">🔄</span>
-                                Mettre à jour
+                                {{ __('show.admin_refresh_streaming') }}
                             </button>
                         </form>
                     @endif
@@ -194,7 +194,7 @@
                                         @endif
                                     </div>
                                     <div class="mt-1 text-[10px] text-red-500 font-bold flex items-center gap-1">
-                                        VOIR MAINTENANT <span class="text-xs">→</span>
+                                        {{ __('show.watch_now_link') }} <span class="text-xs">→</span>
                                     </div>
                                 </div>
                             </a>
@@ -204,7 +204,7 @@
                     <!-- Fallback: Search links on production platforms -->
                     <div class="space-y-3">
                         <p class="text-slate-400 text-sm mb-4">
-                            💡 Bien que non disponible actuellement, vous pouvez chercher sur les plateformes qui la produisent :
+                            {{ __('show.streaming_not_available') }}
                         </p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             @foreach($streamingLinks as $link)
@@ -212,7 +212,7 @@
                                     <span class="text-2xl">{{ $link['icon'] }}</span>
                                     <div class="flex-grow">
                                         <div class="font-bold text-sm text-white group-hover:text-white transition">{{ $link['name'] }}</div>
-                                        <div class="text-[10px] text-slate-200">Chercher sur la plateforme</div>
+                                        <div class="text-[10px] text-slate-200">{{ __('show.streaming_search_platform') }}</div>
                                     </div>
                                     <span class="text-white group-hover:text-yellow-300 transition">→</span>
                                 </a>
@@ -222,13 +222,13 @@
                 @else
                     <div class="bg-slate-800/30 border border-dashed border-slate-700 rounded-xl p-6 text-center">
                         <p class="text-slate-500 text-sm italic">
-                            🕵️ Indisponible sur les plateformes officielles actuellement
+                            {{ __('show.streaming_unavailable') }}
                         </p>
                         <p class="text-[10px] text-slate-600 mt-1">
                             @if($streamingRecord && $streamingRecord->last_updated_at)
-                                (Dernière vérification : {{ $streamingRecord->last_updated_at->format('d/m/Y H:i') }})
+                                ({{ __('show.streaming_last_checked') }} {{ $streamingRecord->last_updated_at->format('d/m/Y H:i') }})
                             @else
-                                (Aucune vérification effectuée pour le moment)
+                                ({{ __('show.streaming_never_checked') }})
                             @endif
                         </p>
                     </div>
@@ -281,7 +281,7 @@
                         <h2 class="text-2xl font-bold">{{ __('show.cast') }}</h2>
                         @if(count($kdrama['credits']['cast']) > 12)
                             <button id="toggleCastBtn" onclick="toggleCast()" class="text-red-500 hover:text-red-400 text-sm font-bold transition">
-                                Voir toute la distribution ({{ count($kdrama['credits']['cast']) }})
+                                {{ __('show.show_full_cast') }} ({{ count($kdrama['credits']['cast']) }})
                             </button>
                         @endif
                     </div>
@@ -309,7 +309,7 @@
                                         <span class="text-slate-400 text-[10px] block">{{ $actor['name'] }}</span>
                                     @endif
                                 </div>
-                                <div class="text-slate-400 text-xs mt-1">Personnage: {{ $actor['character'] }}</div>
+                                <div class="text-slate-400 text-xs mt-1">{{ __('show.character') }}: {{ $actor['character'] }}</div>
                             </div>
                         @endforeach
                     </div>
@@ -398,6 +398,11 @@
 
 <script>
     const translations = @json($kdrama['translations'] ?? []);
+    const errorMessages = {
+        modifying: "{{ __('errors.error_modifying') }}",
+        rating: "{{ __('errors.error_rating') }}",
+        serverConnection: "{{ __('errors.error_modifying') }}"
+    };
 
     function switchLang(lang) {
         if (!translations[lang]) return;
@@ -427,7 +432,7 @@
         if (castItemsHidden.length > 0) {
             // Afficher tout
             document.querySelectorAll('.cast-item').forEach(item => item.classList.remove('hidden'));
-            btn.textContent = 'Réduire la distribution';
+            btn.textContent = "{{ __('show.collapse_cast') }}";
         } else {
             // Réduire
             const highlightActorId = {{ $highlight_actor ?? 'null' }};
@@ -444,7 +449,7 @@
                     }
                 }
             });
-            btn.textContent = 'Voir toute la distribution';
+            btn.textContent = "{{ __('show.show_full_cast') }}";
         }
     }
 
@@ -475,7 +480,7 @@
         } catch (error) {
             console.error("Détails de l'erreur actorDetails:", error);
             body.innerHTML = `<div class="text-center py-10 text-red-500">
-                <p class="font-bold">Erreur lors de la récupération des données de l'acteur.</p>
+                <p class="font-bold">{{ __('errors.error_loading_actor_data') }}</p>
                 <p class="text-xs mt-2 opacity-70">Détail: ${error.message}</p>
             </div>`;
             loader.classList.add('hidden');
@@ -576,7 +581,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 inWatchlist = wasInWatchlist;
                 inWatched = wasInWatched;
                 updateButtonStates();
-                const errorMsg = data.message || 'Erreur lors de la modification';
+                const errorMsg = data.message || errorMessages.modifying;
                 showToast(errorMsg, 'error');
             }
         } catch (error) {
@@ -585,7 +590,7 @@ document.addEventListener('DOMContentLoaded', function() {
             inWatchlist = wasInWatchlist;
             inWatched = wasInWatched;
             updateButtonStates();
-            showToast('Erreur de connexion au serveur', 'error');
+            showToast(errorMessages.serverConnection, 'error');
         } finally {
             watchlistBtn.disabled = false;
         }
@@ -633,7 +638,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 inWatched = wasInWatched;
                 inWatchlist = wasInWatchlist;
                 updateButtonStates();
-                const errorMsg = data.message || 'Erreur lors de la modification';
+                const errorMsg = data.message || errorMessages.modifying;
                 showToast(errorMsg, 'error');
             }
         } catch (error) {
@@ -686,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 inWatchlist = wasInWatchlist;
                 inWatched = wasInWatched;
                 updateButtonStates();
-                const errorMsg = data.message || 'Erreur lors de la modification';
+                const errorMsg = data.message || errorMessages.modifying;
                 showToast(errorMsg, 'error');
             }
         } catch (error) {
@@ -783,7 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateRatingButtonStates();
                     showToast(data.message, 'success');
                 } else {
-                    showToast(data.error || 'Erreur lors de la notation', 'error');
+                    showToast(data.error || errorMessages.rating, 'error');
                 }
             } catch (error) {
                 console.error('Erreur:', error);

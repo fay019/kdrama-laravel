@@ -19,7 +19,7 @@
             <!-- Header -->
             <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-6 sm:px-8">
                 <h3 class="text-2xl font-bold text-white flex items-center gap-3">
-                    <span>📥</span> Exporter la watchlist
+                    <span>📥</span> {{ __('export.modal_title') }}
                 </h3>
                 <p class="text-purple-100 text-sm mt-2" id="adminUserName">Utilisateur</p>
             </div>
@@ -53,7 +53,7 @@
                 <!-- Colonnes -->
                 <div>
                     <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <span>📋</span> Colonnes à inclure
+                        <span>📋</span> {{ __('export.section_columns') }}
                     </h4>
                     <div class="space-y-3 bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                         <label class="flex items-center gap-3 cursor-pointer group" id="adminPosterLabel">
@@ -66,23 +66,23 @@
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[status]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-purple-500 cursor-pointer">
-                            <span class="text-slate-200 group-hover:text-white transition">Statut</span>
+                            <span class="text-slate-200 group-hover:text-white transition">{{ __('export.col_status') }}</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[rating]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-purple-500 cursor-pointer">
-                            <span class="text-slate-200 group-hover:text-white transition">⭐ Rating personnel</span>
+                            <span class="text-slate-200 group-hover:text-white transition">{{ __('export.col_rating') }}</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[year]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-purple-500 cursor-pointer">
-                            <span class="text-slate-200 group-hover:text-white transition">📅 Année</span>
+                            <span class="text-slate-200 group-hover:text-white transition">{{ __('export.col_year') }}</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[vote_average]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-purple-500 cursor-pointer">
-                            <span class="text-slate-200 group-hover:text-white transition">🎯 Vote TMDB</span>
+                            <span class="text-slate-200 group-hover:text-white transition">{{ __('export.col_vote') }}</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[genres]" value="1" checked class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-purple-500 cursor-pointer">
-                            <span class="text-slate-200 group-hover:text-white transition">🎭 Genres</span>
+                            <span class="text-slate-200 group-hover:text-white transition">{{ __('export.col_genres') }}</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer group">
                             <input type="checkbox" name="columns[synopsis]" value="1" class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-purple-500 cursor-pointer">
@@ -123,7 +123,7 @@
                 <!-- Langue du PDF -->
                 <div>
                     <h4 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <span>🌐</span> Langue du PDF
+                        <span>🌐</span> {{ __('admin.dashboard_links_author') }}
                     </h4>
                     <div class="space-y-3 bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                         <label class="flex items-center gap-3 cursor-pointer group">
@@ -184,7 +184,7 @@
                         Annuler
                     </button>
                     <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold rounded-lg transition flex items-center justify-center gap-2" id="adminExportSubmitBtn">
-                        <span>📥</span> Exporter
+                        <span>📥</span> {{ __('export.submit_button') }}
                     </button>
                 </div>
 
@@ -299,7 +299,7 @@ document.getElementById('adminExportForm').addEventListener('submit', async (e) 
     } catch (error) {
         console.error('Error:', error);
         hideAdminExportSpinner();
-        showToast('❌ Erreur lors de l\'export', 'error');
+        showToast('❌ {{ __('errors.error_export') }}', 'error');
     }
 });
 

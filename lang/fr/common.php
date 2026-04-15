@@ -45,4 +45,14 @@ return [
     'language_french' => 'Français',
     'language_english' => 'English',
     'language_german' => 'Deutsch',
+
+    // Footer
+    'footer_quick_links' => 'Liens rapides',
+    'footer_home' => 'Accueil',
+    'footer_catalog' => 'Catalogue',
+    'footer_watchlist' => 'Ma Watchlist',
+    'footer_dashboard' => 'Dashboard',
+    'footer_connect' => 'Se connecter',
+    'footer_coming_soon' => 'Bientôt disponible...',
+    'footer_created_by' => 'Créé avec ❤️ par',
 ];

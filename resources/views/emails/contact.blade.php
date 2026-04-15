@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Nouveau message de contact</title>
+    <title>{{ __('emails.contact.tab_title') }}</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -60,38 +60,37 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📧 Nouveau Message de Contact</h1>
+            <h1>{{ __('emails.contact.header_title') }}</h1>
         </div>
 
-        <p>Bonjour,</p>
-        <p>Vous avez reçu un nouveau message via le formulaire de contact du site KDrama Hub.</p>
+        <p>{{ __('emails.contact.intro') }}</p>
 
         <div class="content-section">
-            <h3>👤 Informations de l'expéditeur</h3>
+            <h3>{{ __('emails.contact.sender_info_title') }}</h3>
             <p>
-                <strong>Nom :</strong> {{ $name }}<br>
-                <strong>Email :</strong> <a href="mailto:{{ $email }}">{{ $email }}</a>
+                <strong>{{ __('emails.contact.sender_name') }}</strong> {{ $name }}<br>
+                <strong>{{ __('emails.contact.sender_email') }}</strong> <a href="mailto:{{ $email }}">{{ $email }}</a>
             </p>
         </div>
 
         <div class="content-section">
-            <h3>📌 Sujet</h3>
+            <h3>{{ __('emails.contact.subject_title') }}</h3>
             <p>{{ $subject_text }}</p>
         </div>
 
         <div class="content-section">
-            <h3>💬 Message</h3>
+            <h3>{{ __('emails.contact.message_title') }}</h3>
             <p style="white-space: pre-wrap; word-wrap: break-word;">{{ $message_text }}</p>
         </div>
 
         <p>
-            <strong>Pour répondre :</strong> Cliquez sur <a href="mailto:{{ $email }}?subject=Re: {{ $subject_text }}">répondre par email</a> ou utilisez l'adresse {{ $email }}
+            <strong>{{ __('emails.contact.reply_text') }}</strong> <a href="mailto:{{ $email }}?subject=Re: {{ $subject_text }}">{{ __('emails.contact.reply_link') }}</a> {{ __('emails.contact.reply_or') }} {{ $email }}
         </p>
 
         <div class="footer">
             <p>
-                Message automatique - KDrama Hub<br>
-                <small>Ne répondez pas à cet email. Utilisez la fonction "Répondre" de votre client email.</small>
+                {{ __('emails.contact.footer_notice') }}<br>
+                <small>{{ __('emails.contact.footer_warning') }}</small>
             </p>
         </div>
     </div>

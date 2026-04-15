@@ -44,4 +44,20 @@ return [
         'automated_notice' => 'This is an automated message. Please do not reply to this email.',
         'copyright' => 'KDrama Hub © :year - All rights reserved',
     ],
+
+    'contact' => [
+        'tab_title' => 'New Contact Message',
+        'header_title' => '📧 New Contact Message',
+        'intro' => 'You have received a new message via the contact form on the KDrama Hub website.',
+        'sender_info_title' => '👤 Sender Information',
+        'sender_name' => 'Name:',
+        'sender_email' => 'Email:',
+        'subject_title' => '📌 Subject',
+        'message_title' => '💬 Message',
+        'reply_text' => 'To reply: Click on',
+        'reply_link' => 'reply by email',
+        'reply_or' => 'or use the address',
+        'footer_notice' => 'Automated message - KDrama Hub',
+        'footer_warning' => 'Do not reply to this email. Use the "Reply" function of your email client.',
+    ],
 ];

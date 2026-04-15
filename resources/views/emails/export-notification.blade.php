@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Votre export de watchlist</title>
+    <title>{{ __('emails.export.tab_title') }}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -116,10 +116,10 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>📥 Votre Export est Prêt!</h1>
+            <h1>{{ __('emails.export.header_title') }}</h1>
             <p>Format: <strong>{{ strtoupper($format) }}</strong>
             @if($sentByAdmin)
-                <br><span style="font-size: 12px; opacity: 0.9;">⭐ Envoyé par un administrateur</span>
+                <br><span style="font-size: 12px; opacity: 0.9;">{{ __('emails.export.sent_by_admin') }}</span>
             @endif
             </p>
         </div>
@@ -129,40 +129,41 @@
             @if($sentByAdmin)
                 <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
                     <p style="color: #92400e; margin: 0; font-size: 14px;">
-                        <strong>ℹ️ Information:</strong> Cet export a été généré et envoyé par un administrateur de la plateforme ({{ $sentByAdmin->name }}).
+                        <strong>ℹ️</strong> {{ __('emails.export.admin_notice', ['name' => $sentByAdmin->name]) }}
                     </p>
                 </div>
             @endif
 
             <div class="greeting">
-                Bonjour {{ $user->name }},<br><br>
+                {{ __('emails.export.greeting', ['name' => $user->name]) }}<br><br>
+                <span class="format-badge">{{ strtoupper($format) }}</span>
                 @if($sentByAdmin)
-                    Votre export de watchlist KDrama <span class="format-badge">{{ strtoupper($format) }}</span> a été généré par l'administrateur et est attaché à cet email! 🎉
+                    {{ __('emails.export.body_admin') }}
                 @else
-                    Votre export de watchlist KDrama <span class="format-badge">{{ strtoupper($format) }}</span> est prêt et attaché à cet email! 🎉
+                    {{ __('emails.export.body_user') }}
                 @endif
             </div>
 
             <!-- Stats -->
             <div class="stats">
-                <h3>📊 Statistiques de votre export</h3>
+                <h3>{{ __('emails.export.stats_title') }}</h3>
                 <div class="stat-item">
-                    <strong>Total items:</strong>
+                    <strong>{{ __('emails.export.stat_total') }}</strong>
                     <span>{{ $stats['totalItems'] ?? 0 }}</span>
                 </div>
                 <div class="stat-item">
-                    <strong>Regardés:</strong>
+                    <strong>{{ __('emails.export.stat_watched') }}</strong>
                     <span>{{ $stats['watchedCount'] ?? 0 }}</span>
                 </div>
                 <div class="stat-item">
-                    <strong>À regarder:</strong>
+                    <strong>{{ __('emails.export.stat_to_watch') }}</strong>
                     <span>{{ $stats['toWatchCount'] ?? 0 }}</span>
                 </div>
             </div>
 
             <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-                ✅ <strong>Fichier:</strong> {{ $filename }}<br>
-                📅 <strong>Date d'export:</strong> {{ now()->format('d/m/Y à H:i') }}
+                ✅ <strong>{{ __('emails.export.file_label') }}</strong> {{ $filename }}<br>
+                📅 <strong>{{ __('emails.export.date_label') }}</strong> {{ now()->format('d/m/Y à H:i') }}
             </p>
 
             <div class="button-container">
@@ -172,20 +173,20 @@
                         : config('app.url');
                 @endphp
                 <a href="{{ $appUrl }}/watchlist" class="button">
-                    ➜ Retourner à ma Watchlist
+                    {{ __('emails.export.cta_btn') }}
                 </a>
             </div>
 
             <p style="color: #6b7280; font-size: 13px; margin-top: 30px; line-height: 1.6;">
-                <strong>Questions?</strong> Si vous avez des problèmes pour ouvrir le fichier ou besoin d'aide, n'hésitez pas à <a href="{{ $appUrl }}/contact" style="color: #ef4444; text-decoration: none;">nous contacter</a>.
+                <strong>{{ __('emails.export.help_text') }}</strong> <a href="{{ $appUrl }}/contact" style="color: #ef4444; text-decoration: none;">{{ __('emails.export.contact_link') }}</a>.
             </p>
         </div>
 
         <!-- Footer -->
         <div class="footer">
             <p style="margin: 0;">
-                KDrama Hub © {{ now()->year }} - Tous droits réservés<br>
-                <a href="{{ $appUrl }}" style="color: #6b7280; text-decoration: none;">Visiter le site</a>
+                {{ __('emails.export.copyright', ['year' => now()->year]) }}<br>
+                <a href="{{ $appUrl }}" style="color: #6b7280; text-decoration: none;">{{ __('emails.export.visit_link') }}</a>
             </p>
         </div>
     </div>

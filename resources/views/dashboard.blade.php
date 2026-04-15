@@ -362,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         row.remove();
                     }, 300);
                 } else {
-                    showToast('Erreur lors de la suppression', 'error');
+                    showToast("{{ __('errors.error_deleting') }}", 'error');
                     this.disabled = false;
                     this.classList.remove('opacity-50');
                 }

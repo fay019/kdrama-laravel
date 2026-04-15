@@ -17,6 +17,7 @@ return [
     'loading' => 'Wird geladen...',
     'no_image' => 'Kein Bild',
     'no_data' => 'Keine Daten verfügbar',
+    'error' => 'Fehler',
     'error_connection' => 'Serverfehler',
     'error_modify' => 'Fehler beim Ändern',
     'error_delete' => 'Fehler beim Löschen',

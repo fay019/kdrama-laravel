@@ -1,24 +1,24 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ContentController;
-use App\Http\Controllers\WatchlistController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminAuthorController;
-use App\Http\Controllers\Admin\AdminIconsController;
 use App\Http\Controllers\Admin\AdminContactController;
 use App\Http\Controllers\Admin\AdminExportController;
+use App\Http\Controllers\Admin\AdminIconsController;
+use App\Http\Controllers\Admin\AdminSettingsController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ContentController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SetupController;
+use App\Http\Controllers\WatchlistController;
 use Illuminate\Support\Facades\Route;
 
 // Language switcher
 Route::post('/language/{locale}', function ($locale) {
     $supported = ['fr', 'en', 'de'];
-    if (!in_array($locale, $supported)) {
+    if (! in_array($locale, $supported)) {
         abort(400);
     }
 
@@ -88,6 +88,10 @@ Route::middleware(['auth', 'admin', 'check.password'])->prefix('admin')->name('a
     Route::post('users/{id}/reset-password', [AdminUserController::class, 'resetPassword'])->name('users.reset-password');
     Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');
     Route::post('settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+    Route::post('settings/create', [AdminSettingsController::class, 'store'])->name('settings.store');
+    Route::post('settings/{id}/edit', [AdminSettingsController::class, 'updateSetting'])->name('settings.update-setting');
+    Route::post('settings/{id}/delete', [AdminSettingsController::class, 'deleteSetting'])->name('settings.delete-setting');
+    Route::post('settings/{id}/move', [AdminSettingsController::class, 'moveSetting'])->name('settings.move-setting');
     Route::get('author', [AdminAuthorController::class, 'edit'])->name('author.edit');
     Route::post('author', [AdminAuthorController::class, 'update'])->name('author.update');
     Route::post('author/social-links/reorder', [AdminAuthorController::class, 'reorderSocialLinks'])->name('author.social-links.reorder');

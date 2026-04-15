@@ -22,6 +22,7 @@ return [
     'no_data' => 'No data available',
 
     // Error messages
+    'error' => 'Error',
     'error_connection' => 'Server connection error',
     'error_modify' => 'Error modifying',
     'error_delete' => 'Error deleting',

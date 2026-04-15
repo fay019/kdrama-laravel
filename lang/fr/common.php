@@ -22,6 +22,7 @@ return [
     'no_data' => 'Aucune donnée disponible',
 
     // Error messages
+    'error' => 'Erreur',
     'error_connection' => 'Erreur de connexion au serveur',
     'error_modify' => 'Erreur lors de la modification',
     'error_delete' => 'Erreur lors de la suppression',

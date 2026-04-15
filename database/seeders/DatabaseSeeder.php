@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -45,11 +45,22 @@ class DatabaseSeeder extends Seeder
             ['key' => 'site_description', 'value' => 'Your favorite Korean dramas hub', 'group' => 'site', 'label' => 'Site Description'],
             ['key' => 'site_links', 'value' => '{}', 'group' => 'site', 'label' => 'Site Links (JSON)'],
 
-            // API settings
-            ['key' => 'tmdb_api_key', 'value' => env('TMDB_API_KEY', ''), 'group' => 'api', 'label' => 'TMDB API Key'],
-            ['key' => 'rapidapi_key', 'value' => env('RAPIDAPI_KEY', ''), 'group' => 'api', 'label' => 'RapidAPI Key'],
-            ['key' => 'rapidapi_host', 'value' => env('RAPIDAPI_HOST', ''), 'group' => 'api', 'label' => 'RapidAPI Host'],
-            ['key' => 'api_source_priority', 'value' => 'env_first', 'group' => 'api', 'label' => 'API Source Priority (env_first or db_first)'],
+            // API settings - Streaming (RapidAPI)
+            ['key' => 'rapidapi_key', 'value' => env('RAPIDAPI_KEY', ''), 'group' => 'api_streaming', 'label' => 'RapidAPI Key (Streaming)'],
+            ['key' => 'rapidapi_host', 'value' => env('RAPIDAPI_HOST', ''), 'group' => 'api_streaming', 'label' => 'RapidAPI Host'],
+            ['key' => 'rapidapi_cache_hours', 'value' => '24', 'group' => 'api_streaming', 'label' => 'RapidAPI Cache Duration (hours)'],
+
+            // API settings - Watchmode
+            ['key' => 'watchmode_api_key', 'value' => env('WATCHMODE_API_KEY', ''), 'group' => 'api_watchmode', 'label' => 'Watchmode API Key'],
+            ['key' => 'watchmode_cache_hours', 'value' => '24', 'group' => 'api_watchmode', 'label' => 'Watchmode Cache Duration (hours)'],
+            ['key' => 'watchmode_enabled', 'value' => 'false', 'group' => 'api_watchmode', 'label' => 'Enable Watchmode'],
+
+            // API settings - TMDB
+            ['key' => 'tmdb_api_key', 'value' => env('TMDB_API_KEY', ''), 'group' => 'api_tmdb', 'label' => 'TMDB API Key'],
+
+            // API settings - General
+            ['key' => 'api_source_priority', 'value' => 'env_first', 'group' => 'api_general', 'label' => 'API Source Priority (env_first or db_first)'],
+            ['key' => 'streaming_provider_priority', 'value' => 'rapidapi', 'group' => 'api_general', 'label' => 'Streaming Provider Priority (rapidapi or watchmode)'],
         ];
 
         foreach ($defaultSettings as $setting) {

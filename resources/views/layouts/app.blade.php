@@ -9,7 +9,11 @@
 
         <!-- Meta Tags -->
         @php
-            $metadata = \App\Models\SiteMetadata::first();
+            try {
+                $metadata = \App\Models\SiteMetadata::first();
+            } catch (\Exception $e) {
+                $metadata = null;
+            }
         @endphp
         @if($metadata)
             <meta name="description" content="{{ $metadata->meta_description ?? config('app.name') }}">
@@ -37,7 +41,11 @@
         <!-- Google AdSense -->
         @php
             // Fetches the AdSense client ID from the database, with a fallback to the .env file.
-            $adsenseClient = \App\Models\Setting::get('adsense_client_id', env('ADSENSE_CLIENT_ID'));
+            try {
+                $adsenseClient = \App\Models\Setting::get('adsense_client_id', env('ADSENSE_CLIENT_ID'));
+            } catch (\Exception $e) {
+                $adsenseClient = env('ADSENSE_CLIENT_ID');
+            }
         @endphp
         @if($adsenseClient)
             <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsenseClient }}"

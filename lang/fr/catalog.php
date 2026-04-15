@@ -15,7 +15,7 @@ return [
     // Filter Labels
     'filter_search' => 'Recherche',
     'filter_search_placeholder' => 'Titre (FR, EN, OR)...',
-    'filter_search_hint' => 'Recherche multi-langue active',
+    'filter_search_hint' => 'Recherche FR/EN. Filtre coréen uniquement.',
 
     'filter_actor' => 'Acteur/Actrice',
     'filter_actor_placeholder' => 'Nom réel...',
@@ -48,5 +48,9 @@ return [
     'filter_toggle_active' => 'Actif',
 
     // Pagination
-    'page_info' => 'Page :current / :total — Affichage de :count résultats sur :total total',
+    'page_label' => 'Page',
+    'showing_label' => 'Affichage de',
+    'results_out_of' => 'résultats sur',
+    'total_label' => 'au total',
+    'page_info' => 'Page :current / :total — Affichage de :count résultats sur :total_results total',
 ];

@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Kdrama;
-use App\Models\WatchlistItem;
-use App\Services\TmdbService;
-use App\Services\StreamingAvailabilityService;
 use App\Helpers\StreamingLinkHelper;
+use App\Models\Kdrama;
+use App\Models\User;
+use App\Models\WatchlistItem;
+use App\Services\StreamingAvailabilityService;
+use App\Services\TmdbService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ContentController extends Controller
 {
     private $tmdbService;
+
     private $streamingService;
 
     public function __construct(TmdbService $tmdbService, StreamingAvailabilityService $streamingService)
@@ -27,7 +30,7 @@ class ContentController extends Controller
         $newest = [];
 
         // Check if first admin has rated dramas
-        $firstAdmin = \App\Models\User::where('is_admin', true)->first();
+        $firstAdmin = User::where('is_admin', true)->first();
 
         if ($firstAdmin) {
             // Get admin's rated dramas (with rating != null)
@@ -69,7 +72,7 @@ class ContentController extends Controller
                 }
 
                 // Take max 12
-                $featured = $itemsToDisplay->take(12)->map(function($kdrama) {
+                $featured = $itemsToDisplay->take(12)->map(function ($kdrama) {
                     return $this->formatKdramaForDisplay($kdrama);
                 })->values()->toArray();
 
@@ -82,7 +85,7 @@ class ContentController extends Controller
             $apiResult = $this->tmdbService->discoverAsianContent([
                 'origins' => ['KR'],
                 'sort' => 'popularity.desc',
-                'page' => 1
+                'page' => 1,
             ]);
             $featured = $apiResult['results'] ?? [];
             $isAdminList = false;
@@ -95,13 +98,13 @@ class ContentController extends Controller
             $pageResult = $this->tmdbService->discoverAsianContent([
                 'origins' => ['KR'],
                 'sort' => 'first_air_date.desc',
-                'page' => $page
+                'page' => $page,
             ]);
             $allReleases = array_merge($allReleases, $pageResult['results'] ?? []);
         }
 
         // Get today's date for comparison
-        $today = \Carbon\Carbon::today();
+        $today = Carbon::today();
 
         // Separate into past and upcoming, filter by poster_path
         $newest = [];
@@ -112,7 +115,7 @@ class ContentController extends Controller
                 continue; // Skip items without images
             }
 
-            $airDate = isset($item['first_air_date']) ? \Carbon\Carbon::parse($item['first_air_date']) : null;
+            $airDate = isset($item['first_air_date']) ? Carbon::parse($item['first_air_date']) : null;
 
             if ($airDate && $airDate->lte($today)) {
                 // Past releases
@@ -127,9 +130,10 @@ class ContentController extends Controller
         $newest = array_slice($newest, 0, 8);
 
         // Sort upcoming by date ascending (closest first)
-        usort($upcoming, function($a, $b) {
-            $dateA = \Carbon\Carbon::parse($a['first_air_date']);
-            $dateB = \Carbon\Carbon::parse($b['first_air_date']);
+        usort($upcoming, function ($a, $b) {
+            $dateA = Carbon::parse($a['first_air_date']);
+            $dateB = Carbon::parse($b['first_air_date']);
+
             return $dateA->getTimestamp() - $dateB->getTimestamp();
         });
         $upcoming = array_slice($upcoming, 0, 8);
@@ -138,7 +142,7 @@ class ContentController extends Controller
             'featured' => $featured,
             'isAdminList' => $isAdminList,
             'newest' => $newest,
-            'upcoming' => $upcoming
+            'upcoming' => $upcoming,
         ]);
     }
 
@@ -162,21 +166,22 @@ class ContentController extends Controller
     private function getLocalizedTitle($kdrama, $locale)
     {
         // Prefer current locale
-        if ($locale === 'de' && !empty($kdrama->translations['de']['name'] ?? null)) {
+        if ($locale === 'de' && ! empty($kdrama->translations['de']['name'] ?? null)) {
             return $kdrama->translations['de']['name'];
-        } elseif ($locale === 'en' && !empty($kdrama->en_name)) {
+        } elseif ($locale === 'en' && ! empty($kdrama->en_name)) {
             return $kdrama->en_name;
-        } elseif ($locale === 'fr' && !empty($kdrama->name)) {
+        } elseif ($locale === 'fr' && ! empty($kdrama->name)) {
             return $kdrama->name;
         }
 
         // Fallback: EN → FR → original
-        if (!empty($kdrama->en_name)) {
+        if (! empty($kdrama->en_name)) {
             return $kdrama->en_name;
         }
-        if (!empty($kdrama->name)) {
+        if (! empty($kdrama->name)) {
             return $kdrama->name;
         }
+
         return $kdrama->original_name ?? 'Unknown';
     }
 
@@ -197,42 +202,98 @@ class ContentController extends Controller
             'hide_watchlist' => $request->boolean('hide_watchlist'),
         ];
 
-        if (!empty($filters['actor_id'])) {
+        if (! empty($filters['actor_id'])) {
             $results = $this->tmdbService->getPersonTvCredits($filters['actor_id'], $filters['page']);
-            if (!$results || empty($results['results'])) {
-                $results = ['results' => [], 'total_pages' => 0];
+            if (! $results || empty($results['results'])) {
+                $results = ['results' => [], 'total_pages' => 0, 'total_results' => 0];
+            } elseif (! empty($filters['search'])) {
+                // Si on a aussi une recherche par titre, on filtre les résultats de l'acteur
+                $searchTerm = mb_strtolower($filters['search']);
+                $results['results'] = array_filter($results['results'], function ($item) use ($searchTerm) {
+                    $name = mb_strtolower($item['name'] ?? '');
+                    $enName = mb_strtolower($item['en_name'] ?? '');
+
+                    return str_contains($name, $searchTerm) || str_contains($enName, $searchTerm);
+                });
+                $results['results'] = array_values($results['results']);
+                $results['total_results'] = count($results['results']);
+                $results['total_pages'] = 1;
             }
-        } elseif (!empty($filters['actor'])) {
+        } elseif (! empty($filters['actor'])) {
             $personSearch = $this->tmdbService->searchPerson($filters['actor']);
-            if (!empty($personSearch['results'])) {
-                // On cherche l'acteur qui a le plus de popularité ET qui est dans le département 'Acting'
+            if (! empty($personSearch['results'])) {
+                // On cherche l'acteur qui a le plus de crédits TV coréens parmi les 10 premiers résultats
                 $bestMatch = null;
-                foreach ($personSearch['results'] as $person) {
+                $maxCredits = -1;
+
+                foreach (array_slice($personSearch['results'], 0, 30) as $person) {
                     if (isset($person['known_for_department']) && $person['known_for_department'] === 'Acting') {
-                        if (!$bestMatch || $person['popularity'] > $bestMatch['popularity']) {
+                        $credits = $this->tmdbService->getPersonTvCredits($person['id']);
+                        $krCreditsCount = count($credits['results'] ?? []);
+
+                        // Score = (credits * 3) + popularity
+                        $score = ($krCreditsCount * 3) + ($person['popularity'] ?? 0);
+
+                        // Bonus pour correspondance exacte du nom (insensible à la casse)
+                        $cleanName = mb_strtolower($person['name']);
+                        $cleanQuery = mb_strtolower($filters['actor']);
+                        if ($cleanName === $cleanQuery) {
+                            $score += 10;
+                        }
+
+                        // Bonus pour photo de profil (signe d'un acteur plus connu)
+                        if (! empty($person['profile_path'])) {
+                            $score += 2;
+                        }
+
+                        if ($score > $maxCredits) {
+                            $maxCredits = $score;
                             $bestMatch = $person;
                         }
                     }
                 }
 
-                // Si aucun n'est dans 'Acting', on prend quand même le premier par défaut
+                // Si aucun n'a de crédits TV KR dans 'Acting', on prend le plus populaire de 'Acting'
+                if (! $bestMatch || $maxCredits <= 0) {
+                    foreach (array_slice($personSearch['results'], 0, 5) as $person) {
+                        if (isset($person['known_for_department']) && $person['known_for_department'] === 'Acting') {
+                            if (! $bestMatch || $person['popularity'] > $bestMatch['popularity']) {
+                                $bestMatch = $person;
+                            }
+                        }
+                    }
+                }
+
+                // Si toujours rien, on prend le tout premier résultat de la recherche
                 $personId = $bestMatch ? $bestMatch['id'] : $personSearch['results'][0]['id'];
 
                 $filters['with_cast'] = $personId;
                 $results = $this->tmdbService->getPersonTvCredits($personId, $filters['page']);
 
                 // Si l'acteur n'a pas de crédits TV coréens, on s'assure que $results est bien vide
-                if (!$results || empty($results['results'])) {
-                    $results = ['results' => [], 'total_pages' => 0];
+                if (! $results || empty($results['results'])) {
+                    $results = ['results' => [], 'total_pages' => 0, 'total_results' => 0];
+                } elseif (! empty($filters['search'])) {
+                    // Si on a aussi une recherche par titre, on filtre les résultats de l'acteur
+                    $searchTerm = mb_strtolower($filters['search']);
+                    $results['results'] = array_filter($results['results'], function ($item) use ($searchTerm) {
+                        $name = mb_strtolower($item['name'] ?? '');
+                        $enName = mb_strtolower($item['en_name'] ?? '');
+
+                        return str_contains($name, $searchTerm) || str_contains($enName, $searchTerm);
+                    });
+                    $results['results'] = array_values($results['results']);
+                    $results['total_results'] = count($results['results']);
+                    $results['total_pages'] = 1; // On a déjà tout chargé pour cet acteur (TMDB ne pagine pas les crédits)
                 }
             } else {
                 // Si l'acteur n'est pas trouvé, on force 0 résultats
-                $results = ['results' => [], 'total_pages' => 0];
+                $results = ['results' => [], 'total_pages' => 0, 'total_results' => 0];
             }
         }
 
-        if (!isset($results)) {
-            if (!empty($filters['search'])) {
+        if (! isset($results)) {
+            if (! empty($filters['search'])) {
                 $results = $this->tmdbService->searchContent($filters['search'], $filters['page']);
             } else {
                 $results = $this->tmdbService->discoverAsianContent($filters);
@@ -240,7 +301,7 @@ class ContentController extends Controller
         }
 
         // Si aucun résultat (ex: recherche infructueuse ou erreur API)
-        if (!$results) {
+        if (! $results) {
             $results = ['results' => [], 'total_pages' => 0, 'total_results' => 0];
         }
 
@@ -256,7 +317,7 @@ class ContentController extends Controller
                     'is_in_watchlist' => $item->is_in_watchlist,
                     'is_watching' => $item->is_watching,
                     'is_watched' => $item->is_watched,
-                    'rating' => $item->rating
+                    'rating' => $item->rating,
                 ]];
             })->toArray();
 
@@ -264,16 +325,29 @@ class ContentController extends Controller
             if ($filters['hide_watched'] || $filters['hide_watching'] || $filters['hide_watchlist']) {
                 $results['results'] = array_filter($results['results'], function ($item) use ($userStatus, $filters) {
                     $tmdbId = $item['id'] ?? null;
-                    if (!$tmdbId || !isset($userStatus[$tmdbId])) return true;
+                    if (! $tmdbId || ! isset($userStatus[$tmdbId])) {
+                        return true;
+                    }
 
-                    if ($filters['hide_watched'] && $userStatus[$tmdbId]['is_watched']) return false;
-                    if ($filters['hide_watching'] && $userStatus[$tmdbId]['is_watching']) return false;
-                    if ($filters['hide_watchlist'] && $userStatus[$tmdbId]['is_in_watchlist']) return false;
+                    if ($filters['hide_watched'] && $userStatus[$tmdbId]['is_watched']) {
+                        return false;
+                    }
+                    if ($filters['hide_watching'] && $userStatus[$tmdbId]['is_watching']) {
+                        return false;
+                    }
+                    if ($filters['hide_watchlist'] && $userStatus[$tmdbId]['is_in_watchlist']) {
+                        return false;
+                    }
 
                     return true;
                 });
                 // Note: array_filter reset les index, on peut ré-indexer si besoin mais pour le foreach ça va.
                 $results['results'] = array_values($results['results']);
+                $results['total_results'] = count($results['results']);
+                // Recalculate total pages based on filtered results if it's not a single page search
+                if (isset($results['total_pages']) && $results['total_pages'] > 1) {
+                    $results['total_pages'] = ceil($results['total_results'] / 20); // Assuming 20 per page
+                }
             }
         }
 
@@ -283,9 +357,10 @@ class ContentController extends Controller
                 $html .= view('kdrams._card', [
                     'kdrama' => $kdrama,
                     'filters' => $filters,
-                    'userStatus' => $userStatus
+                    'userStatus' => $userStatus,
                 ])->render();
             }
+
             return response()->json([
                 'html' => $html,
                 'next_page' => $filters['page'] + 1,
@@ -293,7 +368,7 @@ class ContentController extends Controller
                 'total_results' => (int) ($results['total_results'] ?? 0),
                 'total_pages' => (int) ($results['total_pages'] ?? 1),
                 'current_page' => (int) $filters['page'],
-                'current_count' => count($results['results'] ?? [])
+                'current_count' => count($results['results'] ?? []),
             ]);
         }
 
@@ -303,7 +378,7 @@ class ContentController extends Controller
             'total_results' => $results['total_results'] ?? 0,
             'current_page' => $filters['page'],
             'filters' => $filters,
-            'userStatus' => $userStatus
+            'userStatus' => $userStatus,
         ]);
     }
 
@@ -354,7 +429,7 @@ class ContentController extends Controller
             }
         }
 
-        if (!$details) {
+        if (! $details) {
             abort(404);
         }
 
@@ -377,14 +452,14 @@ class ContentController extends Controller
                     'is_in_watchlist' => $watchlistItem->is_in_watchlist,
                     'is_watching' => $watchlistItem->is_watching,
                     'is_watched' => $watchlistItem->is_watched,
-                    'rating' => $watchlistItem->rating
+                    'rating' => $watchlistItem->rating,
                 ];
             }
         }
 
         // On s'assure d'avoir un tableau pour la vue (pour la compatibilité avec le code existant)
         // On s'assure que 'tmdb_id' est bien présent dans le tableau $details
-        if (!isset($details['tmdb_id']) && isset($details['id'])) {
+        if (! isset($details['tmdb_id']) && isset($details['id'])) {
             $details['tmdb_id'] = $details['id'];
         }
 
@@ -397,7 +472,7 @@ class ContentController extends Controller
             'availability' => $availability ?? [],
             'streamingLinks' => $streamingLinks,
             'highlight_actor' => $request->get('actor_id'),
-            'userStatus' => $userStatus
+            'userStatus' => $userStatus,
         ];
 
         // On peut ajouter l'objet modèle s'il est utile pour certains calculs complexes dans la vue
@@ -426,7 +501,8 @@ class ContentController extends Controller
 
             return back()->with('success', __('show.refresh_success'));
         } catch (\Exception $e) {
-            \Log::error("Manual refresh failed for TMDB {$id}: " . $e->getMessage());
+            \Log::error("Manual refresh failed for TMDB {$id}: ".$e->getMessage());
+
             return back()->with('error', __('show.refresh_error', ['error' => $e->getMessage()]));
         }
     }
@@ -435,12 +511,12 @@ class ContentController extends Controller
     {
         $actor = $this->tmdbService->getPersonDetails($id);
 
-        if (!$actor) {
+        if (! $actor) {
             return response()->json(['error' => __('show.actor_not_found')], 404);
         }
 
         return view('kdrams._actor_modal', [
-            'actor' => $actor
+            'actor' => $actor,
         ])->render();
     }
 }

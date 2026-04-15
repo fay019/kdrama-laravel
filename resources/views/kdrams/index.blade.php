@@ -164,18 +164,25 @@
             <div class="flex-1">
                 @if(count($kdrams) > 0)
                     <div class="mb-6 flex items-center justify-between">
-                        <p class="text-slate-400 text-sm">
-                            @php
-                                $pageInfo = str_replace(
-                                    [':current', ':total', ':count'],
-                                    [$current_page, $total_pages, count($kdrams)],
-                                    __('catalog.page_info')
-                                );
-                                // Also replace the second :total with total_results
-                                $pageInfo = str_replace(':total', $total_results, $pageInfo);
-                            @endphp
-                            {!! preg_replace('/(\d+)/', '<span class="text-red-400 font-bold">$1</span>', $pageInfo) !!}
-                        </p>
+                        <div id="results-stats-container" class="flex items-center gap-4">
+                            <p class="text-slate-400 text-sm">
+                                {{ __('catalog.page_label') }}
+                                <span id="current-page-display" class="text-red-400 font-bold">{{ $current_page }}</span> /
+                                <span id="total-pages-display" class="text-red-400 font-bold">{{ $total_pages }}</span> —
+                                {{ __('catalog.showing_label') }}
+                                <span id="current-count" class="text-red-400 font-bold">{{ count($kdrams) }}</span>
+                                {{ __('catalog.results_out_of') }}
+                                <span id="total-results-display" class="text-red-400 font-bold">{{ $total_results }}</span>
+                                {{ __('catalog.total_label') }}
+                            </p>
+                            <!-- Search Indicator -->
+                            <div id="search-spinner" class="hidden">
+                                <svg class="animate-spin h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="kdrama-grid" class="content-grid mb-12">
@@ -191,53 +198,54 @@
                     <!-- Pagination Simple -->
                     <div id="pagination-container" class="flex justify-center items-center gap-4 mt-16"></div>
 
-                    <!-- Mobile Filter Open Button (when filter is closed) -->
                     <button @click="showFilters = true" v-show="!showFilters"
                             class="lg:hidden fixed bottom-6 right-6 z-20 w-14 h-14 rounded-full bg-slate-800/90 backdrop-blur-sm border border-slate-700 hover:border-slate-600 hover:bg-slate-700/90 shadow-lg flex items-center justify-center text-xl transition-all duration-200 hover:scale-110">
                         🔍
                     </button>
-        @else
-            <div class="card-dark py-24 text-center">
-                <div class="text-6xl mb-6">🔍</div>
-                <h2 class="text-2xl font-bold text-slate-200 mb-4">{{ __('catalog.no_results') }}</h2>
-                <p class="text-slate-400 mb-8">
-                    @if(!empty($filters['search']))
-                        {{ __('catalog.no_results_message') }}: "{{ $filters['search'] }}".
-                    @elseif(!empty($filters['actor']))
-                        {{ __('catalog.no_results_message') }}: "{{ $filters['actor'] }}".<br>
-                        <span class="text-sm italic text-slate-500">Note: {{ __('catalog.filter_actor_hint') }}</span>
-                    @else
-                        {{ __('catalog.no_results_message') }}
-                    @endif
-                </p>
+                @else
+                    <div class="card-dark py-24 text-center">
+                        <div class="text-6xl mb-6">🔍</div>
+                        <h2 class="text-2xl font-bold text-slate-200 mb-4">{{ __('catalog.no_results') }}</h2>
+                        <p class="text-slate-400 mb-8">
+                            @if(!empty($filters['search']))
+                                {{ __('catalog.no_results_message') }}: "{{ $filters['search'] }}".
+                            @elseif(!empty($filters['actor']))
+                                {{ __('catalog.no_results_message') }}: "{{ $filters['actor'] }}".<br>
+                                <span class="text-sm italic text-slate-500">Note: {{ __('catalog.filter_actor_hint') }}</span>
+                            @else
+                                {{ __('catalog.no_results_message') }}
+                            @endif
+                        </p>
 
-                @if(empty($filters['search']) && empty($filters['actor']))
-                    @auth
-                        @if(auth()->user()->is_admin)
-                            <p class="text-slate-500 text-sm mb-4">{{ __('catalog.hide_filters') }}</p>
-                            <a href="{{ route('admin.settings.index') }}" class="btn-primary inline-block">
-                                ⚙️ {{ __('common.configure') }}
+                        @if(empty($filters['search']) && empty($filters['actor']))
+                            @auth
+                                @if(auth()->user()->is_admin)
+                                    <p class="text-slate-500 text-sm mb-4">{{ __('catalog.hide_filters') }}</p>
+                                    <a href="{{ route('admin.settings.index') }}" class="btn-primary inline-block">
+                                        ⚙️ {{ __('common.configure') }}
+                                    </a>
+                                @endif
+                            @endauth
+                        @else
+                            <a href="{{ route('kdrams.catalog') }}" class="btn-primary inline-block">
+                                🔄 {{ __('catalog.filter_clear') }}
                             </a>
                         @endif
-                    @endauth
-                @else
-                    <a href="{{ route('kdrams.catalog') }}" class="btn-primary inline-block">
-                        🔄 {{ __('catalog.filter_clear') }}
-                    </a>
+                    </div>
                 @endif
-            </div>
-        @endif
             </div>
             <!-- Close main content div -->
         </div>
         <!-- Close flex layout div -->
+    </div>
 </div>
 @endsection
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const loadMoreBtn = document.getElementById('load-more');
     const grid = document.getElementById('kdrama-grid');
+    const searchSpinner = document.getElementById('search-spinner');
+    const loadMoreBtn = document.getElementById('load-more');
     const spinner = document.getElementById('loading-spinner');
     const btnText = loadMoreBtn?.querySelector('span');
 
@@ -322,6 +330,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const url = `{{ route('kdrams.catalog') }}?${params.toString()}`;
 
+            // Show indicator
+            if (searchSpinner) searchSpinner.classList.remove('hidden');
+            if (grid) grid.style.opacity = '0.5';
+
             fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -329,14 +341,18 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
+                // Hide indicator
+                if (searchSpinner) searchSpinner.classList.add('hidden');
+                if (grid) grid.style.opacity = '1';
+
                 if (data.html) {
                     // Remplacer le contenu de la grille
                     grid.innerHTML = data.html;
 
                     // Mettre à jour le compteur de résultats actuels
-                    const countSpan = document.getElementById('current-count');
-                    if (countSpan) {
-                        countSpan.textContent = grid.querySelectorAll('.content-card').length;
+                    const currentCountDisplay = document.getElementById('current-count');
+                    if (currentCountDisplay) {
+                        currentCountDisplay.textContent = data.current_count;
                     }
 
                     // Mettre à jour le compteur de pages
@@ -362,7 +378,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.history.replaceState({}, '', url);
                 }
             })
-            .catch(error => console.error('Erreur filtrage:', error));
+            .catch(error => {
+                console.error('Erreur filtrage:', error);
+                if (searchSpinner) searchSpinner.classList.add('hidden');
+                if (grid) grid.style.opacity = '1';
+            });
         }
 
         function generatePagination(currentPage, totalPages, baseUrl) {

@@ -48,5 +48,9 @@ return [
     'filter_toggle_active' => 'Aktiv',
 
     // Pagination
-    'page_info' => 'Seite :current / :total — Anzeige von :count Ergebnissen aus :total gesamt',
+    'page_label' => 'Seite',
+    'showing_label' => 'Anzeige von',
+    'results_out_of' => 'Ergebnissen aus',
+    'total_label' => 'gesamt',
+    'page_info' => 'Seite :current / :total — Anzeige von :count Ergebnissen aus :total_results gesamt',
 ];

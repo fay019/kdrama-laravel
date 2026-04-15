@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class TmdbService
 {
     private $apiKey;
+
     private $baseUrl = 'https://api.themoviedb.org/3';
 
     public function __construct()
@@ -17,7 +18,7 @@ class TmdbService
 
     public function discoverAsianContent(array $filters = [])
     {
-        $cacheKey = 'tmdb_discover_v2_' . md5(json_encode($filters));
+        $cacheKey = 'tmdb_discover_v2_'.md5(json_encode($filters));
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($filters) {
             $languages = ['fr-FR', 'en-US'];
@@ -36,15 +37,15 @@ class TmdbService
                     'vote_average.gte' => $filters['min_rating'] ?? 0,
                 ];
 
-                if (!empty($filters['from_year'])) {
+                if (! empty($filters['from_year'])) {
                     $params['first_air_date.gte'] = "{$filters['from_year']}-01-01";
                 }
 
-                if (!empty($filters['to_year'])) {
+                if (! empty($filters['to_year'])) {
                     $params['first_air_date.lte'] = "{$filters['to_year']}-12-31";
                 }
 
-                if (!empty($filters['with_cast'])) {
+                if (! empty($filters['with_cast'])) {
                     $params['with_cast'] = $filters['with_cast'];
                 }
 
@@ -55,13 +56,13 @@ class TmdbService
                         if (isset($data['results'])) {
                             foreach ($data['results'] as $item) {
                                 $id = $item['id'];
-                                if (!isset($allResults[$id])) {
+                                if (! isset($allResults[$id])) {
                                     $allResults[$id] = $item;
                                 } else {
-                                    if ($lang === 'fr-FR' && !empty($item['name'])) {
+                                    if ($lang === 'fr-FR' && ! empty($item['name'])) {
                                         $allResults[$id]['name'] = $item['name'];
                                     }
-                                    if ($lang === 'en-US' && !empty($item['name'])) {
+                                    if ($lang === 'en-US' && ! empty($item['name'])) {
                                         $allResults[$id]['en_name'] = $item['name'];
                                     }
                                 }
@@ -71,7 +72,7 @@ class TmdbService
                         $totalResults = max($totalResults, $data['total_results'] ?? 0);
                     }
                 } catch (\Exception $e) {
-                    \Log::error("TMDB API Discover Error ($lang): " . $e->getMessage());
+                    \Log::error("TMDB API Discover Error ($lang): ".$e->getMessage());
                 }
             }
 
@@ -79,7 +80,7 @@ class TmdbService
                 'results' => array_values($allResults),
                 'total_pages' => (int) $totalPages,
                 'total_results' => (int) $totalResults,
-                'page' => (int) ($filters['page'] ?? 1)
+                'page' => (int) ($filters['page'] ?? 1),
             ];
         });
     }
@@ -97,7 +98,7 @@ class TmdbService
                     $response = Http::timeout(15)->get("{$this->baseUrl}/{$type}/{$tmdbId}", [
                         'api_key' => $this->apiKey,
                         'language' => $lang,
-                        'append_to_response' => 'credits,keywords,external_ids,similar,production_companies,networks'
+                        'append_to_response' => 'credits,keywords,external_ids,similar,production_companies,networks',
                     ]);
 
                     if ($response->successful()) {
@@ -134,7 +135,8 @@ class TmdbService
 
                 return $base;
             } catch (\Exception $e) {
-                \Log::error("TMDB API Multi-lang Error: " . $e->getMessage());
+                \Log::error('TMDB API Multi-lang Error: '.$e->getMessage());
+
                 return null;
             }
         });
@@ -148,16 +150,18 @@ class TmdbService
             try {
                 $resp = Http::timeout(10)->get("{$this->baseUrl}/person/{$personId}", [
                     'api_key' => $this->apiKey,
-                    'language' => 'en-US'
+                    'language' => 'en-US',
                 ]);
                 if ($resp->failed()) {
                     return null;
                 }
                 $data = $resp->json();
+
                 // Le champ 'name' en en-US est généralement en alphabet latin
                 return $data['name'] ?? null;
             } catch (\Exception $e) {
-                \Log::warning("TMDB person fetch failed for {$personId}: " . $e->getMessage());
+                \Log::warning("TMDB person fetch failed for {$personId}: ".$e->getMessage());
+
                 return null;
             }
         });
@@ -167,114 +171,100 @@ class TmdbService
     {
         $limit = 20;
         $offset = ($page - 1) * $limit;
-        $cacheKey = "tmdb_search_tv_compact_v8_" . md5($query);
+        $cacheKey = 'tmdb_search_tv_v12_'.md5($query);
 
         $allKrData = Cache::remember($cacheKey, now()->addHour(), function () use ($query) {
             try {
                 $languages = ['fr-FR', 'en-US'];
-
-                // Phase 1: Déterminer le total de pages via le premier appel FR
-                $firstResp = Http::timeout(15)->get("{$this->baseUrl}/search/tv", [
-                    'api_key' => $this->apiKey,
-                    'language' => 'fr-FR',
-                    'query' => $query,
-                    'page' => 1,
-                    'include_adult' => false
-                ]);
-
-                if (!$firstResp->successful()) return [];
-
-                $data = $firstResp->json();
-                $apiTotalPages = (int) ($data['total_pages'] ?? 0);
-                if ($apiTotalPages === 0) return [];
-
-                // Phase 2: Tout scanner (max 15 pages) pour avoir une base stable
-                $maxApiPagesToScan = min($apiTotalPages, 15);
-                $uniqueKrIds = [];
                 $idToData = [];
 
-                for ($p = 1; $p <= $maxApiPagesToScan; $p++) {
+                for ($p = 1; $p <= 20; $p++) {
+                    $foundInThisPage = false;
                     foreach ($languages as $lang) {
-                        $resp = Http::timeout(15)->get("{$this->baseUrl}/search/tv", [
+                        $response = Http::timeout(10)->get("{$this->baseUrl}/search/tv", [
                             'api_key' => $this->apiKey,
                             'language' => $lang,
                             'query' => $query,
                             'page' => $p,
-                            'include_adult' => false
+                            'include_adult' => false,
                         ]);
 
-                        if ($resp->successful()) {
-                            $d = $resp->json();
-                            foreach (($d['results'] ?? []) as $item) {
-                                if (isset($item['origin_country']) && in_array('KR', $item['origin_country'])) {
-                                    $id = $item['id'];
-                                    if (!isset($uniqueKrIds[$id])) {
-                                        $uniqueKrIds[$id] = true;
-                                        $idToData[$id] = $item;
-                                        if ($lang === 'en-US') {
-                                            $idToData[$id]['en_name'] = $item['name'];
-                                        }
-                                    } else {
-                                        if ($lang === 'fr-FR') {
-                                            $idToData[$id]['name'] = $item['name'];
-                                        }
-                                        if ($lang === 'en-US') {
-                                            $idToData[$id]['en_name'] = $item['name'];
+                        if ($response->successful()) {
+                            $data = $response->json();
+                            if (! empty($data['results'])) {
+                                $foundInThisPage = true;
+                                foreach ($data['results'] as $item) {
+                                    if (isset($item['origin_country']) && in_array('KR', $item['origin_country'])) {
+                                        $id = $item['id'];
+                                        if (! isset($idToData[$id])) {
+                                            $idToData[$id] = $item;
+                                            if ($lang === 'en-US') {
+                                                $idToData[$id]['en_name'] = $item['name'];
+                                            }
+                                        } else {
+                                            if ($lang === 'fr-FR' && ! empty($item['name'])) {
+                                                $idToData[$id]['name'] = $item['name'];
+                                            }
+                                            if ($lang === 'en-US' && ! empty($item['name'])) {
+                                                $idToData[$id]['en_name'] = $item['name'];
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                    if (! $foundInThisPage && $p > 1) {
+                        break;
+                    }
                 }
+
                 return array_values($idToData);
             } catch (\Exception $e) {
-                \Log::error("TMDB searchContent Scan failed: " . $e->getMessage());
+                \Log::error('TMDB searchContent Scan failed: '.$e->getMessage());
+
                 return [];
             }
         });
 
         $totalFound = count($allKrData);
         $paginatedResults = array_slice($allKrData, $offset, $limit);
-        $results = [];
 
-        foreach ($paginatedResults as $show) {
+        foreach ($paginatedResults as &$show) {
             $id = $show['id'];
-            // Enrichissement FR/EN si manquant
             if (empty($show['name']) || (isset($show['en_name']) && $show['name'] === $show['en_name'])) {
                 $details = $this->getShowSimpleDetails($id, 'fr-FR');
-                if ($details && !empty($details['name'])) {
+                if ($details && ! empty($details['name'])) {
                     $show['name'] = $details['name'];
                 }
             }
             if (empty($show['en_name'])) {
                 $details = $this->getShowSimpleDetails($id, 'en-US');
-                if ($details && !empty($details['name'])) {
+                if ($details && ! empty($details['name'])) {
                     $show['en_name'] = $details['name'];
                 }
             }
-            $results[] = $show;
         }
 
-        $finalTotalPages = (int) ceil($totalFound / $limit);
-
         return [
-            'results' => $results,
-            'total_pages' => max(1, $finalTotalPages),
+            'results' => $paginatedResults,
+            'total_pages' => (int) ceil($totalFound / $limit),
             'total_results' => $totalFound,
-            'page' => (int) $page
+            'page' => (int) $page,
         ];
     }
 
     private function getShowSimpleDetails($id, $lang)
     {
         $cacheKey = "tmdb_show_simple_{$id}_{$lang}";
+
         return Cache::remember($cacheKey, now()->addWeek(), function () use ($id, $lang) {
             try {
                 $response = Http::timeout(10)->get("{$this->baseUrl}/tv/{$id}", [
                     'api_key' => $this->apiKey,
-                    'language' => $lang
+                    'language' => $lang,
                 ]);
+
                 return $response->successful() ? $response->json() : null;
             } catch (\Exception $e) {
                 return null;
@@ -294,7 +284,7 @@ class TmdbService
                 foreach ($languages as $lang) {
                     $response = Http::timeout(15)->get("{$this->baseUrl}/person/{$personId}/tv_credits", [
                         'api_key' => $this->apiKey,
-                        'language' => $lang
+                        'language' => $lang,
                     ]);
 
                     if ($response->successful()) {
@@ -304,7 +294,7 @@ class TmdbService
                                 // Filtrer pour ne garder que les contenus coréens (KR)
                                 if (isset($item['origin_country']) && in_array('KR', $item['origin_country'])) {
                                     $id = $item['id'];
-                                    if (!isset($allCredits[$id])) {
+                                    if (! isset($allCredits[$id])) {
                                         $allCredits[$id] = $item;
                                         if ($lang === 'fr-FR') {
                                             $allCredits[$id]['name'] = $item['name'];
@@ -312,10 +302,10 @@ class TmdbService
                                             $allCredits[$id]['en_name'] = $item['name'];
                                         }
                                     } else {
-                                        if ($lang === 'fr-FR' && !empty($item['name'])) {
+                                        if ($lang === 'fr-FR' && ! empty($item['name'])) {
                                             $allCredits[$id]['name'] = $item['name'];
                                         }
-                                        if ($lang === 'en-US' && !empty($item['name'])) {
+                                        if ($lang === 'en-US' && ! empty($item['name'])) {
                                             $allCredits[$id]['en_name'] = $item['name'];
                                         }
                                     }
@@ -325,18 +315,18 @@ class TmdbService
                     }
                 }
 
-                if (!empty($allCredits)) {
+                if (! empty($allCredits)) {
                     // Enrichissement si manquant
                     foreach ($allCredits as $id => &$show) {
                         if (empty($show['name']) || (isset($show['en_name']) && $show['name'] === $show['en_name'])) {
                             $details = $this->getShowSimpleDetails($id, 'fr-FR');
-                            if ($details && !empty($details['name'])) {
+                            if ($details && ! empty($details['name'])) {
                                 $show['name'] = $details['name'];
                             }
                         }
                         if (empty($show['en_name'])) {
                             $details = $this->getShowSimpleDetails($id, 'en-US');
-                            if ($details && !empty($details['name'])) {
+                            if ($details && ! empty($details['name'])) {
                                 $show['en_name'] = $details['name'];
                             }
                         }
@@ -345,7 +335,7 @@ class TmdbService
                     $results = array_values($allCredits);
 
                     // Trier par popularité par défaut
-                    usort($results, function($a, $b) {
+                    usort($results, function ($a, $b) {
                         return ($b['popularity'] ?? 0) <=> ($a['popularity'] ?? 0);
                     });
 
@@ -361,13 +351,14 @@ class TmdbService
                         'results' => $paginated_results,
                         'total_results' => $total_results,
                         'total_pages' => (int) $total_pages,
-                        'page' => (int) $page
+                        'page' => (int) $page,
                     ];
                 }
 
                 return ['results' => [], 'total_pages' => 0];
             } catch (\Exception $e) {
-                \Log::error("TMDB API Error (tv_credits multi-lang): " . $e->getMessage());
+                \Log::error('TMDB API Error (tv_credits multi-lang): '.$e->getMessage());
+
                 return null;
             }
         });
@@ -386,7 +377,7 @@ class TmdbService
                     $response = Http::timeout(15)->get("{$this->baseUrl}/person/{$personId}", [
                         'api_key' => $this->apiKey,
                         'language' => $lang,
-                        'append_to_response' => 'external_ids,combined_credits'
+                        'append_to_response' => 'external_ids,combined_credits',
                     ]);
 
                     if ($response->successful()) {
@@ -413,7 +404,8 @@ class TmdbService
 
                 return $base;
             } catch (\Exception $e) {
-                \Log::error("TMDB API Person Details Error: " . $e->getMessage());
+                \Log::error('TMDB API Person Details Error: '.$e->getMessage());
+
                 return null;
             }
         });
@@ -421,7 +413,7 @@ class TmdbService
 
     public function searchPerson($query)
     {
-        $cacheKey = "tmdb_search_person_v2_" . md5($query);
+        $cacheKey = 'tmdb_search_person_v2_'.md5($query);
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($query) {
             try {
@@ -431,7 +423,7 @@ class TmdbService
                     'api_key' => $this->apiKey,
                     'language' => 'en-US',
                     'query' => $query,
-                    'include_adult' => false
+                    'include_adult' => false,
                 ]);
 
                 if ($response->failed()) {
@@ -440,7 +432,8 @@ class TmdbService
 
                 return $response->json();
             } catch (\Exception $e) {
-                \Log::error("TMDB API Error (searchPerson): " . $e->getMessage());
+                \Log::error('TMDB API Error (searchPerson): '.$e->getMessage());
+
                 return null;
             }
         });

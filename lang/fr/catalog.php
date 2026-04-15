@@ -14,6 +14,7 @@ return [
 
     // Filter Labels
     'filter_search' => 'Recherche',
+    'filter_actor_search' => 'Chercher un acteur',
     'filter_search_placeholder' => 'Titre (FR, EN, OR)...',
     'filter_search_hint' => 'Recherche FR/EN. Filtre coréen uniquement.',
 
@@ -37,12 +38,24 @@ return [
     'filter_watching' => 'Masquer en train de regarder',
     'filter_watchlist' => 'Masquer ma watchlist',
     'filter_clear' => 'Réinitialiser',
+    'filter_toggle_active' => 'Activé',
+    'filter_exact_name' => 'Nom exact uniquement',
+    'filter_has_photo' => 'Avec photo uniquement',
     'filter_search_btn' => '🔍 Rechercher',
+
+    // Tabs
+    'tabs_dramas' => '📺 Drames',
+    'tabs_actors' => '🎭 Acteurs',
 
     // Results
     'no_results' => 'Aucun résultat trouvé',
     'no_results_message' => 'Essayez avec d\'autres critères de recherche',
+    'no_actors_found' => 'Aucun acteur trouvé',
     'results_count' => 'résultats trouvés',
+
+    // Actor Card
+    'known_for' => 'Connu pour',
+    'view_dramas' => 'Voir les drames',
 
     // Toggles
     'filter_toggle_active' => 'Actif',
@@ -53,4 +66,5 @@ return [
     'results_out_of' => 'résultats sur',
     'total_label' => 'au total',
     'page_info' => 'Page :current / :total — Affichage de :count résultats sur :total_results total',
+    'loading' => 'Chargement...',
 ];

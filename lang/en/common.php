@@ -56,4 +56,5 @@ return [
     'footer_connect' => 'Connect',
     'footer_coming_soon' => 'Coming soon...',
     'footer_created_by' => 'Created with ❤️ by',
+    'years' => '{1} year|[0,2] years',
 ];

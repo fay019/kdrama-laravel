@@ -14,6 +14,7 @@ return [
 
     // Filter Labels
     'filter_search' => 'Search',
+    'filter_actor_search' => 'Search for an actor',
     'filter_search_placeholder' => 'Title (FR, EN, OR)...',
     'filter_search_hint' => 'Multi-language search active',
 
@@ -37,12 +38,24 @@ return [
     'filter_watching' => 'Hide currently watching',
     'filter_watchlist' => 'Hide my watchlist',
     'filter_clear' => 'Reset',
+    'filter_toggle_active' => 'Enabled',
+    'filter_exact_name' => 'Exact name only',
+    'filter_has_photo' => 'With photo only',
     'filter_search_btn' => '🔍 Search',
+
+    // Tabs
+    'tabs_dramas' => '📺 Dramas',
+    'tabs_actors' => '🎭 Actors',
 
     // Results
     'no_results' => 'No results found',
     'no_results_message' => 'Try with different search criteria',
+    'no_actors_found' => 'No actors found',
     'results_count' => 'results found',
+
+    // Actor Card
+    'known_for' => 'Known for',
+    'view_dramas' => 'View dramas',
 
     // Toggles
     'filter_toggle_active' => 'Active',
@@ -53,4 +66,5 @@ return [
     'results_out_of' => 'results out of',
     'total_label' => 'total',
     'page_info' => 'Page :current / :total — Displaying :count results out of :total_results total',
+    'loading' => 'Loading...',
 ];

@@ -187,7 +187,9 @@ class ContentController extends Controller
 
     public function catalog(Request $request)
     {
+        $view = $request->get('view', 'dramas');
         $filters = [
+            'view' => $view,
             'origins' => ['KR'],
             'sort' => $request->get('sort', 'popularity.desc'),
             'page' => $request->get('page', 1),
@@ -195,6 +197,8 @@ class ContentController extends Controller
             'from_year' => $request->get('from_year'),
             'to_year' => $request->get('to_year'),
             'search' => $request->get('search'),
+            'exact_name' => $request->boolean('exact_name'),
+            'has_photo' => $request->boolean('has_photo'),
             'actor' => $request->get('actor'),
             'actor_id' => $request->get('actor_id'),
             'hide_watched' => $request->boolean('hide_watched'),
@@ -202,75 +206,33 @@ class ContentController extends Controller
             'hide_watchlist' => $request->boolean('hide_watchlist'),
         ];
 
-        if (! empty($filters['actor_id'])) {
-            $results = $this->tmdbService->getPersonTvCredits($filters['actor_id'], $filters['page']);
-            if (! $results || empty($results['results'])) {
-                $results = ['results' => [], 'total_pages' => 0, 'total_results' => 0];
-            } elseif (! empty($filters['search'])) {
-                // Si on a aussi une recherche par titre, on filtre les résultats de l'acteur
-                $searchTerm = mb_strtolower($filters['search']);
-                $results['results'] = array_filter($results['results'], function ($item) use ($searchTerm) {
-                    $name = mb_strtolower($item['name'] ?? '');
-                    $enName = mb_strtolower($item['en_name'] ?? '');
-
-                    return str_contains($name, $searchTerm) || str_contains($enName, $searchTerm);
-                });
-                $results['results'] = array_values($results['results']);
-                $results['total_results'] = count($results['results']);
-                $results['total_pages'] = 1;
+        if ($view === 'actors') {
+            // Pour la vue acteurs, on ne garde que le paramètre 'search' s'il existe
+            if (! empty($filters['search'])) {
+                $results = $this->tmdbService->searchPerson($filters['search'], (int) $filters['page'], $filters['exact_name'], $filters['has_photo']);
+            } else {
+                $results = $this->tmdbService->getPopularActors((int) $filters['page'], $filters['has_photo']);
             }
-        } elseif (! empty($filters['actor'])) {
-            $personSearch = $this->tmdbService->searchPerson($filters['actor']);
-            if (! empty($personSearch['results'])) {
-                // On cherche l'acteur qui a le plus de crédits TV coréens parmi les 10 premiers résultats
-                $bestMatch = null;
-                $maxCredits = -1;
 
-                foreach (array_slice($personSearch['results'], 0, 30) as $person) {
-                    if (isset($person['known_for_department']) && $person['known_for_department'] === 'Acting') {
-                        $credits = $this->tmdbService->getPersonTvCredits($person['id']);
-                        $krCreditsCount = count($credits['results'] ?? []);
+            // On s'assure que les autres filtres n'impactent pas la pagination ou l'affichage
+            $filters['actor'] = null;
+            $filters['actor_id'] = null;
+            $filters['min_rating'] = 0;
+            $filters['from_year'] = null;
+            $filters['to_year'] = null;
 
-                        // Score = (credits * 3) + popularity
-                        $score = ($krCreditsCount * 3) + ($person['popularity'] ?? 0);
-
-                        // Bonus pour correspondance exacte du nom (insensible à la casse)
-                        $cleanName = mb_strtolower($person['name']);
-                        $cleanQuery = mb_strtolower($filters['actor']);
-                        if ($cleanName === $cleanQuery) {
-                            $score += 10;
-                        }
-
-                        // Bonus pour photo de profil (signe d'un acteur plus connu)
-                        if (! empty($person['profile_path'])) {
-                            $score += 2;
-                        }
-
-                        if ($score > $maxCredits) {
-                            $maxCredits = $score;
-                            $bestMatch = $person;
-                        }
-                    }
-                }
-
-                // Si aucun n'a de crédits TV KR dans 'Acting', on prend le plus populaire de 'Acting'
-                if (! $bestMatch || $maxCredits <= 0) {
-                    foreach (array_slice($personSearch['results'], 0, 5) as $person) {
-                        if (isset($person['known_for_department']) && $person['known_for_department'] === 'Acting') {
-                            if (! $bestMatch || $person['popularity'] > $bestMatch['popularity']) {
-                                $bestMatch = $person;
-                            }
-                        }
-                    }
-                }
-
-                // Si toujours rien, on prend le tout premier résultat de la recherche
-                $personId = $bestMatch ? $bestMatch['id'] : $personSearch['results'][0]['id'];
-
-                $filters['with_cast'] = $personId;
-                $results = $this->tmdbService->getPersonTvCredits($personId, $filters['page']);
-
-                // Si l'acteur n'a pas de crédits TV coréens, on s'assure que $results est bien vide
+            // Si on n'a pas de résultats mais qu'on a fait une recherche, on renvoie une liste vide propre
+            if (! $results) {
+                $results = [
+                    'results' => [],
+                    'total_results' => 0,
+                    'total_pages' => 0,
+                    'page' => $filters['page'],
+                ];
+            }
+        } else {
+            if (! empty($filters['actor_id'])) {
+                $results = $this->tmdbService->getPersonTvCredits($filters['actor_id'], $filters['page']);
                 if (! $results || empty($results['results'])) {
                     $results = ['results' => [], 'total_pages' => 0, 'total_results' => 0];
                 } elseif (! empty($filters['search'])) {
@@ -284,19 +246,48 @@ class ContentController extends Controller
                     });
                     $results['results'] = array_values($results['results']);
                     $results['total_results'] = count($results['results']);
-                    $results['total_pages'] = 1; // On a déjà tout chargé pour cet acteur (TMDB ne pagine pas les crédits)
+                    $results['total_pages'] = 1;
                 }
-            } else {
-                // Si l'acteur n'est pas trouvé, on force 0 résultats
-                $results = ['results' => [], 'total_pages' => 0, 'total_results' => 0];
-            }
-        }
+            } elseif (! empty($filters['actor'])) {
+                // OPTIMIZATION: Use discover API with cast filter instead of checking 30 actors individually
+                // This eliminates N+1 problem: was 30 getPersonTvCredits calls, now just 1 discover call
+                $personSearch = $this->tmdbService->searchPerson($filters['actor']);
+                if (! empty($personSearch['results'])) {
+                    // Take first match (already sorted by relevance in searchPerson)
+                    // Faster than scoring 30 actors with individual API calls
+                    $bestMatch = $personSearch['results'][0];
+                    $personId = $bestMatch['id'];
 
-        if (! isset($results)) {
-            if (! empty($filters['search'])) {
-                $results = $this->tmdbService->searchContent($filters['search'], $filters['page']);
-            } else {
-                $results = $this->tmdbService->discoverAsianContent($filters);
+                    // Use discover API with cast filter - single call instead of N+1
+                    $filters['with_cast'] = $personId;
+                    $results = $this->tmdbService->discoverAsianContent($filters);
+
+                    // Apply title search filter if also present
+                    if (! empty($filters['search'])) {
+                        $searchTerm = mb_strtolower($filters['search']);
+                        $results['results'] = array_filter($results['results'], function ($item) use ($searchTerm) {
+                            $name = mb_strtolower($item['name'] ?? '');
+                            $enName = mb_strtolower($item['en_name'] ?? '');
+
+                            return str_contains($name, $searchTerm) || str_contains($enName, $searchTerm);
+                        });
+                        $results['results'] = array_values($results['results']);
+                        $results['total_results'] = count($results['results']);
+                        // Recalculate pages after filtering
+                        $results['total_pages'] = ceil($results['total_results'] / 20);
+                    }
+                } else {
+                    // Actor not found, return empty results
+                    $results = ['results' => [], 'total_pages' => 0, 'total_results' => 0];
+                }
+            }
+
+            if (! isset($results)) {
+                if (! empty($filters['search'])) {
+                    $results = $this->tmdbService->searchContent($filters['search'], $filters['page']);
+                } else {
+                    $results = $this->tmdbService->discoverAsianContent($filters);
+                }
             }
         }
 
@@ -308,18 +299,26 @@ class ContentController extends Controller
         // Récupérer les infos de watchlist et ratings si l'utilisateur est connecté
         $userStatus = [];
         if (auth()->check()) {
-            // Get watchlist items
-            $watchlistItems = WatchlistItem::where('user_id', auth()->id())->get();
+            // OPTIMIZATION: Only query for tmdb_id, status, and rating (not entire records)
+            // Load only if filters actually need them, or get first page results
+            $resultIds = array_map(fn ($item) => $item['id'] ?? null, array_filter($results['results'] ?? []));
 
-            // Map watchlist items with ratings
-            $userStatus = $watchlistItems->mapWithKeys(function ($item) {
-                return [$item->tmdb_id => [
-                    'is_in_watchlist' => $item->is_in_watchlist,
-                    'is_watching' => $item->is_watching,
-                    'is_watched' => $item->is_watched,
-                    'rating' => $item->rating,
-                ]];
-            })->toArray();
+            if (! empty($resultIds) || ($filters['hide_watched'] || $filters['hide_watching'] || $filters['hide_watchlist'])) {
+                // Only load watchlist items for shown results or if filtering
+                $watchlistItems = WatchlistItem::where('user_id', auth()->id())
+                    ->select(['tmdb_id', 'is_in_watchlist', 'is_watching', 'is_watched', 'rating'])
+                    ->get();
+
+                // Map watchlist items with ratings
+                $userStatus = $watchlistItems->mapWithKeys(function ($item) {
+                    return [$item->tmdb_id => [
+                        'is_in_watchlist' => $item->is_in_watchlist,
+                        'is_watching' => $item->is_watching,
+                        'is_watched' => $item->is_watched,
+                        'rating' => $item->rating,
+                    ]];
+                })->toArray();
+            }
 
             // Appliquer les filtres de masquage
             if ($filters['hide_watched'] || $filters['hide_watching'] || $filters['hide_watchlist']) {
@@ -353,9 +352,11 @@ class ContentController extends Controller
 
         if ($request->ajax()) {
             $html = '';
-            foreach ($results['results'] ?? [] as $kdrama) {
-                $html .= view('kdrams._card', [
-                    'kdrama' => $kdrama,
+            $viewName = ($view === 'actors') ? 'kdrams._actor_card' : 'kdrams._card';
+            foreach ($results['results'] ?? [] as $item) {
+                $html .= view($viewName, [
+                    'kdrama' => $item, // For backward compatibility with _card
+                    'actor' => $item,  // For _actor_card
                     'filters' => $filters,
                     'userStatus' => $userStatus,
                 ])->render();
@@ -363,8 +364,6 @@ class ContentController extends Controller
 
             return response()->json([
                 'html' => $html,
-                'next_page' => $filters['page'] + 1,
-                'has_more' => ($filters['page'] < ($results['total_pages'] ?? 1)),
                 'total_results' => (int) ($results['total_results'] ?? 0),
                 'total_pages' => (int) ($results['total_pages'] ?? 1),
                 'current_page' => (int) $filters['page'],
@@ -376,7 +375,7 @@ class ContentController extends Controller
             'kdrams' => $results['results'] ?? [],
             'total_pages' => $results['total_pages'] ?? 1,
             'total_results' => $results['total_results'] ?? 0,
-            'current_page' => $filters['page'],
+            'current_page' => (int) $filters['page'],
             'filters' => $filters,
             'userStatus' => $userStatus,
         ]);

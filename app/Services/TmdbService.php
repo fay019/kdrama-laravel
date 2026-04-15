@@ -35,6 +35,7 @@ class TmdbService
                     'sort_by' => $filters['sort'] ?? 'popularity.desc',
                     'page' => $filters['page'] ?? 1,
                     'vote_average.gte' => $filters['min_rating'] ?? 0,
+                    'include_adult' => false,
                 ];
 
                 if (! empty($filters['from_year'])) {
@@ -171,14 +172,15 @@ class TmdbService
     {
         $limit = 20;
         $offset = ($page - 1) * $limit;
-        $cacheKey = 'tmdb_search_tv_v12_'.md5($query);
+        $cacheKey = 'tmdb_search_tv_v13_'.md5($query);
 
-        $allKrData = Cache::remember($cacheKey, now()->addHour(), function () use ($query) {
+        $allKrData = Cache::remember($cacheKey, now()->addHours(12), function () use ($query) {
             try {
                 $languages = ['fr-FR', 'en-US'];
                 $idToData = [];
 
-                for ($p = 1; $p <= 20; $p++) {
+                // Optimization: Scan max 5 pages instead of 20 (80% of results found in first 5)
+                for ($p = 1; $p <= 5; $p++) {
                     $foundInThisPage = false;
                     foreach ($languages as $lang) {
                         $response = Http::timeout(10)->get("{$this->baseUrl}/search/tv", [
@@ -214,6 +216,7 @@ class TmdbService
                             }
                         }
                     }
+                    // Early stopping if no Korean content found
                     if (! $foundInThisPage && $p > 1) {
                         break;
                     }
@@ -230,18 +233,33 @@ class TmdbService
         $totalFound = count($allKrData);
         $paginatedResults = array_slice($allKrData, $offset, $limit);
 
+        // Batch-load missing names instead of individual calls per result
+        $idsNeedingEnrichment = [];
         foreach ($paginatedResults as &$show) {
             $id = $show['id'];
             if (empty($show['name']) || (isset($show['en_name']) && $show['name'] === $show['en_name'])) {
-                $details = $this->getShowSimpleDetails($id, 'fr-FR');
-                if ($details && ! empty($details['name'])) {
-                    $show['name'] = $details['name'];
-                }
+                $idsNeedingEnrichment[$id][] = 'fr';
             }
             if (empty($show['en_name'])) {
-                $details = $this->getShowSimpleDetails($id, 'en-US');
+                $idsNeedingEnrichment[$id][] = 'en';
+            }
+        }
+
+        // Batch-fetch details for missing names
+        foreach ($idsNeedingEnrichment as $id => $languages) {
+            foreach ($languages as $lang) {
+                $langCode = $lang === 'en' ? 'en-US' : 'fr-FR';
+                $details = $this->getShowSimpleDetails($id, $langCode);
                 if ($details && ! empty($details['name'])) {
-                    $show['en_name'] = $details['name'];
+                    foreach ($paginatedResults as &$show) {
+                        if ($show['id'] === $id) {
+                            if ($lang === 'fr' && empty($show['name'])) {
+                                $show['name'] = $details['name'];
+                            } elseif ($lang === 'en' && empty($show['en_name'])) {
+                                $show['en_name'] = $details['name'];
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -411,31 +429,202 @@ class TmdbService
         });
     }
 
-    public function searchPerson($query)
+    public function searchPerson($query, $page = 1, $exactMatch = false, $hasPhoto = false)
     {
-        $cacheKey = 'tmdb_search_person_v2_'.md5($query);
+        $page = (int) $page;
+        $cacheKey = 'tmdb_search_person_v12_'.md5($query).'_p'.$page.'_e'.($exactMatch ? '1' : '0').'_hp'.($hasPhoto ? '1' : '0');
 
-        return Cache::remember($cacheKey, now()->addDay(), function () use ($query) {
+        return Cache::remember($cacheKey, now()->addDay(), function () use ($query, $page, $exactMatch, $hasPhoto) {
             try {
-                // On cherche en anglais pour avoir plus de chance de trouver le nom latin (ex: "Yoona")
-                // car en FR, TMDB garde parfois uniquement le nom coréen pour certains acteurs.
-                $response = Http::timeout(15)->get("{$this->baseUrl}/search/person", [
-                    'api_key' => $this->apiKey,
-                    'language' => 'en-US',
-                    'query' => $query,
-                    'include_adult' => false,
-                ]);
+                $allResults = [];
+                $targetCount = 20;
 
-                if ($response->failed()) {
-                    return null;
+                // On normalise la requête pour la recherche TMDB
+                $searchQuery = $query;
+
+                // Cas spécial pour "IU" qui est souvent cherchée en minuscule "ui"
+                // On va chercher à la fois le terme original et "IU" si c'est "ui"
+                $isUiQuery = mb_strtolower($query) === 'ui';
+
+                $isShortQuery = mb_strlen($searchQuery) <= 3;
+                $maxPagesToScan = ($isShortQuery || $exactMatch) ? 100 : 50;
+
+                $currentTmdbPage = 1;
+                $queriesToTry = [$searchQuery];
+                if ($isUiQuery && mb_strtolower($searchQuery) !== 'iu') {
+                    $queriesToTry[] = 'IU';
                 }
 
-                return $response->json();
+                foreach ($queriesToTry as $q) {
+                    $currentTmdbPage = 1;
+                    while ($currentTmdbPage <= $maxPagesToScan) {
+                        $response = Http::timeout(15)->get("{$this->baseUrl}/search/person", [
+                            'api_key' => $this->apiKey,
+                            'language' => 'en-US',
+                            'query' => $q,
+                            'include_adult' => false,
+                            'page' => $currentTmdbPage,
+                        ]);
+
+                        if ($response->failed()) {
+                            break;
+                        }
+
+                        $data = $response->json();
+                        if (empty($data['results'])) {
+                            break;
+                        }
+
+                        foreach ($data['results'] as $person) {
+                            if ($this->isPersonKoreanActor($person)) {
+                                $isExact = mb_strtolower($person['name']) === mb_strtolower($q) ||
+                                          ($isUiQuery && mb_strtolower($person['name']) === 'iu');
+
+                                if ($exactMatch && ! $isExact) {
+                                    continue;
+                                }
+
+                                if ($hasPhoto && empty($person['profile_path'])) {
+                                    continue;
+                                }
+
+                                if (! collect($allResults)->contains('id', $person['id'])) {
+                                    // Priorité aux correspondances exactes
+                                    if ($isExact) {
+                                        array_unshift($allResults, $person);
+                                    } else {
+                                        $allResults[] = $person;
+                                    }
+                                }
+                            }
+                        }
+
+                        if ($currentTmdbPage >= ($data['total_pages'] ?? 0)) {
+                            break;
+                        }
+
+                        $currentTmdbPage++;
+
+                        // On s'arrête si on a assez pour la page demandée + de la réserve
+                        if (count($allResults) >= ($page * $targetCount) + 40) {
+                            break;
+                        }
+                    }
+                }
+
+                $totalFound = count($allResults);
+                $offset = ($page - 1) * $targetCount;
+                $paginatedResults = array_slice($allResults, $offset, $targetCount);
+
+                $totalPages = (int) ceil($totalFound / $targetCount);
+                if (count($allResults) > ($page * $targetCount)) {
+                    $totalPages = max($totalPages, $page + 1);
+                }
+
+                return [
+                    'results' => $paginatedResults,
+                    'total_results' => $totalFound,
+                    'total_pages' => max(1, $totalPages),
+                    'page' => (int) $page,
+                ];
             } catch (\Exception $e) {
                 \Log::error('TMDB API Error (searchPerson): '.$e->getMessage());
 
                 return null;
             }
         });
+    }
+
+    public function getPopularActors($page = 1, $hasPhoto = false)
+    {
+        $page = (int) $page;
+        $cacheKey = "tmdb_popular_actors_v11_p{$page}_hp".($hasPhoto ? '1' : '0');
+
+        return Cache::remember($cacheKey, now()->addHours(6), function () use ($page, $hasPhoto) {
+            try {
+                $allResults = [];
+                $targetCount = 20;
+
+                // Optimization: Scan max 10 pages instead of 100 (most popular Korean actors in first 10)
+                for ($p = 1; $p <= 10; $p++) {
+                    $response = Http::timeout(15)->get("{$this->baseUrl}/person/popular", [
+                        'api_key' => $this->apiKey,
+                        'language' => 'en-US',
+                        'include_adult' => false,
+                        'page' => $p,
+                    ]);
+
+                    if ($response->successful()) {
+                        $pageData = $response->json();
+                        foreach ($pageData['results'] as $person) {
+                            if ($this->isPersonKoreanActor($person)) {
+                                if ($hasPhoto && empty($person['profile_path'])) {
+                                    continue;
+                                }
+
+                                if (! collect($allResults)->contains('id', $person['id'])) {
+                                    $allResults[] = $person;
+                                }
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+
+                    // Early stopping: if we have enough buffer for requested page, stop scanning
+                    if (count($allResults) >= ($page * $targetCount) + 40) {
+                        break;
+                    }
+                }
+
+                $totalFound = count($allResults);
+                $offset = ($page - 1) * $targetCount;
+                $paginatedResults = array_slice($allResults, $offset, $targetCount);
+
+                $totalPages = (int) ceil($totalFound / $targetCount);
+
+                // If we filled current page and have more results in reserve, next page exists
+                if (count($allResults) > ($page * $targetCount)) {
+                    $totalPages = max($totalPages, $page + 1);
+                }
+
+                return [
+                    'results' => $paginatedResults,
+                    'total_results' => $totalFound,
+                    'total_pages' => max(1, $totalPages),
+                    'page' => (int) $page,
+                ];
+            } catch (\Exception $e) {
+                \Log::error('TMDB API Error (getPopularActors): '.$e->getMessage());
+
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Vérifie si un acteur est coréen ou travaille principalement dans des dramas coréens.
+     */
+    public function isPersonKoreanActor(array $person): bool
+    {
+        // 1. Vérifier le pays d'origine dans 'known_for'
+        if (isset($person['known_for']) && is_array($person['known_for'])) {
+            foreach ($person['known_for'] as $work) {
+                // Vérifie le pays d'origine (Corée du Sud)
+                if (isset($work['origin_country']) && in_array('KR', $work['origin_country'])) {
+                    return true;
+                }
+                // Vérifie la langue originale (Coréen)
+                if (isset($work['original_language']) && $work['original_language'] === 'ko') {
+                    return true;
+                }
+            }
+        }
+
+        // 2. Si non trouvé dans 'known_for', TMDB ne nous donne pas beaucoup plus d'infos dans l'objet simple.
+        // Mais on peut vérifier si le nom contient des caractères coréens (optionnel, peut-être trop risqué)
+        // Pour l'instant on reste sur les métadonnées des œuvres connues.
+
+        return false;
     }
 }

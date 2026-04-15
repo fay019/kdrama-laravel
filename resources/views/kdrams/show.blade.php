@@ -845,5 +845,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 });
+
+window.filterByActor = function(actorId, actorName) {
+    // Navigate to dramas view filtered by actor ID
+    window.location.href = '{{ route("kdrams.catalog") }}?view=dramas&actor_id=' + actorId;
+};
 </script>
 @endsection

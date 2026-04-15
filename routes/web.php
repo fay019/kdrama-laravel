@@ -39,6 +39,7 @@ Route::prefix('setup')->name('setup.')->group(function () {
 // Public routes (with password check for authenticated users)
 Route::get('/', [ContentController::class, 'index'])->middleware('check.password')->name('home');
 Route::get('/kdrams', [ContentController::class, 'catalog'])->middleware('check.password')->name('kdrams.catalog');
+Route::get('/kdrams/actor/{id}', [ContentController::class, 'actorDetails'])->middleware('check.password')->name('kdrams.actor.details');
 Route::get('/kdrams/{id}', [ContentController::class, 'show'])->middleware('check.password')->name('kdrams.show');
 Route::get('/api/actor/{id}', [ContentController::class, 'actorDetails'])->middleware('check.password')->name('api.actor.details');
 

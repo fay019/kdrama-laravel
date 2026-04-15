@@ -1,7 +1,65 @@
 # 🎬 KDrama Laravel - Documentation Complète
 
-**Date de mise à jour:** 2026-03-12
-**Dernier développement:** Fixed PDF export watching filter + Fixed home page drama links (tmdb_id vs id)
+**Date de mise à jour:** 2026-04-16
+**Dernier développement:** Dual catalog view system (Dramas + Actors) with advanced search filters
+
+---
+
+## 🔄 Recent Changes (2026-04-16)
+
+### ✅ Dual Catalog View System - Dramas & Actors Explorer
+**Major Addition:** Complete actor browsing and search system integrated into the catalog page
+
+**Features Implemented:**
+- ✅ **Toggle View**: Switch between `?view=dramas` (default) and `?view=actors` in catalog
+- ✅ **Actor Cards**: New `_actor_card.blade.php` component displaying actor photos with known works
+- ✅ **Search Actors**: Full-text search across all TMDB actors with pagination
+- ✅ **Filter Options**: 
+  - `exact_name=true` - Match actor names exactly (case-insensitive)
+  - `has_photo=true` - Show only actors with profile images
+- ✅ **Popular Actors**: Default view when no search query shows trending actors
+- ✅ **Click to View**: Click any actor card to open their modal with full bio and filmography
+
+**New Methods in TmdbService:**
+```php
+// Retrieve popular actors paginated
+getPopularActors(int $page = 1, bool $hasPhoto = false): array
+
+// Search actors with filters
+searchPerson(string $query, int $page = 1, bool $exactName = false, bool $hasPhoto = false): array
+```
+
+**New Route Parameters:**
+```
+/kdrams?view=actors                     # Show actor catalog
+/kdrams?view=actors&search=park%20shin  # Search actors
+/kdrams?view=actors&exact_name=true     # Exact name matching
+/kdrams?view=actors&has_photo=true      # Show only with photos
+/kdrams?view=dramas                     # Default drama view
+```
+
+**Database Impact:** None - uses TMDB API only
+
+**Testing:**
+- ✅ New test file: `tests/Feature/SearchReliabilityTest.php`
+- ✅ Tests cover: Korean content filtering, multi-page scanning, title+actor combination search
+- Run: `php artisan test --filter=SearchReliability`
+
+**Files Modified:**
+- `app/Http/Controllers/ContentController.php` - Added view switching logic, refactored actor search
+- `app/Services/TmdbService.php` - New actor search methods with filters
+- `resources/views/kdrams/index.blade.php` - Added actor view layout + view toggle
+- `resources/views/kdrams/_actor_card.blade.php` - **NEW** actor card component
+- `resources/views/kdrams/_actor_modal.blade.php` - Enhanced actor modal (full bio, social links)
+- `lang/*/catalog.php` - Translation keys for actor view
+- `routes/web.php` - No changes required (uses existing route)
+
+**UI/UX:**
+- Actor cards display poster-style with hover zoom effect
+- Known works displayed below actor name
+- Fallback placeholder for actors without profile photos
+- Seamless toggle between dramas and actors view
+- Search filters work identically to drama search
 
 ---
 

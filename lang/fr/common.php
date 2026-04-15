@@ -56,4 +56,5 @@ return [
     'footer_connect' => 'Se connecter',
     'footer_coming_soon' => 'Bientôt disponible...',
     'footer_created_by' => 'Créé avec ❤️ par',
+    'years' => '{1} an|[0,2] ans',
 ];

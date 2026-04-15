@@ -23,7 +23,7 @@ class AdminSettingsController extends Controller
             }
         }
 
-        return redirect()->route('admin.settings.index')->with('success', __('admin.settings.settings_saved'));
+        return redirect()->route('admin.settings.index')->with('success', '✅ '.__('admin.settings_save'));
     }
 
     public function store(Request $request)
@@ -33,7 +33,6 @@ class AdminSettingsController extends Controller
             'group' => 'required|string',
             'label' => 'required|string',
             'value' => 'nullable|string',
-            'is_sensitive' => 'boolean',
         ]);
 
         // Get max order for this group
@@ -46,6 +45,7 @@ class AdminSettingsController extends Controller
             'value' => $validated['value'] ?? '',
             'order' => $maxOrder + 1,
             'is_deletable' => true,
+            'is_sensitive' => $request->has('is_sensitive'),
         ]);
 
         return redirect()->route('admin.settings.index')->with('success', "✅ Setting '{$validated['key']}' created successfully!");
@@ -60,7 +60,11 @@ class AdminSettingsController extends Controller
             'value' => 'nullable|string',
         ]);
 
-        $setting->update($validated);
+        $setting->update([
+            'label' => $validated['label'],
+            'value' => $validated['value'] ?? '',
+            'is_sensitive' => $request->has('is_sensitive'),
+        ]);
 
         return redirect()->route('admin.settings.index')->with('success', "✅ Setting '{$setting->key}' updated successfully!");
     }

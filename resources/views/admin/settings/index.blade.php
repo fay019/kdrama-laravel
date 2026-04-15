@@ -16,14 +16,13 @@
             <!-- Content -->
             <div class="w-full py-6 px-3 sm:py-8 sm:px-6 lg:px-8">
                 <div class="w-full max-w-5xl mx-auto">
-                    <!-- Success Message -->
+                    <!-- Success Message (Toast) -->
                     @if (session('success'))
-                        <div class="mb-6 bg-green-900/30 border border-green-600 text-green-200 px-4 py-3 rounded-lg flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            {{ session('success') }}
-                        </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                showToast('{{ session('success') }}', 'success');
+                            });
+                        </script>
                     @endif
 
                     <!-- Add New Setting Button -->
@@ -115,7 +114,7 @@
                                             <label for="{{ $setting->key }}" class="block text-slate-200 font-semibold mb-2 flex items-center justify-between">
                                                 <span>{{ $setting->label ?? ucwords(str_replace('_', ' ', $setting->key)) }}</span>
                                                 <div class="flex items-center gap-2">
-                                                    @if(str_contains($setting->key, 'key') || str_contains($setting->key, 'secret'))
+                                                    @if($setting->is_sensitive)
                                                         <span class="text-xs font-normal text-yellow-400 bg-yellow-900/30 px-2 py-1 rounded">🔐 Sensitive</span>
                                                     @endif
 
@@ -134,19 +133,17 @@
                                                     @endif
 
                                                     <!-- Edit Button -->
-                                                    <button type="button" onclick="openEditModal({{ $setting->id }}, '{{ $setting->label }}', {{ json_encode($setting->value) }})"
+                                                    <button type="button" onclick="openEditModal({{ $setting->id }}, '{{ $setting->label }}', {{ json_encode($setting->value) }}, {{ $setting->is_sensitive ? 'true' : 'false' }})"
                                                         title="{{ __('admin.settings_edit_btn') }}" class="text-slate-400 hover:text-green-400 transition text-sm">
                                                         ✏️
                                                     </button>
 
                                                     <!-- Delete Button -->
                                                     @if($setting->is_deletable)
-                                                        <form action="{{ route('admin.settings.delete-setting', $setting->id) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('admin.settings_confirm_delete') }}')">
-                                                            @csrf
-                                                            <button type="submit" title="{{ __('admin.settings_delete_btn') }}" class="text-slate-400 hover:text-red-400 transition text-sm">
-                                                                🗑️
-                                                            </button>
-                                                        </form>
+                                                        <button type="button" onclick="openDeleteModal({{ $setting->id }}, '{{ addslashes($setting->label) }}')"
+                                                            title="{{ __('admin.settings_delete_btn') }}" class="text-slate-400 hover:text-red-400 transition text-sm">
+                                                            🗑️
+                                                        </button>
                                                     @endif
                                                 </div>
                                             </label>
@@ -190,7 +187,7 @@
 
                                             @else
                                                 @php
-                                                    $isApiKey = str_contains($setting->key, 'key') || str_contains($setting->key, 'secret');
+                                                    $isApiKey = $setting->is_sensitive;
                                                     $displayValue = $isApiKey ? maskApiKey(old($setting->key, $setting->value)) : old($setting->key, $setting->value);
                                                 @endphp
 
@@ -291,6 +288,7 @@
                     <div>
                         <label for="modal_key" class="block text-slate-200 font-semibold mb-2">{{ __('admin.settings_add_key_label') }}</label>
                         <input type="text" name="key" id="modal_key" placeholder="{{ __('admin.settings_add_key_placeholder') }}"
+                            value="{{ old('key') }}"
                             class="w-full px-4 py-3 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-slate-700 text-white transition"
                             required>
                         @error('key')
@@ -302,6 +300,7 @@
                     <div>
                         <label for="modal_group" class="block text-slate-200 font-semibold mb-2">{{ __('admin.settings_add_group_label') }}</label>
                         <input type="text" name="group" id="modal_group" list="groups_list" placeholder="{{ __('admin.settings_add_group_placeholder') }}"
+                            value="{{ old('group') }}"
                             class="w-full px-4 py-3 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-slate-700 text-white placeholder-slate-500 transition"
                             required>
                         <datalist id="groups_list">
@@ -322,6 +321,7 @@
                     <div class="md:col-span-2">
                         <label for="modal_label" class="block text-slate-200 font-semibold mb-2">{{ __('admin.settings_add_label_label') }}</label>
                         <input type="text" name="label" id="modal_label" placeholder="{{ __('admin.settings_add_label_placeholder') }}"
+                            value="{{ old('label') }}"
                             class="w-full px-4 py-3 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-slate-700 text-white transition"
                             required>
                         @error('label')
@@ -333,16 +333,19 @@
                     <div class="md:col-span-2">
                         <label for="modal_value" class="block text-slate-200 font-semibold mb-2">{{ __('admin.settings_add_value_label') }}</label>
                         <textarea name="value" id="modal_value" rows="3" placeholder="{{ __('admin.settings_add_value_placeholder') }}"
-                            class="w-full px-4 py-3 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-slate-700 text-white placeholder-slate-500 transition"></textarea>
+                            class="w-full px-4 py-3 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-slate-700 text-white placeholder-slate-500 transition">{{ old('value') }}</textarea>
                         @error('value')
                             <p class="text-xs text-red-400 mt-2">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Sensitive Checkbox -->
+                    <!-- Sensitive Toggle -->
                     <div class="md:col-span-2">
                         <label class="flex items-center gap-3 cursor-pointer">
-                            <input type="checkbox" name="is_sensitive" value="true" class="w-5 h-5 rounded border-slate-600 text-yellow-600 focus:ring-2 focus:ring-yellow-500/20">
+                            <div class="relative inline-block">
+                                <input type="checkbox" name="is_sensitive" value="true" id="modal_is_sensitive" {{ old('is_sensitive') ? 'checked' : '' }} class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-600 peer-checked:bg-blue-600 rounded-full transition peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:h-5 after:w-5 after:rounded-full after:transition"></div>
+                            </div>
                             <span class="text-slate-300 font-medium">{{ __('admin.settings_add_sensitive') }}</span>
                         </label>
                     </div>
@@ -392,6 +395,17 @@
                         <textarea name="value" id="edit_value" rows="3"
                             class="w-full px-4 py-3 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-slate-700 text-white placeholder-slate-500 transition"></textarea>
                     </div>
+
+                    <!-- Sensitive Toggle -->
+                    <div>
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <div class="relative inline-block">
+                                <input type="checkbox" name="is_sensitive" value="true" id="edit_is_sensitive" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-600 peer-checked:bg-blue-600 rounded-full transition peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:h-5 after:w-5 after:rounded-full after:transition"></div>
+                            </div>
+                            <span class="text-slate-300 font-medium">{{ __('admin.settings_add_sensitive') }}</span>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Modal Footer -->
@@ -404,6 +418,40 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Delete Setting Confirmation Modal -->
+    <div id="deleteSettingModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-lg max-w-md w-full border border-slate-700 shadow-2xl">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-slate-800 to-slate-700 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
+                <h2 class="font-bold text-lg text-white">⚠️ {{ __('admin.settings_delete_btn') }}</h2>
+                <button type="button" onclick="closeDeleteModal()" class="text-slate-400 hover:text-white transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6">
+                <p class="text-slate-300 mb-6">
+                    {{ __('admin.settings_confirm_delete') }}
+                    <span id="delete_setting_label" class="font-bold text-white block mt-2 text-center text-lg"></span>
+                </p>
+
+                <!-- Modal Footer -->
+                <form id="deleteSettingForm" method="POST" class="flex gap-3">
+                    @csrf
+                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold rounded-lg transition shadow-lg hover:shadow-xl">
+                        {{ __('admin.settings_delete_btn') }}
+                    </button>
+                    <button type="button" onclick="closeDeleteModal()" class="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition">
+                        {{ __('common.cancel') }}
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -456,11 +504,12 @@
             document.getElementById('addSettingModal').classList.add('hidden');
         }
 
-        function openEditModal(settingId, label, value) {
+        function openEditModal(settingId, label, value, isSensitive = false) {
             const form = document.getElementById('editSettingForm');
             form.action = `/admin/settings/${settingId}/edit`;
             document.getElementById('edit_label').value = label;
             document.getElementById('edit_value').value = value;
+            document.getElementById('edit_is_sensitive').checked = isSensitive;
 
             // Add data attribute to track visibility
             document.getElementById('edit_value').setAttribute('data-visible', 'false');
@@ -471,6 +520,17 @@
 
         function closeEditModal() {
             document.getElementById('editSettingModal').classList.add('hidden');
+        }
+
+        function openDeleteModal(settingId, label) {
+            const form = document.getElementById('deleteSettingForm');
+            form.action = `/admin/settings/${settingId}/delete`;
+            document.getElementById('delete_setting_label').textContent = label;
+            document.getElementById('deleteSettingModal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteSettingModal').classList.add('hidden');
         }
 
         function moveSetting(settingId, direction) {
@@ -529,6 +589,7 @@
             if (e.key === 'Escape') {
                 closeAddSettingModal();
                 closeEditModal();
+                closeDeleteModal();
             }
         });
 
@@ -542,6 +603,17 @@
         document.getElementById('editSettingModal')?.addEventListener('click', (e) => {
             if (e.target.id === 'editSettingModal') {
                 closeEditModal();
+            }
+        });
+
+        // Auto-open add modal if there are validation errors
+        document.addEventListener('DOMContentLoaded', () => {
+            const addModal = document.getElementById('addSettingModal');
+            const hasErrors = addModal?.querySelector('.text-red-400');
+
+            if (hasErrors) {
+                openAddSettingModal();
+                showToast('❌ Erreurs de validation - corrigez-les', 'error');
             }
         });
     </script>

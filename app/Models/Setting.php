@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
-    protected $fillable = ['key', 'value', 'group', 'label', 'order', 'is_deletable'];
+    protected $fillable = ['key', 'value', 'group', 'label', 'order', 'is_deletable', 'is_sensitive'];
 
     protected $casts = [
         'is_deletable' => 'boolean',
+        'is_sensitive' => 'boolean',
     ];
 
     public static function get($key, $default = null)

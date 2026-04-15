@@ -18,6 +18,7 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/framework
 /vendor
 Homestead.json
 Homestead.yaml
@@ -25,7 +26,9 @@ Thumbs.db
 
 # Project exclude paths
 /storage/app/
-/storage/framework/.claude/
+
+# Development & IDE files
+.claude/
 .junie/
 .mcp.json
 AGENTS.md

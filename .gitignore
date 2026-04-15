@@ -25,4 +25,8 @@ Thumbs.db
 
 # Project exclude paths
 /storage/app/
-/storage/framework/
+/storage/framework/.claude/
+.junie/
+.mcp.json
+AGENTS.md
+boost.json

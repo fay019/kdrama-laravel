@@ -98,7 +98,7 @@
                             <!-- Icon Picker Help -->
                             <div class="mb-4 p-3 bg-blue-900/30 border border-blue-600 rounded text-sm">
                                 <p class="text-blue-200 font-semibold mb-2">{{ __('admin.author_icon_hint') }}</p>
-                                <p class="text-blue-300 text-xs">4500+ Tabler Icons available • Live search • Click to select</p>
+                                <p class="text-blue-300 text-xs">{{ __('admin.author_social_link_icon_hint') }}</p>
                             </div>
 
                             <div id="social-links-container" class="space-y-4">
@@ -109,8 +109,8 @@
                                             <div class="flex items-center gap-3 flex-1">
                                                 <span class="drag-handle text-slate-400 cursor-grab active:cursor-grabbing text-lg" title="Drag to reorder">⋮⋮</span>
                                                 <div class="flex-1">
-                                                    <label class="block text-slate-200 font-semibold mb-2 text-sm">🔗 Platform Name</label>
-                                                    <input type="text" name="social_links[{{ $index }}][platform]" value="{{ $link->platform }}" placeholder="Twitter, GitHub, Email..." class="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500">
+                                                    <label class="block text-slate-200 font-semibold mb-2 text-sm">{{ __('admin.author_social_link_platform_label') }}</label>
+                                                    <input type="text" name="social_links[{{ $index }}][platform]" value="{{ $link->platform }}" placeholder="{{ __('admin.author_social_link_platform_placeholder') }}" class="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500">
                                                 </div>
                                             </div>
                                             <button type="button" onclick="this.closest('.social-link-item').remove()" class="ml-3 text-slate-400 hover:text-red-400 text-2xl transition">🗑️</button>
@@ -120,16 +120,16 @@
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <!-- URL -->
                                             <div>
-                                                <label class="block text-slate-200 font-semibold mb-2 text-sm">🌐 URL</label>
-                                                <input type="text" name="social_links[{{ $index }}][url]" value="{{ $link->url }}" placeholder="moussouni.dev ou https://..." class="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500" onblur="autoAddProtocol(this)">
-                                                <p class="text-xs text-slate-400 mt-1">https:// will be added automatically if missing</p>
+                                                <label class="block text-slate-200 font-semibold mb-2 text-sm">{{ __('admin.author_social_link_url_label') }}</label>
+                                                <input type="text" name="social_links[{{ $index }}][url]" value="{{ $link->url }}" placeholder="{{ __('admin.author_social_link_url_placeholder') }}" class="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500" onblur="autoAddProtocol(this)">
+                                                <p class="text-xs text-slate-400 mt-1">{{ __('admin.author_social_link_url_hint') }}</p>
                                             </div>
 
                                             <!-- Icon + Picker -->
                                             <div>
-                                                <label class="block text-slate-200 font-semibold mb-2 text-sm">🎨 Icon Name</label>
+                                                <label class="block text-slate-200 font-semibold mb-2 text-sm">{{ __('admin.author_social_link_icon_label') }}</label>
                                                 <div class="flex gap-2">
-                                                    <input type="text" name="social_links[{{ $index }}][icon]" value="{{ $link->icon }}" placeholder="brand-twitter..." class="flex-1 px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500">
+                                                    <input type="text" name="social_links[{{ $index }}][icon]" value="{{ $link->icon }}" placeholder="{{ __('admin.author_social_link_icon_placeholder') }}" class="flex-1 px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500">
                                                     <button type="button" onclick="openIconPicker(this.previousElementSibling)" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold text-sm transition">🎨</button>
                                                 </div>
                                             </div>
@@ -139,18 +139,18 @@
                                         <div class="mt-4 pt-4 border-t border-slate-600">
                                             <label class="flex items-center gap-3 cursor-pointer">
                                                 <input type="checkbox" name="social_links[{{ $index }}][is_visible]" value="1" {{ $link->is_visible ? 'checked' : '' }} class="w-4 h-4 rounded bg-slate-600 border border-slate-500 text-blue-600 focus:ring-blue-500">
-                                                <span class="text-slate-200 font-semibold text-sm">👁️ Visible in footer</span>
+                                                <span class="text-slate-200 font-semibold text-sm">{{ __('admin.author_social_link_visible_label') }}</span>
                                             </label>
                                         </div>
                                     </div>
                                 @empty
                                     <div class="text-center py-8">
-                                        <p class="text-slate-400 text-sm">No social links yet</p>
-                                        <p class="text-slate-500 text-xs mt-1">Click "+ Add Social Link" to create one</p>
+                                        <p class="text-slate-400 text-sm">{{ __('admin.author_social_links_empty') }}</p>
+                                        <p class="text-slate-500 text-xs mt-1">{{ __('admin.author_social_links_empty_hint') }}</p>
                                     </div>
                                 @endforelse
                             </div>
-                            <button type="button" onclick="addSocialLink()" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">+ Add Social Link</button>
+                            <button type="button" onclick="addSocialLink()" class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">{{ __('admin.author_social_links_add_btn') }}</button>
                         </div>
 
                         <hr class="border-slate-700 my-8">
@@ -160,48 +160,48 @@
                             <h3 class="font-semibold text-lg text-white mb-4">{{ __('admin.dashboard_seo_settings') }}</h3>
 
                             <div class="mb-4">
-                                <label class="block text-slate-200 font-semibold mb-2">Meta Description <span class="text-xs text-slate-400">(160 chars max)</span></label>
-                                <textarea name="meta_description" rows="2" maxlength="160" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded text-white focus:border-blue-500 text-sm" placeholder="Brief description for Google search results">{{ old('meta_description', $metadata->meta_description) }}</textarea>
-                                <div class="text-xs text-slate-400 mt-1"><span id="desc-count">{{ strlen($metadata->meta_description ?? '') }}</span>/160</div>
+                                <label class="block text-slate-200 font-semibold mb-2">{{ __('admin.author_meta_description_label') }} <span class="text-xs text-slate-400">{{ __('admin.author_meta_description_hint') }}</span></label>
+                                <textarea name="meta_description" rows="2" maxlength="160" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded text-white focus:border-blue-500 text-sm" placeholder="{{ __('admin.author_meta_description_placeholder') }}">{{ old('meta_description', $metadata->meta_description) }}</textarea>
+                                <div class="text-xs text-slate-400 mt-1"><span id="desc-count">{{ strlen($metadata->meta_description ?? '') }}</span>{{ __('admin.author_char_count_suffix') }}</div>
                                 @error('meta_description') <span class="text-red-400 text-sm">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="mb-4">
-                                <label class="block text-slate-200 font-semibold mb-2">Meta Keywords</label>
-                                <input type="text" name="meta_keywords" value="{{ old('meta_keywords', $metadata->meta_keywords) }}" placeholder="kdrama, korean drama, series" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded text-white focus:border-blue-500 text-sm">
+                                <label class="block text-slate-200 font-semibold mb-2">{{ __('admin.author_meta_keywords_label') }}</label>
+                                <input type="text" name="meta_keywords" value="{{ old('meta_keywords', $metadata->meta_keywords) }}" placeholder="{{ __('admin.author_meta_keywords_placeholder') }}" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded text-white focus:border-blue-500 text-sm">
                                 @error('meta_keywords') <span class="text-red-400 text-sm">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="mb-4">
-                                <label class="block text-slate-200 font-semibold mb-2">OG Title (Social Media)</label>
+                                <label class="block text-slate-200 font-semibold mb-2">{{ __('admin.author_og_title_label') }}</label>
                                 <input type="text" name="og_title" value="{{ old('og_title', $metadata->og_title) }}" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded text-white focus:border-blue-500">
                                 @error('og_title') <span class="text-red-400 text-sm">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="mb-4">
-                                <label class="block text-slate-200 font-semibold mb-2">OG Description</label>
+                                <label class="block text-slate-200 font-semibold mb-2">{{ __('admin.author_og_description_label') }}</label>
                                 <textarea name="og_description" rows="3" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded text-white focus:border-blue-500">{{ old('og_description', $metadata->og_description) }}</textarea>
                                 @error('og_description') <span class="text-red-400 text-sm">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="mb-4">
-                                <label class="block text-slate-200 font-semibold mb-2">OG Image</label>
+                                <label class="block text-slate-200 font-semibold mb-2">{{ __('admin.author_og_image_label') }}</label>
                                 @if($metadata->og_image)
                                     <div class="mb-2">
                                         <img src="{{ asset('storage/' . $metadata->og_image) }}" alt="OG Image" class="w-48 h-auto rounded">
                                     </div>
                                 @endif
                                 <input type="file" name="og_image" accept="image/*" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded text-white">
-                                <p class="text-xs text-slate-400 mt-1">Recommended: 1200x630px</p>
+                                <p class="text-xs text-slate-400 mt-1">{{ __('admin.author_og_image_hint') }}</p>
                                 @error('og_image') <span class="text-red-400 text-sm">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="mb-4">
-                                <label class="block text-slate-200 font-semibold mb-2">OG Type</label>
+                                <label class="block text-slate-200 font-semibold mb-2">{{ __('admin.author_og_type_label') }}</label>
                                 <select name="og_type" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded text-white focus:border-blue-500">
-                                    <option value="website" {{ old('og_type', $metadata->og_type) === 'website' ? 'selected' : '' }}>Website</option>
-                                    <option value="blog" {{ old('og_type', $metadata->og_type) === 'blog' ? 'selected' : '' }}>Blog</option>
-                                    <option value="article" {{ old('og_type', $metadata->og_type) === 'article' ? 'selected' : '' }}>Article</option>
+                                    <option value="website" {{ old('og_type', $metadata->og_type) === 'website' ? 'selected' : '' }}>{{ __('admin.author_og_type_website') }}</option>
+                                    <option value="blog" {{ old('og_type', $metadata->og_type) === 'blog' ? 'selected' : '' }}>{{ __('admin.author_og_type_blog') }}</option>
+                                    <option value="article" {{ old('og_type', $metadata->og_type) === 'article' ? 'selected' : '' }}>{{ __('admin.author_og_type_article') }}</option>
                                 </select>
                                 @error('og_type') <span class="text-red-400 text-sm">{{ $message }}</span> @enderror
                             </div>
@@ -240,6 +240,18 @@
         // Global variables and functions for inline event handlers
         let socialLinkIndex = {{ count($socialLinks) }};
 
+        // Translation strings for JavaScript
+        const translations = {
+            platformLabel: "{{ __('admin.author_social_link_platform_label') }}",
+            platformPlaceholder: "{{ __('admin.author_social_link_platform_placeholder') }}",
+            urlLabel: "{{ __('admin.author_social_link_url_label') }}",
+            urlPlaceholder: "{{ __('admin.author_social_link_url_placeholder') }}",
+            urlHint: "{{ __('admin.author_social_link_url_hint') }}",
+            iconLabel: "{{ __('admin.author_social_link_icon_label') }}",
+            iconPlaceholder: "{{ __('admin.author_social_link_icon_placeholder') }}",
+            visibleLabel: "{{ __('admin.author_social_link_visible_label') }}"
+        };
+
         // Auto-add https:// to URLs if missing
         function autoAddProtocol(input) {
             let url = input.value.trim();
@@ -265,8 +277,8 @@
                         <div class="flex items-center gap-3 flex-1">
                             <span class="drag-handle text-slate-400 cursor-grab active:cursor-grabbing text-lg" title="Drag to reorder">⋮⋮</span>
                             <div class="flex-1">
-                                <label class="block text-slate-200 font-semibold mb-2 text-sm">🔗 Platform Name</label>
-                                <input type="text" name="social_links[${socialLinkIndex}][platform]" class="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500" placeholder="Twitter, GitHub, Email...">
+                                <label class="block text-slate-200 font-semibold mb-2 text-sm">${translations.platformLabel}</label>
+                                <input type="text" name="social_links[${socialLinkIndex}][platform]" class="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500" placeholder="${translations.platformPlaceholder}">
                             </div>
                         </div>
                         <button type="button" onclick="this.closest('.social-link-item').remove()" class="ml-3 text-slate-400 hover:text-red-400 text-2xl transition">🗑️</button>
@@ -276,16 +288,16 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- URL -->
                         <div>
-                            <label class="block text-slate-200 font-semibold mb-2 text-sm">🌐 URL</label>
-                            <input type="text" name="social_links[${socialLinkIndex}][url]" class="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500" placeholder="moussouni.dev ou https://..." onblur="autoAddProtocol(this)">
-                            <p class="text-xs text-slate-400 mt-1">https:// will be added automatically if missing</p>
+                            <label class="block text-slate-200 font-semibold mb-2 text-sm">${translations.urlLabel}</label>
+                            <input type="text" name="social_links[${socialLinkIndex}][url]" class="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500" placeholder="${translations.urlPlaceholder}" onblur="autoAddProtocol(this)">
+                            <p class="text-xs text-slate-400 mt-1">${translations.urlHint}</p>
                         </div>
 
                         <!-- Icon + Picker -->
                         <div>
-                            <label class="block text-slate-200 font-semibold mb-2 text-sm">🎨 Icon Name</label>
+                            <label class="block text-slate-200 font-semibold mb-2 text-sm">${translations.iconLabel}</label>
                             <div class="flex gap-2">
-                                <input type="text" name="social_links[${socialLinkIndex}][icon]" class="flex-1 px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500" placeholder="brand-twitter...">
+                                <input type="text" name="social_links[${socialLinkIndex}][icon]" class="flex-1 px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-sm focus:border-blue-500" placeholder="${translations.iconPlaceholder}">
                                 <button type="button" onclick="openIconPicker(this.previousElementSibling)" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold text-sm transition">🎨</button>
                             </div>
                         </div>
@@ -295,7 +307,7 @@
                     <div class="mt-4 pt-4 border-t border-slate-600">
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="checkbox" name="social_links[${socialLinkIndex}][is_visible]" value="1" checked class="w-4 h-4 rounded bg-slate-600 border border-slate-500 text-blue-600 focus:ring-blue-500">
-                            <span class="text-slate-200 font-semibold text-sm">👁️ Visible in footer</span>
+                            <span class="text-slate-200 font-semibold text-sm">${translations.visibleLabel}</span>
                         </label>
                     </div>
                 </div>

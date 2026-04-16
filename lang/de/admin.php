@@ -154,6 +154,7 @@ return [
     'author_favicon_title' => '🎨 Favicon',
     'author_favicon_label' => 'Browser-Symbol',
     'author_favicon_hint' => 'Empfohlen: 512x512px oder größer',
+    'author_updated' => '✅ Autor- und Website-Einstellungen erfolgreich aktualisiert',
 
     // Contact Page - List
     'contact_title' => 'Nachrichtenverwaltung',
@@ -333,6 +334,22 @@ return [
     'author_og_type_website' => 'Website',
     'author_og_type_blog' => 'Blog',
     'author_og_type_article' => 'Artikel',
+
+    // Author Page - SEO Settings
+    'author_meta_description_label' => 'Meta-Beschreibung',
+    'author_meta_description_hint' => '(max. 160 Zeichen)',
+    'author_meta_description_placeholder' => 'Kurze Beschreibung für Google-Suchergebnisse',
+    'author_meta_keywords_label' => 'Meta-Schlüsselwörter',
+    'author_meta_keywords_placeholder' => 'kdrama, korean drama, series',
+    'author_og_title_label' => 'OG-Titel (Soziale Medien)',
+    'author_og_description_label' => 'OG-Beschreibung',
+    'author_og_image_label' => 'OG-Bild',
+    'author_og_image_hint' => 'Empfohlen: 1200x630px',
+    'author_og_type_label' => 'OG-Typ',
+    'author_og_type_website' => 'Website',
+    'author_og_type_blog' => 'Blog',
+    'author_og_type_article' => 'Artikel',
+    'author_char_count_suffix' => '/160',
 
     // Author Page - Social Links
     'author_social_link_icon_hint' => '4500+ Tabler-Icons verfügbar • Live-Suche • Zum Auswählen klicken',

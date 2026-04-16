@@ -154,6 +154,7 @@ return [
     'author_favicon_title' => '🎨 Favicon',
     'author_favicon_label' => 'Icône du navigateur',
     'author_favicon_hint' => 'Recommandé: 512x512px ou plus',
+    'author_updated' => '✅ Auteur et paramètres du site mis à jour avec succès',
 
     // Contact Page - List
     'contact_title' => 'Gestion des messages',
@@ -334,19 +335,35 @@ return [
     'author_og_type_blog' => 'Blog',
     'author_og_type_article' => 'Article',
 
+    // Author Page - SEO Settings
+    'author_meta_description_label' => 'Meta Description',
+    'author_meta_description_hint' => '(160 caractères max)',
+    'author_meta_description_placeholder' => 'Brève description pour les résultats de recherche Google',
+    'author_meta_keywords_label' => 'Mots-clés Meta',
+    'author_meta_keywords_placeholder' => 'kdrama, korean drama, series',
+    'author_og_title_label' => 'OG Title (Réseaux sociaux)',
+    'author_og_description_label' => 'OG Description',
+    'author_og_image_label' => 'OG Image',
+    'author_og_image_hint' => 'Recommandé: 1200x630px',
+    'author_og_type_label' => 'OG Type',
+    'author_og_type_website' => 'Site web',
+    'author_og_type_blog' => 'Blog',
+    'author_og_type_article' => 'Article',
+    'author_char_count_suffix' => '/160',
+
     // Author Page - Social Links
-    'author_social_link_icon_hint' => '4500+ Tabler Icons available • Live search • Click to select',
-    'author_social_link_platform_label' => '🔗 Platform Name',
+    'author_social_link_icon_hint' => '4500+ Tabler Icons disponibles • Recherche en direct • Cliquez pour sélectionner',
+    'author_social_link_platform_label' => '🔗 Nom de la plateforme',
     'author_social_link_platform_placeholder' => 'Twitter, GitHub, Email...',
     'author_social_link_url_label' => '🌐 URL',
-    'author_social_link_url_placeholder' => 'moussouni.dev or https://...',
-    'author_social_link_url_hint' => 'https:// will be added automatically if missing',
-    'author_social_link_icon_label' => '🎨 Icon Name',
+    'author_social_link_url_placeholder' => 'moussouni.dev ou https://...',
+    'author_social_link_url_hint' => 'https:// sera ajouté automatiquement s\'il manque',
+    'author_social_link_icon_label' => '🎨 Nom de l\'icône',
     'author_social_link_icon_placeholder' => 'brand-twitter...',
-    'author_social_link_visible_label' => '👁️ Visible in footer',
-    'author_social_links_empty' => 'No social links yet',
-    'author_social_links_empty_hint' => 'Click "+ Add Social Link" to create one',
-    'author_social_links_add_btn' => '+ Add Social Link',
+    'author_social_link_visible_label' => '👁️ Visible dans le footer',
+    'author_social_links_empty' => 'Aucun lien social pour le moment',
+    'author_social_links_empty_hint' => 'Cliquez sur "+ Ajouter un lien social" pour en créer un',
+    'author_social_links_add_btn' => '+ Ajouter un lien social',
 
     // Jobs & Tasks Page
     'section_jobs' => 'Jobs & Tâches',

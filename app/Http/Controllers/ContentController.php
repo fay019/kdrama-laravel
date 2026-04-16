@@ -266,63 +266,90 @@ class ContentController extends Controller
             'hide_watched' => $request->boolean('hide_watched'),
             'hide_watching' => $request->boolean('hide_watching'),
             'hide_watchlist' => $request->boolean('hide_watchlist'),
+            'hide_films' => $request->boolean('hide_films', true), // Default: true (hide films)
         ];
 
         if ($view === 'actors') {
-            // Get actors from database (synced daily)
-            $query = Actor::query();
+            // If database is nearly empty, use live API search until sync job completes
+            $actorCount = Actor::count();
 
-            // Search by name if provided
-            if (! empty($filters['search'])) {
-                $searchTerm = "%{$filters['search']}%";
-                $query->where(function ($q) use ($searchTerm) {
-                    $q->where('name', 'like', $searchTerm)
-                        ->orWhere('known_for', 'like', $searchTerm);
-                });
-            }
+            if ($actorCount < 50) {
+                // Use TMDB API directly while database is being populated (need at least 50 actors for meaningful local search)
+                // Skip hasWorks check for faster API search (reduce API calls during live search)
+                if (! empty($filters['search'])) {
+                    $apiResult = $this->tmdbService->searchPerson(
+                        $filters['search'],
+                        $filters['page'],
+                        $filters['exact_name'] ?? false,
+                        $filters['has_photo'] ?? false,
+                        false  // Skip hasWorks check for speed during live API search
+                    );
+                } else {
+                    // Show popular actors from API
+                    $apiResult = $this->tmdbService->getPopularActors(
+                        $filters['page'],
+                        $filters['has_photo'] ?? false,
+                        false  // Skip hasWorks check for speed during live API search
+                    );
+                }
 
-            // Filter by TV credits if enabled (has_works)
-            if ($filters['has_works']) {
-                $query->where('tv_credits_count', '>=', 1);
-            }
+                $results = $apiResult ?? ['results' => [], 'total_results' => 0, 'total_pages' => 0, 'page' => 1];
+            } else {
+                // Get actors from database (synced daily)
+                $query = Actor::query();
 
-            // Filter by photo if requested
-            if ($filters['has_photo']) {
-                $query->whereNotNull('profile_path');
-            }
+                // Search by name if provided
+                if (! empty($filters['search'])) {
+                    $searchTerm = "%{$filters['search']}%";
+                    $query->where(function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', $searchTerm)
+                            ->orWhere('known_for', 'like', $searchTerm);
+                    });
+                }
 
-            // Get total count before pagination
-            $totalResults = $query->count();
+                // Filter by TV credits if enabled (has_works)
+                if ($filters['has_works']) {
+                    $query->where('tv_credits_count', '>=', 1);
+                }
 
-            // Paginate results (20 per page)
-            $targetCount = 20;
-            $page = (int) $filters['page'];
-            $actorData = $query->orderBy('popularity', 'desc')
-                ->skip(($page - 1) * $targetCount)
-                ->limit($targetCount)
-                ->get();
+                // Filter by photo if requested
+                if ($filters['has_photo']) {
+                    $query->whereNotNull('profile_path');
+                }
 
-            // Transform to match TMDB structure (id = tmdb_id for modal links)
-            $results = $actorData->map(function ($actor) {
-                return [
-                    'id' => $actor->tmdb_id,  // For openActorModal() to work
-                    'tmdb_id' => $actor->tmdb_id,
-                    'name' => $actor->name,
-                    'profile_path' => $actor->profile_path,
-                    'popularity' => $actor->popularity,
-                    'known_for' => $actor->known_for,
-                    'tv_credits_count' => $actor->tv_credits_count,
+                // Get total count before pagination
+                $totalResults = $query->count();
+
+                // Paginate results (20 per page)
+                $targetCount = 20;
+                $page = (int) $filters['page'];
+                $actorData = $query->orderBy('popularity', 'desc')
+                    ->skip(($page - 1) * $targetCount)
+                    ->limit($targetCount)
+                    ->get();
+
+                // Transform to match TMDB structure (id = tmdb_id for modal links)
+                $results = $actorData->map(function ($actor) {
+                    return [
+                        'id' => $actor->tmdb_id,  // For openActorModal() to work
+                        'tmdb_id' => $actor->tmdb_id,
+                        'name' => $actor->name,
+                        'profile_path' => $actor->profile_path,
+                        'popularity' => $actor->popularity,
+                        'known_for' => $actor->known_for,
+                        'tv_credits_count' => $actor->tv_credits_count,
+                    ];
+                })->toArray();
+
+                $totalPages = ceil($totalResults / $targetCount);
+
+                $results = [
+                    'results' => $results,
+                    'total_results' => $totalResults,
+                    'total_pages' => $totalPages,
+                    'page' => $page,
                 ];
-            })->toArray();
-
-            $totalPages = ceil($totalResults / $targetCount);
-
-            $results = [
-                'results' => $results,
-                'total_results' => $totalResults,
-                'total_pages' => $totalPages,
-                'page' => $page,
-            ];
+            }
 
             // Ensure other filters don't impact display
             $filters['actor'] = null;
@@ -406,6 +433,16 @@ class ContentController extends Controller
             // Do NOT overwrite total_results and total_pages here,
             // because $results['results'] only contains the current page's results.
             // Overwriting them with count() would break pagination for the 2800+ total dramas.
+        }
+
+        // Filter out films if hide_films is enabled AND no search query
+        // (Films are shown in search results even if hide_films is true)
+        if ($view === 'dramas' && $filters['hide_films'] && empty($filters['search']) && ! empty($results['results'])) {
+            $results['results'] = array_filter($results['results'], function ($item) {
+                // Keep TV shows (media_type = 'tv'), exclude movies (media_type = 'movie')
+                return ($item['media_type'] ?? 'tv') === 'tv';
+            });
+            $results['results'] = array_values($results['results']);
         }
 
         // Récupérer les infos de watchlist et ratings si l'utilisateur est connecté

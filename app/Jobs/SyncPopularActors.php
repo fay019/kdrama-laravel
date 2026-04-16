@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Actor;
+use App\Models\JobHistory;
 use App\Services\TmdbService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -19,7 +20,11 @@ class SyncPopularActors implements ShouldQueue
 
     public function handle(TmdbService $tmdbService): void
     {
-        Log::info('Starting Korean drama actors sync job');
+        // Increase timeout for long-running job (scanning 100 pages of TMDB)
+        set_time_limit(300);
+
+        $jobStartTime = now();
+        Log::channel('jobs')->info('Starting Korean drama actors sync job');
 
         try {
             $allActors = [];
@@ -38,7 +43,7 @@ class SyncPopularActors implements ShouldQueue
                 ]);
 
                 if ($response->failed()) {
-                    Log::warning("Failed to fetch page {$p} of Korean dramas");
+                    Log::channel('jobs')->warning("Failed to fetch page {$p} of Korean dramas");
                     break;
                 }
 
@@ -80,14 +85,14 @@ class SyncPopularActors implements ShouldQueue
                     $processedDramas++;
                 }
 
-                Log::info("Processed {$processedDramas} dramas, found ".count($allActors)." unique actors");
+                Log::channel('jobs')->info("Processed {$processedDramas} dramas, found ".count($allActors)." unique actors");
             }
 
-            Log::info("Total unique actors extracted: ".count($allActors));
+            Log::channel('jobs')->info("Total unique actors extracted: ".count($allActors));
 
             // Sync all actors to database in efficient batches using upsert
             $synced = 0;
-            $batchSize = 500; // Larger batches for upsert efficiency
+            $batchSize = 100; // Small batches for memory efficiency (5568 actors ÷ 100 = ~56 queries)
             $now = now();
 
             $actorsBatch = array_chunk($allActors, $batchSize, true);
@@ -112,18 +117,53 @@ class SyncPopularActors implements ShouldQueue
                     Actor::upsert($upsertData, ['tmdb_id'], ['name', 'profile_path', 'popularity', 'tv_credits_count', 'last_synced_at', 'updated_at']);
 
                     $synced += count($batch);
-                    Log::info("Synced {$synced} actors so far (batch ".($batchIndex + 1)." of ".count($actorsBatch).")");
+                    Log::channel('jobs')->info("Synced {$synced} actors so far (batch ".($batchIndex + 1)." of ".count($actorsBatch).")");
                 } catch (\Exception $e) {
-                    Log::error("Batch ".($batchIndex + 1)." failed: ".$e->getMessage()." in file ".$e->getFile()." line ".$e->getLine());
+                    Log::channel('jobs')->error("Batch ".($batchIndex + 1)." failed: ".$e->getMessage()." in file ".$e->getFile()." line ".$e->getLine());
                     throw $e;
                 }
             }
 
-            Log::info("Synced {$synced} actors from Korean dramas to database", ['count' => $synced]);
+            Log::channel('jobs')->info("Synced {$synced} actors from Korean dramas to database", ['count' => $synced]);
 
-            Log::info('Actor sync completed successfully');
+            Log::channel('jobs')->info('Actor sync completed successfully');
+
+            // Record job completion in history
+            JobHistory::create([
+                'job_class' => self::class,
+                'queue' => 'default',
+                'payload' => json_encode(['displayName' => 'App\Jobs\SyncPopularActors']),
+                'attempts' => 1,
+                'output' => "Processed {$processedDramas} dramas, synced {$synced} actors",
+                'status' => 'completed',
+                'exception' => null,
+                'duration_seconds' => now()->diffInSeconds($jobStartTime),
+                'metadata' => [
+                    'dramas_processed' => $processedDramas,
+                    'actors_synced' => $synced,
+                    'total_unique_actors_found' => count($allActors),
+                ],
+                'started_at' => $jobStartTime,
+                'completed_at' => now(),
+            ]);
         } catch (\Exception $e) {
-            Log::error('Actor sync failed: '.$e->getMessage());
+            Log::channel('jobs')->error('Actor sync failed: '.$e->getMessage());
+
+            // Record job failure in history
+            JobHistory::create([
+                'job_class' => self::class,
+                'queue' => 'default',
+                'payload' => json_encode(['displayName' => 'App\Jobs\SyncPopularActors']),
+                'attempts' => 1,
+                'output' => null,
+                'status' => 'failed',
+                'exception' => $e->getMessage(),
+                'duration_seconds' => now()->diffInSeconds($jobStartTime),
+                'metadata' => null,
+                'started_at' => $jobStartTime,
+                'completed_at' => now(),
+            ]);
+
             throw $e;
         }
     }

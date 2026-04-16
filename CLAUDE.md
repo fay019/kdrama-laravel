@@ -1,11 +1,75 @@
 # 🎬 KDrama Laravel - Documentation Complète
 
 **Date de mise à jour:** 2026-04-16
-**Dernier développement:** Dual catalog view system (Dramas + Actors) with advanced search filters
+**Dernier développement:** Professional Async Queue Setup + Admin Jobs Dashboard + Dual Catalog View System
 
 ---
 
 ## 🔄 Recent Changes (2026-04-16)
+
+### ✅ Professional Async Queue Setup - Database-Backed Job Processing
+**Major Addition:** Transitioned from synchronous to professional asynchronous job queue with worker processes
+
+**Features Implemented:**
+- ✅ **Queue Driver:** Changed from `sync` to `database` (MySQL-backed persistent jobs)
+- ✅ **Queue Tables:** `jobs` and `failed_jobs` tables for reliable job storage
+- ✅ **Admin Jobs Dashboard** (`/admin/jobs`):
+  - 3 Quick Action Cards: Sync Actors, Cleanup PDFs, Update Production
+  - Live Pending Queue Table with 2-second auto-refresh
+  - Failed Jobs Management (Retry/Delete buttons)
+  - Live Logs Viewer (last 100 lines from `storage/logs/jobs.log`)
+- ✅ **Isolated Job Logging:** Separate `storage/logs/jobs.log` channel for job-specific output
+- ✅ **SyncPopularActors Job:** Updated with 300-second timeout, isolated logging, proper error handling
+- ✅ **Queue Worker Execution:** Professional async worker process (`php artisan queue:work --timeout=300`)
+
+**Configuration Changes:**
+- `.env`: `QUEUE_CONNECTION=database` (was `sync`)
+- `config/logging.php`: Added `jobs` channel pointing to `storage/logs/jobs.log`
+- `app/Jobs/SyncPopularActors.php`: Added `set_time_limit(300)` and `Log::channel('jobs')`
+- `config/queue.php`: Already configured for database driver with proper timeouts
+
+**Database Schema:**
+```
+jobs table:           Stores pending/available jobs
+failed_jobs table:    Stores failed job records with exception details
+job_batches table:    Stores batch job information
+```
+
+**Admin Routes Added:**
+- `GET /admin/jobs` - Main dashboard
+- `POST /admin/jobs/dispatch` - Dispatch SyncPopularActors job
+- `POST /admin/jobs/run-command` - Run Artisan commands
+- `GET /admin/jobs/logs` - Fetch live logs (AJAX)
+- `POST /admin/jobs/failed/{uuid}/retry` - Retry failed job
+- `DELETE /admin/jobs/failed/{uuid}` - Delete failed job
+
+**Translation Keys Added (FR/EN/DE):**
+- 40+ keys for jobs management (section_jobs, nav_jobs_monitor, jobs_dispatched, etc.)
+- Sidebar integration with collapsible 'Jobs & Tasks' section
+
+**Documentation:**
+- ✅ New file: `QUEUE.md` - Complete guide to queue setup, worker configuration, monitoring, and troubleshooting
+- ✅ Quick start: Run `php artisan queue:work --timeout=300` in separate terminal
+- ✅ Verification: Watch `/admin/jobs` dashboard for real-time job processing
+
+**Files Modified/Created:**
+- `app/Http/Controllers/Admin/AdminJobsController.php` - NEW
+- `resources/views/admin/jobs/index.blade.php` - NEW
+- `config/logging.php` - Added jobs channel
+- `app/Jobs/SyncPopularActors.php` - Updated with timeout & isolated logging
+- `routes/web.php` - Added 6 new admin routes
+- `resources/views/components/admin-sidebar.blade.php` - Added jobs section
+- `lang/{fr|en|de}/admin.php` - Added 40+ translation keys
+- `QUEUE.md` - NEW comprehensive queue documentation
+- `.env` - Changed QUEUE_CONNECTION to database
+
+**Next Steps for Production:**
+1. Run: `php artisan queue:work --timeout=300` in background process or supervisor daemon
+2. Monitor via `/admin/jobs` dashboard
+3. Check `storage/logs/jobs.log` for detailed job output
+4. For production, consider using Supervisor to manage worker process lifecycle
+
+---
 
 ### ✅ Dual Catalog View System - Dramas & Actors Explorer
 **Major Addition:** Complete actor browsing and search system integrated into the catalog page

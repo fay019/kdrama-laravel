@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuthorController;
 use App\Http\Controllers\Admin\AdminContactController;
 use App\Http\Controllers\Admin\AdminExportController;
 use App\Http\Controllers\Admin\AdminIconsController;
+use App\Http\Controllers\Admin\AdminJobsController;
 use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\AdminController;
@@ -121,6 +122,17 @@ Route::middleware(['auth', 'admin', 'check.password'])->prefix('admin')->name('a
     Route::post('exports/cache-purge-expired', [AdminExportController::class, 'purgeExpiredCache'])->name('exports.cache.purge-expired');
     Route::get('exports/stats', [AdminExportController::class, 'statsIndex'])->name('exports.stats');
     Route::post('exports/user/{userId}', [AdminExportController::class, 'exportUserWatchlist'])->name('exports.user');
+
+    // Jobs & Tasks management
+    Route::get('jobs', [AdminJobsController::class, 'index'])->name('jobs.index');
+    Route::get('jobs/history', [AdminJobsController::class, 'history'])->name('jobs.history');
+    Route::post('jobs/dispatch', [AdminJobsController::class, 'dispatchJob'])->name('jobs.dispatch');
+    Route::post('jobs/run-command', [AdminJobsController::class, 'runCommand'])->name('jobs.run-command');
+    Route::delete('jobs/pending/{jobId}', [AdminJobsController::class, 'deletePending'])->name('jobs.pending.delete');
+    Route::post('jobs/failed/{uuid}/retry', [AdminJobsController::class, 'retryFailed'])->name('jobs.failed.retry');
+    Route::delete('jobs/failed/{uuid}', [AdminJobsController::class, 'deleteFailed'])->name('jobs.failed.delete');
+    Route::get('jobs/logs', [AdminJobsController::class, 'getLogs'])->name('jobs.logs');
+    Route::post('jobs/logs/clear', [AdminJobsController::class, 'clearLogs'])->name('jobs.logs.clear');
 });
 
 require __DIR__.'/auth.php';

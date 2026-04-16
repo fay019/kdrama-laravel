@@ -148,6 +148,33 @@
                 </span>
             </a>
         </div>
+
+        <!-- Divider -->
+        <div class="my-4 border-t border-slate-700"></div>
+
+        <!-- Jobs Section - Collapsible -->
+        <button onclick="toggleSection('jobs')" class="w-full flex items-center justify-between px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider hover:text-slate-300 transition group">
+            <span>⚙️ {{ __('admin.section_jobs') }}</span>
+            <span class="jobs-toggle text-sm transform transition-transform duration-200">▼</span>
+        </button>
+
+        <div id="jobs-items" class="jobs-items space-y-1 transition-all duration-200">
+            <!-- Job Monitor -->
+            <a href="{{ route('admin.jobs.index') }}"
+               class="block px-4 py-3 rounded-lg {{ request()->routeIs('admin.jobs.index') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700' }} transition">
+                <span class="flex items-center gap-2">
+                    <span>🔧</span> {{ __('admin.nav_jobs_monitor') }}
+                </span>
+            </a>
+
+            <!-- Job History -->
+            <a href="{{ route('admin.jobs.history') }}"
+               class="block px-4 py-3 rounded-lg {{ request()->routeIs('admin.jobs.history') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700' }} transition">
+                <span class="flex items-center gap-2">
+                    <span>📜</span> {{ __('admin.jobs_history_title') }}
+                </span>
+            </a>
+        </div>
     </nav>
 
     <!-- User Info Footer -->
@@ -290,6 +317,22 @@
                     <span class="flex items-center gap-2"><span>📊</span> {{ __('admin.nav_export_stats') }}</span>
                 </a>
             </div>
+
+            <div class="my-4 border-t border-slate-700"></div>
+
+            <!-- Jobs Section (Mobile) -->
+            <button onclick="toggleSection('mobile-jobs')" class="w-full flex items-center justify-between px-4 py-2 text-xs font-bold text-slate-400 uppercase hover:text-slate-300 transition">
+                <span>⚙️ {{ __('admin.section_jobs') }}</span>
+                <span class="mobile-jobs-toggle text-sm">▼</span>
+            </button>
+            <div id="mobile-jobs-items" class="mobile-jobs-items space-y-1">
+                <a href="{{ route('admin.jobs.index') }}" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition" onclick="toggleMobileAdminMenu()">
+                    <span class="flex items-center gap-2"><span>🔧</span> {{ __('admin.nav_jobs_monitor') }}</span>
+                </a>
+                <a href="{{ route('admin.jobs.history') }}" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition" onclick="toggleMobileAdminMenu()">
+                    <span class="flex items-center gap-2"><span>📜</span> {{ __('admin.jobs_history_title') }}</span>
+                </a>
+            </div>
         </nav>
 
         <!-- User Info Footer (Mobile) -->
@@ -346,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeSections() {
-    const sections = ['site', 'admin', 'exports', 'mobile-site', 'mobile-admin', 'mobile-exports'];
+    const sections = ['site', 'admin', 'exports', 'jobs', 'mobile-site', 'mobile-admin', 'mobile-exports', 'mobile-jobs'];
 
     sections.forEach(section => {
         const state = localStorage.getItem(`sidebar-${section}`);
@@ -416,16 +459,16 @@ function toggleMobileAdminMenu() {
 </script>
 
 <style>
-.site-items, .admin-items, .exports-items,
-.mobile-site-items, .mobile-admin-items, .mobile-exports-items {
+.site-items, .admin-items, .exports-items, .jobs-items,
+.mobile-site-items, .mobile-admin-items, .mobile-exports-items, .mobile-jobs-items {
     max-height: none;
     opacity: 1;
     overflow: hidden;
     transition: max-height 0.3s ease, opacity 0.3s ease;
 }
 
-.site-items.hidden, .admin-items.hidden, .exports-items.hidden,
-.mobile-site-items.hidden, .mobile-admin-items.hidden, .mobile-exports-items.hidden {
+.site-items.hidden, .admin-items.hidden, .exports-items.hidden, .jobs-items.hidden,
+.mobile-site-items.hidden, .mobile-admin-items.hidden, .mobile-exports-items.hidden, .mobile-jobs-items.hidden {
     max-height: 0;
     opacity: 0;
 }

@@ -6,7 +6,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <!-- Header -->
     @php
-        $hasFilters = !empty($filters['search']) || !empty($filters['actor']) || !empty($filters['min_rating']) || !empty($filters['from_year']) || !empty($filters['to_year']) || !empty($filters['hide_watched']) || !empty($filters['hide_watchlist']) || !empty($filters['exact_name']) || !empty($filters['has_photo']) || !empty($filters['has_works']);
+        $hasFilters = !empty($filters['search']) || !empty($filters['actor']) || !empty($filters['min_rating']) || !empty($filters['from_year']) || !empty($filters['to_year']) || !empty($filters['hide_watched']) || !empty($filters['hide_watchlist']) || !empty($filters['hide_films']) || !empty($filters['exact_name']) || !empty($filters['has_photo']) || !empty($filters['has_works']);
     @endphp
     <div class="mb-8" x-data="{ showFilters: {{ $hasFilters ? 'true' : 'false' }}, isLoading: false }">
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
@@ -174,6 +174,17 @@
                             </label>
                         </div>
                     @endauth
+
+                    <!-- Masquer Films -->
+                    <div class="filter-form-group">
+                        <label class="filter-form-label">{{ __('catalog.filter_hide_films') }}</label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="hidden" name="hide_films" value="0">
+                            <input type="checkbox" name="hide_films" value="1" {{ $filters['hide_films'] ? 'checked' : '' }} class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-purple-500 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            <span class="ml-3 text-xs font-medium text-slate-400">{{ __('catalog.filter_toggle_active') }}</span>
+                        </label>
+                    </div>
                 </div>
             </div>
 

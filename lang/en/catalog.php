@@ -37,6 +37,7 @@ return [
     'filter_watched' => 'Hide watched',
     'filter_watching' => 'Hide currently watching',
     'filter_watchlist' => 'Hide my watchlist',
+    'filter_hide_films' => 'Hide films',
     'filter_clear' => 'Reset',
     'filter_toggle_active' => 'Enabled',
     'filter_exact_name' => 'Exact name only',

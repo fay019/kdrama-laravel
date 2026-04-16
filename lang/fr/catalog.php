@@ -37,6 +37,7 @@ return [
     'filter_watched' => 'Masquer les regardés',
     'filter_watching' => 'Masquer en train de regarder',
     'filter_watchlist' => 'Masquer ma watchlist',
+    'filter_hide_films' => 'Masquer les films',
     'filter_clear' => 'Réinitialiser',
     'filter_toggle_active' => 'Activé',
     'filter_exact_name' => 'Nom exact uniquement',

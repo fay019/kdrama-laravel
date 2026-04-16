@@ -547,7 +547,7 @@ class TmdbService
     public function searchPerson($query, $page = 1, $exactMatch = false, $hasPhoto = false, $hasWorks = true)
     {
         $page = (int) $page;
-        $cacheKey = 'tmdb_search_person_v13_'.md5($query).'_p'.$page.'_e'.($exactMatch ? '1' : '0').'_hp'.($hasPhoto ? '1' : '0').'_hw'.($hasWorks ? '1' : '0');
+        $cacheKey = 'tmdb_search_person_v14_'.md5($query).'_p'.$page.'_e'.($exactMatch ? '1' : '0').'_hp'.($hasPhoto ? '1' : '0').'_hw'.($hasWorks ? '1' : '0'); // v14: Filter adult content in known_for
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($query, $page, $exactMatch, $hasPhoto, $hasWorks) {
             try {
@@ -562,7 +562,8 @@ class TmdbService
                 $isUiQuery = mb_strtolower($query) === 'ui';
 
                 $isShortQuery = mb_strlen($searchQuery) <= 3;
-                $maxPagesToScan = ($isShortQuery || $exactMatch) ? 100 : 50;
+                // Reduce pages scanned for faster live search (while DB is being populated)
+                $maxPagesToScan = ($isShortQuery || $exactMatch) ? 30 : 15;
 
                 $currentTmdbPage = 1;
                 $queriesToTry = [$searchQuery];
@@ -661,7 +662,7 @@ class TmdbService
     public function getPopularActors($page = 1, $hasPhoto = false, $hasWorks = true)
     {
         $page = (int) $page;
-        $cacheKey = "tmdb_popular_actors_v12_p{$page}_hp".($hasPhoto ? '1' : '0').'_hw'.($hasWorks ? '1' : '0');
+        $cacheKey = "tmdb_popular_actors_v13_p{$page}_hp".($hasPhoto ? '1' : '0').'_hw'.($hasWorks ? '1' : '0'); // v13: Filter adult content in known_for
 
         return Cache::remember($cacheKey, now()->addHours(6), function () use ($page, $hasPhoto, $hasWorks) {
             try {
@@ -745,15 +746,28 @@ class TmdbService
     {
         // 1. Vérifier le pays d'origine dans 'known_for'
         if (isset($person['known_for']) && is_array($person['known_for'])) {
+            $hasKoreanWork = false;
+
             foreach ($person['known_for'] as $work) {
+                // Exclure si le contenu est adulte
+                if ($work['adult'] ?? false) {
+                    continue; // Skip adult content
+                }
+
                 // Vérifie le pays d'origine (Corée du Sud)
                 if (isset($work['origin_country']) && in_array('KR', $work['origin_country'])) {
-                    return true;
+                    $hasKoreanWork = true;
+                    break;
                 }
                 // Vérifie la langue originale (Coréen)
                 if (isset($work['original_language']) && $work['original_language'] === 'ko') {
-                    return true;
+                    $hasKoreanWork = true;
+                    break;
                 }
+            }
+
+            if ($hasKoreanWork) {
+                return true;
             }
         }
 

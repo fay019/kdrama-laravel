@@ -554,10 +554,10 @@ class ContentController extends Controller
         // Vérifier si on a besoin de refetch:
         // 1. Pas en DB
         // 2. Plus d'1 semaine depuis la synchro
-        // 3. Détails vides (bio, birthday, external_ids)
+        // 3. Champs détaillés manquants (combined_credits surtout pour les dramas)
         $needsRefresh = ! $dbActor || ! $dbActor->last_synced_at ||
                         $dbActor->last_synced_at->addWeek()->isPast() ||
-                        (! $dbActor->biography && ! $dbActor->birthday && ! $dbActor->external_ids);
+                        ! $dbActor->combined_credits;
 
         if ($needsRefresh) {
             // Fetcher les détails complets de l'API TMDB
@@ -568,6 +568,8 @@ class ContentController extends Controller
             }
 
             // Sauvegarder/mettre à jour en base de données
+            $creditCount = count($apiActor['combined_credits']['cast'] ?? []);
+
             if ($dbActor) {
                 // Mise à jour existante
                 $dbActor->update([
@@ -575,7 +577,9 @@ class ContentController extends Controller
                     'birthday' => $apiActor['birthday'] ?? null,
                     'birthplace' => $apiActor['place_of_birth'] ?? null,
                     'known_for' => $apiActor['known_for'] ?? null,
+                    'combined_credits' => $apiActor['combined_credits'] ?? null,
                     'external_ids' => $apiActor['external_ids'] ?? null,
+                    'tv_credits_count' => $creditCount,
                     'last_synced_at' => now(),
                 ]);
             } else {
@@ -588,9 +592,10 @@ class ContentController extends Controller
                     'birthday' => $apiActor['birthday'] ?? null,
                     'birthplace' => $apiActor['place_of_birth'] ?? null,
                     'known_for' => $apiActor['known_for'] ?? null,
+                    'combined_credits' => $apiActor['combined_credits'] ?? null,
                     'popularity' => $apiActor['popularity'] ?? 0,
                     'external_ids' => $apiActor['external_ids'] ?? null,
-                    'tv_credits_count' => count($apiActor['combined_credits']['tv'] ?? []),
+                    'tv_credits_count' => $creditCount,
                     'last_synced_at' => now(),
                 ]);
             }
@@ -599,6 +604,9 @@ class ContentController extends Controller
         } else {
             // Utiliser les données en base de données
             $actor = $dbActor->toArray();
+
+            // Important: utiliser tmdb_id comme 'id' pour que le modal envoie le bon ID
+            $actor['id'] = $dbActor->tmdb_id;
 
             // Mapper les champs DB vers les champs attendus par la vue
             $actor['place_of_birth'] = $dbActor->birthplace ?? null;
@@ -610,6 +618,15 @@ class ContentController extends Controller
                 $actor['external_ids'] = $dbActor->external_ids;
             } else {
                 $actor['external_ids'] = [];
+            }
+
+            // Assurer que combined_credits est un array
+            if (is_string($dbActor->combined_credits)) {
+                $actor['combined_credits'] = json_decode($dbActor->combined_credits, true);
+            } elseif ($dbActor->combined_credits) {
+                $actor['combined_credits'] = $dbActor->combined_credits;
+            } else {
+                $actor['combined_credits'] = [];
             }
         }
 

@@ -423,13 +423,21 @@ class TmdbService
                     $base['latin_name'] = $data['en-US']['name'];
                 }
 
-                // Filter combined_credits to show only Korean content
+                // Keep only essential data in combined_credits to save DB space
                 if (isset($base['combined_credits']['cast'])) {
-                    $base['combined_credits']['cast'] = array_filter($base['combined_credits']['cast'], function ($item) {
-                        return isset($item['origin_country']) && in_array('KR', $item['origin_country']);
+                    // Sort by popularity descending so best-known shows appear first
+                    usort($base['combined_credits']['cast'], function ($a, $b) {
+                        return ($b['popularity'] ?? 0) <=> ($a['popularity'] ?? 0);
                     });
-                    // Re-index array
-                    $base['combined_credits']['cast'] = array_values($base['combined_credits']['cast']);
+
+                    // Keep only id, name, poster_path
+                    $base['combined_credits']['cast'] = array_map(function ($item) {
+                        return [
+                            'id' => $item['id'] ?? null,
+                            'name' => $item['name'] ?? $item['title'] ?? null,
+                            'poster_path' => $item['poster_path'] ?? null,
+                        ];
+                    }, $base['combined_credits']['cast']);
                 }
 
                 return $base;

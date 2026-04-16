@@ -15,6 +15,7 @@ class Actor extends Model
         'birthday',
         'birthplace',
         'known_for',
+        'combined_credits',
         'tv_credits_count',
         'popularity',
         'external_ids',
@@ -23,6 +24,7 @@ class Actor extends Model
 
     protected $casts = [
         'known_for' => 'array',
+        'combined_credits' => 'array',
         'external_ids' => 'array',
         'birthday' => 'date',
         'last_synced_at' => 'datetime',

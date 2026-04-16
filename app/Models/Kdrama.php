@@ -29,6 +29,7 @@ class Kdrama extends Model
         'networks',
         'similar',
         'translations',
+        'adult_only',
         'last_updated_at',
     ];
 
@@ -40,6 +41,7 @@ class Kdrama extends Model
         'networks' => 'array',
         'similar' => 'array',
         'translations' => 'array',
+        'adult_only' => 'boolean',
         'last_updated_at' => 'datetime',
         'first_air_date' => 'date',
         'last_air_date' => 'date',

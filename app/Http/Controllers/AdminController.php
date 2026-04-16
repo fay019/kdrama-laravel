@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Kdrama;
 use App\Models\Setting;
-use Illuminate\Http\Request;
+use App\Models\User;
 
 class AdminController extends Controller
 {
@@ -21,6 +20,24 @@ class AdminController extends Controller
             'totalContents' => $totalContents,
             'cacheDuration' => $cacheDuration,
             'lastSync' => $lastSync,
+        ]);
+    }
+
+    public function toggleAdultContent($tmdbId)
+    {
+        $kdrama = Kdrama::where('tmdb_id', $tmdbId)->first();
+
+        if (! $kdrama) {
+            return response()->json(['error' => 'Content not found'], 404);
+        }
+
+        $kdrama->adult_only = ! $kdrama->adult_only;
+        $kdrama->save();
+
+        return response()->json([
+            'status' => 'success',
+            'adult_only' => $kdrama->adult_only,
+            'message' => $kdrama->adult_only ? 'Marked as adult content' : 'Unmarked as adult content',
         ]);
     }
 }

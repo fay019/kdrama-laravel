@@ -52,10 +52,25 @@ KDrama Laravel est une application web moderne permettant de parcourir des drama
 - ✅ **UX optimisée** : modale interactive, spinner de chargement, noms de fichier automatiques
 
 ### 🎨 Admin Panel
+
+#### 📊 Dashboard & Infrastructure
 - ✅ **Dashboard admin** avec statistiques (utilisateurs, contenus, synchronisations)
-- ✅ **Sidebar collapsible** avec sections (Site, Admin, Exports)
+- ✅ **Sidebar collapsible** avec sections (Site, Admin, Exports, Jobs & Tasks)
 - ✅ **Sélecteur de langue intégré** (changement instantané)
+- ✅ **Telescope** (outil de débogage) : Accès admin uniquement
+  - Visualisation des requêtes SQL, HTTP, erreurs
+  - Logs en temps réel
+  - Performance monitoring
+
+#### 👥 Gestion des Utilisateurs
 - ✅ **Gestion des utilisateurs** (CRUD complet)
+- ✅ **Force Password Change System** :
+  - 🔑 Bouton "Generate & Send New Password" pour réinitialiser le mot de passe
+  - 📧 Envoi de mot de passe temporaire sécurisé (12 chars) par email
+  - 🔒 Utilisateur forcé de changer le mot de passe avant accès à l'app
+  - ✏️ Page `/change-password` avec validation des critères de force
+
+#### ⚙️ Configuration & Paramètres
 - ✅ **Gestion des paramètres** (settings key-value avec grouping)
 - ✅ **Gestion auteur/site/SEO** :
   - Profil auteur (nom, bio, email, avatar)
@@ -64,24 +79,99 @@ KDrama Laravel est une application web moderne permettant de parcourir des drama
   - **Icônes intégrées**: Tabler (5021) + Simple Icons (3356) = 8377 icons total
   - Icon picker modal avec recherche en direct sur 8377+ icons
   - SEO : meta description, keywords, Open Graph tags (OG title, description, image, type)
-- ✅ **Gestion des icônes** :
-  - **Admin Icon Browser** (`/admin/icons`) : Recherche tous les 8377 icons (Tabler + Simple)
-  - Pagination "Load More" avec compteur dynamique (100 icons par page)
-  - **Labels en bleu** pour tous les icons (meilleure information)
-  - Type badges pour distinguer Tabler et Simple Icons
-  - Copy to clipboard avec préfixe `si-` pour Simple Icons
-  - **Compteur dynamique**: Mis à jour automatiquement si les packages changent
-- ✅ **Gestion des messages de contact** :
-  - Liste avec stats (total, en attente, lus, en cours, réglés, spam, erreurs email)
-  - Recherche et filtrage par statut
-  - Affichage des messages avec détails (expéditeur, email, pièces jointes)
-  - **Workflow d'état** : Pending → Read → In Progress → Resolved (transitions logiques)
-  - Téléchargement des pièces jointes
-  - Suppression définitive des messages
-- ✅ **Telescope** (outil de débogage) : Accès admin uniquement
-  - Visualisation des requêtes SQL, HTTP, erreurs
-  - Logs en temps réel
-  - Performance monitoring
+
+#### 🎨 Gestion des Icônes
+- ✅ **Admin Icon Browser** (`/admin/icons`) : Recherche tous les 8377 icons (Tabler + Simple)
+- ✅ Pagination "Load More" avec compteur dynamique (100 icons par page)
+- ✅ **Labels en bleu** pour tous les icons (meilleure information)
+- ✅ Type badges pour distinguer Tabler et Simple Icons
+- ✅ Copy to clipboard avec préfixe `si-` pour Simple Icons
+- ✅ **Compteur dynamique**: Mis à jour automatiquement si les packages changent
+
+#### 📧 Gestion des Messages de Contact
+- ✅ **Liste complète** avec stats (total, en attente, lus, en cours, réglés, spam, erreurs email)
+- ✅ **Recherche et filtrage** par statut
+- ✅ **Affichage détaillé** (expéditeur, email, pièces jointes)
+- ✅ **Workflow d'état** : Pending → Read → In Progress → Resolved (transitions logiques)
+- ✅ **Téléchargement** des pièces jointes
+- ✅ **Suppression** définitive des messages
+
+#### 🔄 Gestion des Jobs & Tâches Background (`/admin/jobs`)
+- ✅ **Professional Async Queue** : Database-backed persistent job processing (MySQL)
+- ✅ **Live Logs Viewer** (`/admin/jobs`):
+  - ✨ **Syntax Colorization** : Codes couleur automatiques (timestamps, log levels, keywords, numbers)
+  - 📊 **Color Legend** : Explication visuelle des couleurs utilisées
+  - 🔄 **Auto-refresh 2s** : Mise à jour automatique des logs en temps réel
+  - 🎛️ **Contrôles** : Toggle auto-refresh, refresh manuel, bouton "Clear Logs"
+  - 📜 **Affichage** : Dernières 100 lignes du `storage/logs/jobs.log`
+- ✅ **Quick Actions** - 3 boutons pour dispatcher jobs rapidement:
+  - 🎭 **Sync Actors** : Synchronise les acteurs populaires depuis TMDB
+  - 🗑️ **Cleanup PDFs** : Supprime les exports PDF de plus de 7 jours
+  - 🎬 **Update Production** : Met à jour les sociétés de production et réseaux
+- ✅ **Monitoring de la File d'Attente** :
+  - 📋 Table des jobs en attente (queue, tentatives, date disponibilité)
+  - 🗑️ **Bouton Delete** : Supprimer les jobs de la file d'attente
+  - 📱 **Vue mobile** : Cards avec tous les détails (desktop + mobile)
+- ✅ **Gestion des Jobs Échoués** :
+  - 🔴 Table avec exception preview
+  - 🔁 **Bouton Retry** : Relance un job échoué
+  - 🗑️ **Bouton Delete** : Supprime un job échoué
+
+#### 📜 Historique des Jobs (`/admin/jobs/history`)
+- ✅ **Exécution complète** : Page dédiée pour l'historique des jobs exécutés
+- ✅ **Métadonnées enrichies** :
+  - Job class et statut (completed/failed)
+  - Duration (temps d'exécution)
+  - Output (résumé de l'exécution)
+  - Completed at (timestamp)
+  - Metadata (JSON avec détails: dramas_processed, actors_synced, etc.)
+- ✅ **Pagination** : 20 résultats par page
+- ✅ **Responsive design** : Desktop (tables) + Mobile (cards avec badges)
+
+#### 📥 Gestion des Exports (`/admin/exports`)
+- ✅ **Export Admin** - Export watchlist de n'importe quel utilisateur
+  - Filtres identiques aux users (regardés, à regarder, mélange)
+  - Sélection des colonnes à inclure
+  - Choix du tri (date d'ajout, titre, rating, vote TMDB)
+  - PDF avec mise en page élégante, CSV avec colonnes personnalisables
+- ✅ **Cache Management** (`/admin/exports/cache`):
+  - 📊 Liste complète des fichiers cachés (taille, date création)
+  - 🗑️ Suppression individuelle des fichiers
+  - 💥 **Purge All** : Supprime tous les PDFs cachés
+  - ⏰ **Purge Expired** : Supprime seulement les fichiers > 7 jours
+  - 📈 Affichage de l'espace disque utilisé
+- ✅ **Export Statistics** (`/admin/exports/stats`):
+  - 📊 Statistiques complètes (nombre d'exports, formats, utilisateurs)
+  - 📈 Graphiques et tendances
+  - ⏱️ Temps moyen de génération, hit rate du cache
+
+#### 🚀 Système de Queue Professionnel
+- ✅ **Driver Database** : Jobs stockés dans MySQL (table `jobs`)
+- ✅ **Failed Jobs Tracking** : Logs des failures (table `failed_jobs`)
+- ✅ **Job Timeout** : 300 secondes pour les jobs longue durée
+- ✅ **Isolated Logging** : Logs séparés dans `storage/logs/jobs.log`
+- ✅ **Memory Optimization** : Batch processing avec réduction des requêtes SQL
+- ✅ **Supervisor Integration** : Prêt pour production avec daemon management
+
+#### 🛡️ Signalement de Contenu et Modération
+- ✅ **Report Modal** : Formulaire pour signaler le contenu
+  - 📝 Raison du signalement (inapproprié, faux, spam, autre)
+  - 💬 Description textuelle du problème
+  - 📧 Email du signaleur (optionnel)
+  - 🔗 Lien direct vers le contenu signalé
+- ✅ **Admin Dashboard** (`/admin/reports`):
+  - 📋 Liste complète des signalements
+  - 🔍 Filtrage par statut (Pending, In Review, Resolved, Dismissed)
+  - 📊 Statistiques des signalements
+- ✅ **Workflow de Modération** :
+  - 📝 États : Pending → In Review → Resolved/Dismissed
+  - 📧 Email de notification aux modérateurs
+  - 💬 Notes internes pour chaque action
+- ✅ **Actions Admin** :
+  - 👁️ **Review** : Marquer comme en cours de revue
+  - ✅ **Resolve** : Fermer le signalement (action prise)
+  - ❌ **Dismiss** : Clore sans action (faux positif)
+  - 🗑️ **Delete** : Supprimer le signalement
 
 ### 🔄 Synchronisation des Données
 - ✅ Intégration **TMDB** pour les métadonnées des dramas
@@ -967,6 +1057,93 @@ Voici une liste des idées et améliorations envisagées pour les prochaines pha
   - Clears flag et redirige
 - ✅ **Database:** Colonne `password_must_change` ajoutée
 - ✅ **Sidebar Integration:** Lien Telescope 🔍 sécurisé pour admins
+
+---
+
+## 🔄 Recent Major Updates (2026-04-15 to 2026-04-16)
+
+### ⚙️ Professional Async Queue with Job History (2026-04-16)
+- ✅ **Queue Driver:** Database-backed persistent jobs (MySQL)
+- ✅ **Admin Jobs Dashboard** at `/admin/jobs`:
+  - 3 Quick Action Cards (Sync Actors, Cleanup PDFs, Update Production)
+  - Live Pending Queue with auto-refresh (2 second intervals)
+  - Failed Jobs Management (Retry/Delete buttons)
+  - **Live Logs Viewer** with:
+    - Syntax colorization (timestamps, log levels, keywords, numbers)
+    - Color legend explanation
+    - Whitespace preservation for readability
+    - Auto-refresh toggle
+    - Clear logs button
+- ✅ **Job History Tracking** at `/admin/jobs/history`:
+  - Complete execution history (completed & failed jobs)
+  - Duration tracking, status, metadata
+  - Desktop table + mobile card views
+  - Pagination (20 per page)
+  - Metadata display (dramas_processed, actors_synced, etc.)
+- ✅ **Memory Optimization:**
+  - Batch size reduced from 500 to 100
+  - Memory limit: 256M (with option for 512M in production)
+  - Execution time: 300 seconds (5 minutes)
+  - SyncPopularActors completes in ~1m 45s for 5568 actors
+- ✅ **Documentation:** Complete `QUEUE.md` guide with deployment instructions
+
+### 📋 Content Reporting & Moderation (2026-04-16)
+- ✅ **Report Button** on drama/actor cards
+- ✅ **Report Modal** with category selection and messaging
+- ✅ **Admin Dashboard** at `/admin/contact` for managing reports
+- ✅ **Email Notifications** to admin on new reports
+- ✅ **Status Workflow:** pending → in_progress → resolved/spam
+
+### 🚫 Adult Content Marking (2026-04-16)
+- ✅ **Admin Toggle** to mark K-dramas as adult content
+- ✅ **User Filter** with `?hide_adult=1` parameter
+- ✅ **Default Behavior** - adult content hidden for guests
+- ✅ **Database Column:** `kdramas.adult_only`
+
+### 🎭 Actor Enhancements (2026-04-16)
+- ✅ **Detail Caching** with lazy-load system
+- ✅ **Combined Credits** JSON column for filmography
+- ✅ **Enhanced Modal** with bio, birth info, social links
+- ✅ **Cache Duration:** 30 days before re-fetching
+- ✅ **Performance Gain:** Actor details load instantly from cache
+- ✅ **"View All Dramas" Functionality:**
+  - Actor modal button now filters catalog by actor
+  - Direct TMDB credits lookup for faster filtering
+  - Actor ID stored in URL for state preservation
+  - Auto-clears actor filter when user starts searching
+  - Works on both catalog and detail pages
+
+### 🔍 Search & Catalog Improvements (2026-04-15/16)
+- ✅ **Actor Search Optimization** with API fallback
+- ✅ **Catalog Pagination Preservation** when switching views
+- ✅ **Better Filtering** across drama and actor catalogs
+
+### ⚙️ Settings Management (2026-04-15)
+- ✅ **Sensitivity Flags** for protecting API keys/secrets
+- ✅ **Custom Groups** for organizing settings
+- ✅ **Fallback Descriptions** auto-generated for custom categories
+- ✅ **Missing Migrations** included for settings sensitivity columns
+- ✅ **Toggle UI** for sensitive status in admin settings page
+
+### 🌐 Complete Multilingual Coverage (2026-04-15)
+- ✅ **100% Translation** across all 9 language files
+- ✅ **500+ Translation Keys** covering all admin & user pages
+- ✅ **Automatic Detection** via `SetLocale` middleware
+
+### 🔧 Development & Deployment Improvements (2026-04-15)
+- ✅ **Corrected .gitignore**
+  - Properly ignores development files
+  - Excludes storage and build artifacts
+  - Prevents tracking of local env files
+  - Boost configuration files handled correctly
+- ✅ **Updated Composer Dependencies**
+  - Latest stable versions installed
+  - Security patches applied
+  - Performance optimizations from newer versions
+- ✅ **Laravel Boost Integration**
+  - Development files added to configuration
+  - MCP server configurations ready
+  - Agent configurations for development
 
 ---
 

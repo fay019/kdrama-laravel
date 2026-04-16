@@ -403,8 +403,9 @@ class ContentController extends Controller
                 return ! in_array($item['id'] ?? $item['tmdb_id'] ?? null, $adultIds);
             });
             $results['results'] = array_values($results['results']);
-            $results['total_results'] = count($results['results']);
-            $results['total_pages'] = ceil($results['total_results'] / 20) ?: 1;
+            // Do NOT overwrite total_results and total_pages here,
+            // because $results['results'] only contains the current page's results.
+            // Overwriting them with count() would break pagination for the 2800+ total dramas.
         }
 
         // Récupérer les infos de watchlist et ratings si l'utilisateur est connecté
@@ -453,11 +454,12 @@ class ContentController extends Controller
                 });
                 // Note: array_filter reset les index, on peut ré-indexer si besoin mais pour le foreach ça va.
                 $results['results'] = array_values($results['results']);
-                $results['total_results'] = count($results['results']);
-                // Recalculate total pages based on filtered results if it's not a single page search
-                if (isset($results['total_pages']) && $results['total_pages'] > 1) {
-                    $results['total_pages'] = ceil($results['total_results'] / 20); // Assuming 20 per page
-                }
+
+                // If we are filtering by watched/watchlist locally, the total results/pages count from TMDB
+                // is no longer accurate for the filtered set. However, we cannot know the true total
+                // without fetching ALL pages from TMDB.
+                // For now, we keep the original totals to allow pagination to continue,
+                // even if some pages might appear with fewer than 20/40 results.
             }
         }
 

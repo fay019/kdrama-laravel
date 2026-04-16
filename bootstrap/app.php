@@ -24,7 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
-        // Le rafraîchissement se fait désormais à la consultation (24h cache)
+        // Sync all Korean drama actors weekly (Sunday at midnight)
+        $schedule->job(\App\Jobs\SyncPopularActors::class)->weeklyOn(0, '00:00');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

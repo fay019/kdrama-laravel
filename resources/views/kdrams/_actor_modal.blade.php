@@ -32,7 +32,7 @@
                 </div>
             @endif
 
-            @if($actor['place_of_birth'])
+            @if($actor['place_of_birth'] ?? null)
                 <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
                     <p class="text-slate-400 text-xs uppercase tracking-wider font-bold">{{ __('show.actor_place_of_birth') }}</p>
                     <p class="text-white font-medium text-sm">{{ $actor['place_of_birth'] }}</p>

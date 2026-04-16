@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\StreamingLinkHelper;
+use App\Models\Actor;
 use App\Models\Kdrama;
 use App\Models\User;
 use App\Models\WatchlistItem;
@@ -199,6 +200,7 @@ class ContentController extends Controller
             'search' => $request->get('search'),
             'exact_name' => $request->boolean('exact_name'),
             'has_photo' => $request->boolean('has_photo'),
+            'has_works' => $request->boolean('has_works', true),
             'actor' => $request->get('actor'),
             'actor_id' => $request->get('actor_id'),
             'hide_watched' => $request->boolean('hide_watched'),
@@ -207,29 +209,67 @@ class ContentController extends Controller
         ];
 
         if ($view === 'actors') {
-            // Pour la vue acteurs, on ne garde que le paramètre 'search' s'il existe
+            // Get actors from database (synced daily)
+            $query = \App\Models\Actor::query();
+
+            // Search by name if provided
             if (! empty($filters['search'])) {
-                $results = $this->tmdbService->searchPerson($filters['search'], (int) $filters['page'], $filters['exact_name'], $filters['has_photo']);
-            } else {
-                $results = $this->tmdbService->getPopularActors((int) $filters['page'], $filters['has_photo']);
+                $searchTerm = "%{$filters['search']}%";
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', $searchTerm)
+                      ->orWhere('known_for', 'like', $searchTerm);
+                });
             }
 
-            // On s'assure que les autres filtres n'impactent pas la pagination ou l'affichage
+            // Filter by TV credits if enabled (has_works)
+            if ($filters['has_works']) {
+                $query->where('tv_credits_count', '>=', 1);
+            }
+
+            // Filter by photo if requested
+            if ($filters['has_photo']) {
+                $query->whereNotNull('profile_path');
+            }
+
+            // Get total count before pagination
+            $totalResults = $query->count();
+
+            // Paginate results (20 per page)
+            $targetCount = 20;
+            $page = (int) $filters['page'];
+            $actorData = $query->orderBy('popularity', 'desc')
+                ->skip(($page - 1) * $targetCount)
+                ->limit($targetCount)
+                ->get();
+
+            // Transform to match TMDB structure (id = tmdb_id for modal links)
+            $results = $actorData->map(function ($actor) {
+                return [
+                    'id' => $actor->tmdb_id,  // For openActorModal() to work
+                    'tmdb_id' => $actor->tmdb_id,
+                    'name' => $actor->name,
+                    'profile_path' => $actor->profile_path,
+                    'popularity' => $actor->popularity,
+                    'known_for' => $actor->known_for,
+                    'tv_credits_count' => $actor->tv_credits_count,
+                ];
+            })->toArray();
+
+            $totalPages = ceil($totalResults / $targetCount);
+
+            $results = [
+                'results' => $results,
+                'total_results' => $totalResults,
+                'total_pages' => $totalPages,
+                'page' => $page,
+            ];
+
+            // Ensure other filters don't impact display
             $filters['actor'] = null;
             $filters['actor_id'] = null;
             $filters['min_rating'] = 0;
             $filters['from_year'] = null;
             $filters['to_year'] = null;
-
-            // Si on n'a pas de résultats mais qu'on a fait une recherche, on renvoie une liste vide propre
-            if (! $results) {
-                $results = [
-                    'results' => [],
-                    'total_results' => 0,
-                    'total_pages' => 0,
-                    'page' => $filters['page'],
-                ];
-            }
         } else {
             if (! empty($filters['actor_id'])) {
                 $results = $this->tmdbService->getPersonTvCredits($filters['actor_id'], $filters['page']);
@@ -508,11 +548,80 @@ class ContentController extends Controller
 
     public function actorDetails($id)
     {
-        $actor = $this->tmdbService->getPersonDetails($id);
+        // Chercher l'acteur en base de données
+        $dbActor = Actor::where('tmdb_id', $id)->first();
+
+        // Vérifier si on a besoin de refetch:
+        // 1. Pas en DB
+        // 2. Plus d'1 semaine depuis la synchro
+        // 3. Détails vides (bio, birthday, external_ids)
+        $needsRefresh = ! $dbActor || ! $dbActor->last_synced_at ||
+                        $dbActor->last_synced_at->addWeek()->isPast() ||
+                        (! $dbActor->biography && ! $dbActor->birthday && ! $dbActor->external_ids);
+
+        if ($needsRefresh) {
+            // Fetcher les détails complets de l'API TMDB
+            $apiActor = $this->tmdbService->getPersonDetails($id);
+
+            if (! $apiActor) {
+                return response()->json(['error' => __('show.actor_not_found')], 404);
+            }
+
+            // Sauvegarder/mettre à jour en base de données
+            if ($dbActor) {
+                // Mise à jour existante
+                $dbActor->update([
+                    'biography' => $apiActor['biography'] ?? null,
+                    'birthday' => $apiActor['birthday'] ?? null,
+                    'birthplace' => $apiActor['place_of_birth'] ?? null,
+                    'known_for' => $apiActor['known_for'] ?? null,
+                    'external_ids' => $apiActor['external_ids'] ?? null,
+                    'last_synced_at' => now(),
+                ]);
+            } else {
+                // Créer nouveau record
+                Actor::create([
+                    'tmdb_id' => $id,
+                    'name' => $apiActor['name'] ?? null,
+                    'biography' => $apiActor['biography'] ?? null,
+                    'profile_path' => $apiActor['profile_path'] ?? null,
+                    'birthday' => $apiActor['birthday'] ?? null,
+                    'birthplace' => $apiActor['place_of_birth'] ?? null,
+                    'known_for' => $apiActor['known_for'] ?? null,
+                    'popularity' => $apiActor['popularity'] ?? 0,
+                    'external_ids' => $apiActor['external_ids'] ?? null,
+                    'tv_credits_count' => count($apiActor['combined_credits']['tv'] ?? []),
+                    'last_synced_at' => now(),
+                ]);
+            }
+
+            $actor = $apiActor;
+        } else {
+            // Utiliser les données en base de données
+            $actor = $dbActor->toArray();
+
+            // Mapper les champs DB vers les champs attendus par la vue
+            $actor['place_of_birth'] = $dbActor->birthplace ?? null;
+
+            // Assurer que external_ids est un array
+            if (is_string($dbActor->external_ids)) {
+                $actor['external_ids'] = json_decode($dbActor->external_ids, true);
+            } elseif ($dbActor->external_ids) {
+                $actor['external_ids'] = $dbActor->external_ids;
+            } else {
+                $actor['external_ids'] = [];
+            }
+        }
 
         if (! $actor) {
             return response()->json(['error' => __('show.actor_not_found')], 404);
         }
+
+        // Assurer que toutes les clés optionnelles existent pour éviter les erreurs undefined array key dans la vue
+        $actor['deathday'] = $actor['deathday'] ?? null;
+        $actor['latin_name'] = $actor['latin_name'] ?? $actor['name'] ?? null;
+        $actor['original_name'] = $actor['original_name'] ?? $actor['name'] ?? null;
+        $actor['combined_credits'] = $actor['combined_credits'] ?? [];
 
         return view('kdrams._actor_modal', [
             'actor' => $actor,

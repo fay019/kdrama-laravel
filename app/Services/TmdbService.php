@@ -292,7 +292,7 @@ class TmdbService
 
     public function getPersonTvCredits($personId, $page = 1)
     {
-        $cacheKey = "tmdb_person_tv_credits_v3_{$personId}_p{$page}";
+        $cacheKey = "tmdb_person_tv_credits_v7_{$personId}_p{$page}";
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($personId, $page) {
             try {
@@ -303,14 +303,16 @@ class TmdbService
                     $response = Http::timeout(15)->get("{$this->baseUrl}/person/{$personId}/tv_credits", [
                         'api_key' => $this->apiKey,
                         'language' => $lang,
+                        'include_adult' => false,
                     ]);
 
                     if ($response->successful()) {
                         $data = $response->json();
                         if (isset($data['cast'])) {
                             foreach ($data['cast'] as $item) {
-                                // Filtrer pour ne garder que les contenus coréens (KR)
-                                if (isset($item['origin_country']) && in_array('KR', $item['origin_country'])) {
+                                // Filter to exclude adult content only
+                                // For Korean actors, we assume their TV credits are mostly Korean dramas
+                                if (! ($item['adult'] ?? false)) {
                                     $id = $item['id'];
                                     if (! isset($allCredits[$id])) {
                                         $allCredits[$id] = $item;
@@ -384,7 +386,7 @@ class TmdbService
 
     public function getPersonDetails($personId)
     {
-        $cacheKey = "tmdb_person_details_v1_{$personId}";
+        $cacheKey = "tmdb_person_details_v3_{$personId}";
 
         return Cache::remember($cacheKey, now()->addWeek(), function () use ($personId) {
             try {
@@ -396,6 +398,7 @@ class TmdbService
                         'api_key' => $this->apiKey,
                         'language' => $lang,
                         'append_to_response' => 'external_ids,combined_credits',
+                        'include_adult' => false,
                     ]);
 
                     if ($response->successful()) {
@@ -420,6 +423,15 @@ class TmdbService
                     $base['latin_name'] = $data['en-US']['name'];
                 }
 
+                // Filter combined_credits to show only Korean content
+                if (isset($base['combined_credits']['cast'])) {
+                    $base['combined_credits']['cast'] = array_filter($base['combined_credits']['cast'], function ($item) {
+                        return isset($item['origin_country']) && in_array('KR', $item['origin_country']);
+                    });
+                    // Re-index array
+                    $base['combined_credits']['cast'] = array_values($base['combined_credits']['cast']);
+                }
+
                 return $base;
             } catch (\Exception $e) {
                 \Log::error('TMDB API Person Details Error: '.$e->getMessage());
@@ -429,12 +441,12 @@ class TmdbService
         });
     }
 
-    public function searchPerson($query, $page = 1, $exactMatch = false, $hasPhoto = false)
+    public function searchPerson($query, $page = 1, $exactMatch = false, $hasPhoto = false, $hasWorks = true)
     {
         $page = (int) $page;
-        $cacheKey = 'tmdb_search_person_v12_'.md5($query).'_p'.$page.'_e'.($exactMatch ? '1' : '0').'_hp'.($hasPhoto ? '1' : '0');
+        $cacheKey = 'tmdb_search_person_v13_'.md5($query).'_p'.$page.'_e'.($exactMatch ? '1' : '0').'_hp'.($hasPhoto ? '1' : '0').'_hw'.($hasWorks ? '1' : '0');
 
-        return Cache::remember($cacheKey, now()->addDay(), function () use ($query, $page, $exactMatch, $hasPhoto) {
+        return Cache::remember($cacheKey, now()->addDay(), function () use ($query, $page, $exactMatch, $hasPhoto, $hasWorks) {
             try {
                 $allResults = [];
                 $targetCount = 20;
@@ -488,6 +500,14 @@ class TmdbService
                                     continue;
                                 }
 
+                                // Check if actor has TV credits when hasWorks filter is enabled
+                                if ($hasWorks) {
+                                    $credits = $this->getPersonTvCredits($person['id']);
+                                    if (! $credits || empty($credits['results'])) {
+                                        continue;
+                                    }
+                                }
+
                                 if (! collect($allResults)->contains('id', $person['id'])) {
                                     // Priorité aux correspondances exactes
                                     if ($isExact) {
@@ -535,18 +555,22 @@ class TmdbService
         });
     }
 
-    public function getPopularActors($page = 1, $hasPhoto = false)
+    public function getPopularActors($page = 1, $hasPhoto = false, $hasWorks = true)
     {
         $page = (int) $page;
-        $cacheKey = "tmdb_popular_actors_v11_p{$page}_hp".($hasPhoto ? '1' : '0');
+        $cacheKey = "tmdb_popular_actors_v12_p{$page}_hp".($hasPhoto ? '1' : '0').'_hw'.($hasWorks ? '1' : '0');
 
-        return Cache::remember($cacheKey, now()->addHours(6), function () use ($page, $hasPhoto) {
+        return Cache::remember($cacheKey, now()->addHours(6), function () use ($page, $hasPhoto, $hasWorks) {
             try {
                 $allResults = [];
                 $targetCount = 20;
 
-                // Optimization: Scan max 10 pages instead of 100 (most popular Korean actors in first 10)
-                for ($p = 1; $p <= 10; $p++) {
+                // Optimized scanning: Balance speed vs result count
+                // With filter: Need more pages since many actors get filtered out
+                // Without filter: Can get good results with fewer pages
+                $maxPages = $hasWorks ? 25 : 40;
+
+                for ($p = 1; $p <= $maxPages; $p++) {
                     $response = Http::timeout(15)->get("{$this->baseUrl}/person/popular", [
                         'api_key' => $this->apiKey,
                         'language' => 'en-US',
@@ -562,6 +586,14 @@ class TmdbService
                                     continue;
                                 }
 
+                                // Check if actor has TV credits when hasWorks filter is enabled
+                                if ($hasWorks) {
+                                    $credits = $this->getPersonTvCredits($person['id']);
+                                    if (! $credits || empty($credits['results'])) {
+                                        continue;
+                                    }
+                                }
+
                                 if (! collect($allResults)->contains('id', $person['id'])) {
                                     $allResults[] = $person;
                                 }
@@ -572,7 +604,8 @@ class TmdbService
                     }
 
                     // Early stopping: if we have enough buffer for requested page, stop scanning
-                    if (count($allResults) >= ($page * $targetCount) + 40) {
+                    $requiredBuffer = $hasWorks ? 100 : 200;
+                    if (count($allResults) >= ($page * $targetCount) + $requiredBuffer) {
                         break;
                     }
                 }

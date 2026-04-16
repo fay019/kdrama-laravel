@@ -6,7 +6,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <!-- Header -->
     @php
-        $hasFilters = !empty($filters['search']) || !empty($filters['actor']) || !empty($filters['min_rating']) || !empty($filters['from_year']) || !empty($filters['to_year']) || !empty($filters['hide_watched']) || !empty($filters['hide_watchlist']) || !empty($filters['exact_name']) || !empty($filters['has_photo']);
+        $hasFilters = !empty($filters['search']) || !empty($filters['actor']) || !empty($filters['min_rating']) || !empty($filters['from_year']) || !empty($filters['to_year']) || !empty($filters['hide_watched']) || !empty($filters['hide_watchlist']) || !empty($filters['exact_name']) || !empty($filters['has_photo']) || !empty($filters['has_works']);
     @endphp
     <div class="mb-8" x-data="{ showFilters: {{ $hasFilters ? 'true' : 'false' }}, isLoading: false }">
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
@@ -200,6 +200,16 @@
                             <span class="ml-3 text-xs font-medium text-slate-400">{{ __('catalog.filter_toggle_active') }}</span>
                         </label>
                     </div>
+
+                    <div class="filter-form-group">
+                        <label class="filter-form-label">Avec au moins 1 film</label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="hidden" name="has_works" value="0">
+                            <input type="checkbox" name="has_works" value="1" {{ ($filters['has_works'] ?? true) ? 'checked' : '' }} class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-blue-500 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            <span class="ml-3 text-xs font-medium text-slate-400">{{ __('catalog.filter_toggle_active') }}</span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -292,18 +302,9 @@
                         </p>
 
                         @php
-                            $hasActiveFilters = !empty($filters['search']) || !empty($filters['actor']) || !empty($filters['min_rating']) || !empty($filters['from_year']) || !empty($filters['to_year']) || $filters['hide_watched'] || $filters['hide_watching'] || $filters['hide_watchlist'] || $filters['exact_name'] || $filters['has_photo'];
+                            $hasActiveFilters = !empty($filters['search']) || !empty($filters['actor']) || !empty($filters['actor_id']) || !empty($filters['min_rating']) || !empty($filters['from_year']) || !empty($filters['to_year']) || $filters['hide_watched'] || $filters['hide_watching'] || $filters['hide_watchlist'] || $filters['exact_name'] || $filters['has_photo'];
                         @endphp
-                        @if(!$hasActiveFilters)
-                            @auth
-                                @if(auth()->user()->is_admin)
-                                    <p class="text-slate-500 text-sm mb-4">{{ __('catalog.hide_filters') }}</p>
-                                    <a href="{{ route('admin.settings.index') }}?view={{ $filters['view'] ?? 'dramas' }}" class="btn-primary inline-block">
-                                        ⚙️ {{ __('common.configure') }}
-                                    </a>
-                                @endif
-                            @endauth
-                        @else
+                        @if($hasActiveFilters)
                             <a href="{{ route('kdrams.catalog') }}?view={{ $filters['view'] ?? 'dramas' }}" class="btn-primary inline-block">
                                 🔄 {{ __('catalog.filter_clear') }}
                             </a>
@@ -450,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make triggerLiveFilter globally accessible for Alpine.js
     window.triggerLiveFilter = function(inputElement) {
         // Si c'est un filtre de recherche, reset la page à 1
-        const searchFilters = ['search_drama', 'search_actor', 'actor', 'from_year', 'to_year', 'min_rating', 'exact_name', 'has_photo'];
+        const searchFilters = ['search_drama', 'search_actor', 'actor', 'from_year', 'to_year', 'min_rating', 'exact_name', 'has_photo', 'has_works'];
         if (inputElement && (searchFilters.includes(inputElement.name) || inputElement.id === 'view-input')) {
             const pageInput = document.getElementById('page-input');
             if (pageInput) {
@@ -489,11 +490,11 @@ document.addEventListener('DOMContentLoaded', function() {
             for (const [key, value] of formData.entries()) {
                 if (value === '') continue;
 
-                // Si on est en vue acteurs, on ne garde que view, page, search_actor (renommé en search), exact_name et has_photo
+                // Si on est en vue acteurs, on ne garde que view, page, search_actor (renommé en search), exact_name, has_photo et has_works
                 if (view === 'actors') {
                     if (key === 'search_actor') {
                         params.append('search', value);
-                    } else if (['view', 'page', 'exact_name', 'has_photo'].includes(key)) {
+                    } else if (['view', 'page', 'exact_name', 'has_photo', 'has_works'].includes(key)) {
                         params.append(key, value);
                     }
                 } else {

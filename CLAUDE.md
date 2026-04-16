@@ -37,37 +37,223 @@ job_batches table:    Stores batch job information
 
 **Admin Routes Added:**
 - `GET /admin/jobs` - Main dashboard
+- `GET /admin/jobs/history` - Job execution history
 - `POST /admin/jobs/dispatch` - Dispatch SyncPopularActors job
 - `POST /admin/jobs/run-command` - Run Artisan commands
-- `GET /admin/jobs/logs` - Fetch live logs (AJAX)
+- `DELETE /admin/jobs/pending/{jobId}` - Delete pending job from queue
 - `POST /admin/jobs/failed/{uuid}/retry` - Retry failed job
 - `DELETE /admin/jobs/failed/{uuid}` - Delete failed job
+- `GET /admin/jobs/logs` - Fetch live logs (AJAX)
+- `POST /admin/jobs/logs/clear` - Clear all job logs
+
+**Job History Tracking System:**
+- ✅ New `job_history` table stores all job executions (completed & failed)
+- ✅ JobHistory model with metadata support (JSON)
+- ✅ `/admin/jobs/history` page with:
+  - Desktop table view (job, status, duration, output, date)
+  - Mobile card view
+  - Pagination (20 per page)
+  - Metadata display (dramas_processed, actors_synced, etc.)
+- ✅ SyncPopularActors records:
+  - Execution start/end times
+  - Duration in seconds
+  - Status (completed/failed)
+  - Output summary and exception details
+  - Custom metadata for each job run
+
+**UI/UX Enhancements:**
+- ✅ **Colorized Live Logs** with syntax highlighting:
+  - Timestamps (gray)
+  - INFO/ERROR/WARNING levels (blue/red/amber)
+  - Success keywords (green)
+  - Numbers/stats (yellow)
+  - Key info (cyan)
+  - Start/End messages with ▶/✓/✗ indicators
+- ✅ **Color Legend** below logs with explanation
+- ✅ **Delete Pending Jobs** feature:
+  - Delete button in pending queue table (desktop)
+  - Delete button in pending queue cards (mobile)
+  - Confirmation dialog before deletion
+- ✅ **Clear Logs Button** with confirmation
+- ✅ **Whitespace preservation** in logs (whitespace-pre-wrap CSS)
+- ✅ **Flexible wrap layout** for action buttons
+
+**Memory & Performance Optimization:**
+- ✅ **Batch size reduced** from 500 to 100 (5568 actors → ~56 queries instead of 12)
+- ✅ **Memory limit increased:**
+  - `.user.ini`: `memory_limit = 256M` (was 128M)
+  - Queue worker launch: `php -d memory_limit=512M artisan queue:work --timeout=300`
+- ✅ **Execution time:** `max_execution_time = 300` seconds (5 minutes)
+- ✅ **Verified:** SyncPopularActors completes in ~1m 45s with 5568 actors
 
 **Translation Keys Added (FR/EN/DE):**
 - 40+ keys for jobs management (section_jobs, nav_jobs_monitor, jobs_dispatched, etc.)
+- 10+ keys for job history (jobs_history_title, jobs_status_completed, jobs_completed_at, etc.)
 - Sidebar integration with collapsible 'Jobs & Tasks' section
+- Sidebar link to Job History page (📜 Job History)
 
 **Documentation:**
 - ✅ New file: `QUEUE.md` - Complete guide to queue setup, worker configuration, monitoring, and troubleshooting
-- ✅ Quick start: Run `php artisan queue:work --timeout=300` in separate terminal
-- ✅ Verification: Watch `/admin/jobs` dashboard for real-time job processing
+- ✅ CLAUDE.md updated with all 2026-04-16 changes
+- ✅ Quick start: Run `php -d memory_limit=512M artisan queue:work --timeout=300` in separate terminal
+- ✅ Verification: Watch `/admin/jobs` dashboard for real-time job processing and history
 
 **Files Modified/Created:**
-- `app/Http/Controllers/Admin/AdminJobsController.php` - NEW
-- `resources/views/admin/jobs/index.blade.php` - NEW
+- `app/Http/Controllers/Admin/AdminJobsController.php` - NEW (6 methods for job management)
+- `app/Models/JobHistory.php` - NEW (job execution history model)
+- `resources/views/admin/jobs/index.blade.php` - NEW (dashboard with live logs, queue, failed jobs)
+- `resources/views/admin/jobs/history.blade.php` - NEW (job history page with pagination)
+- `database/migrations/2026_04_16_043912_create_job_history_table.php` - NEW
 - `config/logging.php` - Added jobs channel
-- `app/Jobs/SyncPopularActors.php` - Updated with timeout & isolated logging
-- `routes/web.php` - Added 6 new admin routes
-- `resources/views/components/admin-sidebar.blade.php` - Added jobs section
-- `lang/{fr|en|de}/admin.php` - Added 40+ translation keys
+- `app/Jobs/SyncPopularActors.php` - Updated with:
+  - Reduced batch size (500 → 100)
+  - JobHistory recording on success/failure
+  - Proper start time tracking
+  - Metadata collection
+- `routes/web.php` - Added 9 new admin routes
+- `resources/views/components/admin-sidebar.blade.php` - Added jobs section with history link
+- `lang/{fr|en|de}/admin.php` - Added 50+ translation keys
 - `QUEUE.md` - NEW comprehensive queue documentation
-- `.env` - Changed QUEUE_CONNECTION to database
+- `.user.ini` - NEW (max_execution_time = 300, memory_limit = 256M)
 
-**Next Steps for Production:**
-1. Run: `php artisan queue:work --timeout=300` in background process or supervisor daemon
-2. Monitor via `/admin/jobs` dashboard
-3. Check `storage/logs/jobs.log` for detailed job output
-4. For production, consider using Supervisor to manage worker process lifecycle
+**Production Deployment:**
+1. Run: `php -d memory_limit=512M artisan queue:work --timeout=300` in background process or supervisor
+2. Monitor via `/admin/jobs` dashboard in real-time
+3. Check job history at `/admin/jobs/history` for past executions
+4. View detailed logs in `storage/logs/jobs.log`
+5. For production, use Supervisor/systemd to manage worker process lifecycle
+
+---
+
+### ✅ Content Reporting & Moderation System (2026-04-16)
+**Major Addition:** Complete content report workflow with admin moderation
+
+**Features Implemented:**
+- ✅ **Report Button** on drama/actor cards (desktop & mobile)
+- ✅ **Report Modal** with:
+  - Category selection (inappropriate content, spam, other)
+  - Custom message textarea
+  - Submit button with validation
+- ✅ **Admin Dashboard** at `/admin/contact` with:
+  - Status workflow (pending → in_progress → resolved/spam)
+  - Report type display
+  - Message preview with full text
+  - Mark as spam button
+- ✅ **Email Notifications** to admin with:
+  - Report type and category
+  - User message
+  - Drama/actor details
+  - Status tracking link
+- ✅ **Database:** `contact_messages` table stores all reports
+- ✅ **Translations:** Full FR/EN/DE support
+
+**Files Modified:**
+- `app/Http/Controllers/ContentController.php` - Added reportContent() method
+- `resources/views/kdrams/show.blade.php` - Added report button
+- `resources/views/kdrams/_card.blade.php` - Added report button
+- `resources/views/kdrams/_actor_card.blade.php` - Added report button
+- `resources/views/admin/contact/` - Report management pages
+- `lang/{fr|en|de}/show.php` - Report translations
+
+### ✅ Adult Content Marking System (2026-04-16)
+**Major Addition:** Admin ability to mark K-dramas as adult content
+
+**Features Implemented:**
+- ✅ **Toggle in Admin** - Mark kdrama as `adult_only` in `/admin/kdrama/{id}/edit`
+- ✅ **User Filter** - `?hide_adult=1` parameter to exclude adult content
+- ✅ **Default Behavior** - Adult content hidden by default for guests
+- ✅ **Database** - `kdramas.adult_only` boolean column
+- ✅ **Translations** - Settings available in FR/EN/DE
+
+**Files Modified:**
+- `app/Models/Kdrama.php` - Added adult_only column
+- `app/Http/Controllers/ContentController.php` - Added adult filtering logic
+- `database/migrations/` - Added adult_only column migration
+- `lang/{fr|en|de}/catalog.php` - Filter translations
+
+### ✅ Actor Detail Caching & Enhanced Display (2026-04-16)
+**Major Addition:** Intelligent caching system for actor details with combined credits
+
+**Features Implemented:**
+- ✅ **Combined Credits** - `combined_credits` JSON column on actors table
+- ✅ **Lazy-Load Caching** - Actor details cached on first view
+- ✅ **Cache Duration** - 30 days before re-fetching from TMDB
+- ✅ **Detail Modal** - Enhanced actor bio with:
+  - Combined filmography from cache
+  - Profile image with fallback
+  - Popularity score
+  - Birth date and place
+- ✅ **Database** - Efficient storage with `last_synced_at` tracking
+
+**Performance Gains:**
+- Actor modal loads instantly from cache
+- Reduced TMDB API calls
+- Better user experience on actor cards
+
+**Files Modified:**
+- `app/Models/Actor.php` - Added combined_credits column
+- `app/Services/TmdbService.php` - Cache logic added
+- `resources/views/kdrams/_actor_modal.blade.php` - Enhanced display
+- `database/migrations/` - Added combined_credits column
+
+### ✅ Catalog Pagination Preservation (2026-04-16)
+**Bug Fix:** Global pagination counts now preserved during local filtering
+
+**Issue:** Switching between drama/actor views reset pagination to page 1
+
+**Solution:**
+- Preserve global `page` parameter in view switch
+- Keep local filter counts separate from global pagination
+- Updated routes to maintain pagination state
+
+**Files Modified:**
+- `app/Http/Controllers/ContentController.php` - Fixed pagination logic
+- `resources/views/kdrams/index.blade.php` - Updated view switch links
+
+### ✅ Actor Search Improvements (2026-04-15)
+**Enhancement:** Better actor discovery with improved search
+
+**Features:**
+- ✅ Reduced TMDB pages scanned (100 → 50 for better performance)
+- ✅ Smart API fallback when actor database < 50 records
+- ✅ Pagination improvements
+- ✅ Better filtering
+
+**Files Modified:**
+- `app/Services/TmdbService.php` - Optimized search logic
+- `tests/Feature/SearchReliabilityTest.php` - New test suite
+
+### ✅ Settings Management Enhancements (2026-04-15)
+**Enhancement:** Improved settings CRUD with sensitivity flags
+
+**Features:**
+- ✅ **Sensitive Settings** - Mark fields as sensitive (API keys, secrets)
+- ✅ **Custom Groups** - Organize settings by category
+- ✅ **Fallback Descriptions** - Auto-generate for custom groups
+- ✅ **Validation** - Full form validation on updates
+
+**Files Modified:**
+- `database/migrations/` - Added sensitivity columns
+- `app/Models/Setting.php` - Added sensitivity support
+- `resources/views/admin/settings/` - Enhanced UI
+- Admin settings page with sensitivity indicators
+
+### ✅ Complete Multilingual Coverage (2026-04-15)
+**Major Addition:** 100% translation of all pages (FR/EN/DE)
+
+**Coverage:**
+- ✅ All 9 language files complete
+- ✅ 500+ translation keys
+- ✅ All admin pages translated
+- ✅ All user-facing content translated
+- ✅ Error messages translated
+- ✅ Success messages translated
+
+**Files Updated:**
+- `lang/{fr|en|de}/*.php` - All files 100% complete
+- Database: `users.preferred_language` column
+- Middleware: `SetLocale.php` for automatic detection
+- Footer & profile selectors for language switching
 
 ---
 

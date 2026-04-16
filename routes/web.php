@@ -30,6 +30,9 @@ Route::post('/language/{locale}', function ($locale) {
     return back();
 })->name('language.switch');
 
+// User report content
+Route::post('/report-content', [ContentController::class, 'reportContent'])->middleware('auth')->name('report.content');
+
 // Setup routes
 Route::prefix('setup')->name('setup.')->group(function () {
     Route::get('/', [SetupController::class, 'index'])->name('index');
@@ -46,6 +49,9 @@ Route::get('/api/actor/{id}', [ContentController::class, 'actorDetails'])->middl
 // Contact routes (with password check for authenticated users)
 Route::get('/contact', [ContactController::class, 'show'])->middleware('check.password')->name('contact.show');
 Route::post('/contact', [ContactController::class, 'store'])->middleware('check.password')->name('contact.store');
+
+// Public report endpoint (no auth required)
+Route::post('/report-issue', [ContactController::class, 'reportIssue'])->name('report.issue');
 
 // Admin protected routes
 Route::middleware(['auth', 'admin', 'check.password'])->group(function () {
@@ -104,6 +110,9 @@ Route::middleware(['auth', 'admin', 'check.password'])->prefix('admin')->name('a
     Route::post('contact/{id}/status', [AdminContactController::class, 'updateStatus'])->name('contact.update-status');
     Route::delete('contact/{id}', [AdminContactController::class, 'destroy'])->name('contact.destroy');
     Route::get('contact/{id}/attachment', [AdminContactController::class, 'downloadAttachment'])->name('contact.download-attachment');
+
+    // Content moderation
+    Route::post('content/{tmdbId}/toggle-adult', [AdminController::class, 'toggleAdultContent'])->name('content_toggle_adult');
 
     // Export management
     Route::get('exports/cache', [AdminExportController::class, 'cacheIndex'])->name('exports.cache');

@@ -95,4 +95,17 @@ return [
     // Catalog Filters
     'filter_toggle_active' => 'Actif',
     'catalog_page_info' => 'Page :current / :total — Affichage de :count résultats sur :total total',
+
+    // Moderation
+    'mark_as_adult' => '⭕ Marquer comme contenu adulte',
+    'unmark_as_adult' => '🔴 Marqué comme adulte',
+    'report_content' => '🚩 Signaler le contenu',
+    'report_modal_title' => '🚩 Signaler un contenu',
+    'report_modal_text' => 'Pourquoi souhaitez-vous signaler ce contenu ?',
+    'report_reason_placeholder' => 'Décrivez le problème (ex: erreur de traduction, lien mort, contenu inapproprié...)',
+    'report_email_placeholder' => 'Votre email (optionnel)',
+    'report_submit' => 'Envoyer le signalement',
+    'report_cancel' => 'Annuler',
+    'report_success' => 'Merci de votre signalement. Notre équipe examinera ce contenu.',
+    'report_confirm' => 'Êtes-vous sûr de vouloir signaler ce contenu comme inapproprié ?',
 ];

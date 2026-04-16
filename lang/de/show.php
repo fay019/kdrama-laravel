@@ -32,6 +32,9 @@ return [
     'similar' => 'Ähnliche Dramen',
     'watch_now' => 'Jetzt ansehen',
     'where_to_watch' => 'Wo kann man schauen',
+    'production_diffusion' => '🎬 Produktion & Ausstrahlung',
+    'production_studios' => '🏢 Studios',
+    'production_networks' => '📡 Netzwerke',
 
     // Ratings
     'rating_title' => 'Meine Bewertung',
@@ -92,4 +95,17 @@ return [
     // Catalog Filters
     'filter_toggle_active' => 'Aktiv',
     'catalog_page_info' => 'Seite :current / :total — Anzeige von :count Ergebnissen aus :total gesamt',
+
+    // Moderation
+    'mark_as_adult' => '⭕ Als Erwachseneninhalte markieren',
+    'unmark_as_adult' => '🔴 Als Erwachseneninhalte markiert',
+    'report_content' => '🚩 Inhalt melden',
+    'report_modal_title' => '🚩 Inhalt melden',
+    'report_modal_text' => 'Warum möchten Sie diesen Inhalt melden?',
+    'report_reason_placeholder' => 'Beschreiben Sie das Problem (z.B. Übersetzungsfehler, defekter Link, unangemessener Inhalt...)',
+    'report_email_placeholder' => 'Ihre E-Mail (optional)',
+    'report_submit' => 'Meldung senden',
+    'report_cancel' => 'Abbrechen',
+    'report_success' => 'Vielen Dank für Ihre Meldung. Unser Team wird diesen Inhalt prüfen.',
+    'report_confirm' => 'Sind Sie sicher, dass Sie diesen Inhalt als unangemessen melden möchten?',
 ];

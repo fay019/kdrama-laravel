@@ -32,6 +32,9 @@ return [
     'similar' => 'Similar dramas',
     'watch_now' => 'Watch now',
     'where_to_watch' => 'Where to watch',
+    'production_diffusion' => '🎬 Production & Broadcasting',
+    'production_studios' => '🏢 Studios',
+    'production_networks' => '📡 Networks',
 
     // Ratings
     'rating_title' => 'My rating',
@@ -92,4 +95,17 @@ return [
     // Catalog Filters
     'filter_toggle_active' => 'Active',
     'catalog_page_info' => 'Page :current / :total — Displaying :count results out of :total total',
+
+    // Moderation
+    'mark_as_adult' => '⭕ Mark as adult content',
+    'unmark_as_adult' => '🔴 Marked as adult',
+    'report_content' => '🚩 Report content',
+    'report_modal_title' => '🚩 Report Content',
+    'report_modal_text' => 'Why are you reporting this content?',
+    'report_reason_placeholder' => 'Describe the issue (e.g., translation error, broken link, inappropriate content...)',
+    'report_email_placeholder' => 'Your email (optional)',
+    'report_submit' => 'Send Report',
+    'report_cancel' => 'Cancel',
+    'report_success' => 'Thank you for reporting. Our team will review this content.',
+    'report_confirm' => 'Are you sure you want to report this content as inappropriate?',
 ];

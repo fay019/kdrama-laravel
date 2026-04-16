@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\StreamingLinkHelper;
+use App\Mail\ContactMail;
 use App\Models\Actor;
 use App\Models\Kdrama;
 use App\Models\User;
@@ -11,6 +12,7 @@ use App\Services\StreamingAvailabilityService;
 use App\Services\TmdbService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ContentController extends Controller
 {
@@ -161,6 +163,64 @@ class ContentController extends Controller
         return $data;
     }
 
+    public function reportContent(Request $request)
+    {
+        $validated = $request->validate([
+            'tmdb_id' => 'required|string',
+            'reason' => 'required|string|max:500',
+            'drama_name' => 'nullable|string',
+            'drama_image' => 'nullable|string',
+            'page_url' => 'nullable|string',
+        ]);
+
+        // Log the report
+        \Log::info('Content reported', [
+            'user_id' => auth()->id(),
+            'tmdb_id' => $validated['tmdb_id'],
+            'drama_name' => $validated['drama_name'] ?? 'Unknown',
+            'reason' => $validated['reason'],
+            'timestamp' => now(),
+        ]);
+
+        // Send email to admin
+        try {
+            $adminEmail = env('MAIL_ADMIN_EMAIL', config('app.admin_email'));
+            $imageUrl = ! empty($validated['drama_image'])
+                ? 'https://image.tmdb.org/t/p/w500'.$validated['drama_image']
+                : null;
+
+            $message = "Un contenu a été signalé par un utilisateur connecté.\n\n".
+                       'Drama: '.($validated['drama_name'] ?? 'Inconnu')." (ID: {$validated['tmdb_id']})\n";
+
+            if (! empty($validated['page_url'])) {
+                $message .= "Lien: {$validated['page_url']}\n";
+            }
+
+            if ($imageUrl) {
+                $message .= "Image: {$imageUrl}\n";
+            }
+
+            $message .= "Raison: {$validated['reason']}\n";
+
+            Mail::to($adminEmail)->send(new ContactMail([
+                'name' => auth()->user()->name ?? 'Utilisateur connecté',
+                'email' => auth()->user()->email ?? 'noreply@example.com',
+                'subject' => 'Signalement de contenu : '.($validated['drama_name'] ?? $validated['tmdb_id']),
+                'message' => $message,
+                'drama_image' => $imageUrl,
+                'page_url' => $validated['page_url'] ?? null,
+                'ip_address' => $request->ip(),
+            ]));
+        } catch (\Exception $e) {
+            \Log::error('Error sending report email', ['error' => $e->getMessage()]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Report submitted',
+        ]);
+    }
+
     /**
      * Get localized title with fallback: current locale → EN → FR → original
      */
@@ -210,14 +270,14 @@ class ContentController extends Controller
 
         if ($view === 'actors') {
             // Get actors from database (synced daily)
-            $query = \App\Models\Actor::query();
+            $query = Actor::query();
 
             // Search by name if provided
             if (! empty($filters['search'])) {
                 $searchTerm = "%{$filters['search']}%";
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('name', 'like', $searchTerm)
-                      ->orWhere('known_for', 'like', $searchTerm);
+                        ->orWhere('known_for', 'like', $searchTerm);
                 });
             }
 
@@ -336,6 +396,17 @@ class ContentController extends Controller
             $results = ['results' => [], 'total_pages' => 0, 'total_results' => 0];
         }
 
+        // Filter out adult_only content for drama results (not for actors)
+        if ($view === 'dramas' && ! empty($results['results'])) {
+            $adultIds = Kdrama::where('adult_only', true)->pluck('tmdb_id')->toArray();
+            $results['results'] = array_filter($results['results'], function ($item) use ($adultIds) {
+                return ! in_array($item['id'] ?? $item['tmdb_id'] ?? null, $adultIds);
+            });
+            $results['results'] = array_values($results['results']);
+            $results['total_results'] = count($results['results']);
+            $results['total_pages'] = ceil($results['total_results'] / 20) ?: 1;
+        }
+
         // Récupérer les infos de watchlist et ratings si l'utilisateur est connecté
         $userStatus = [];
         if (auth()->check()) {
@@ -432,20 +503,28 @@ class ContentController extends Controller
             $details = $kdrama->toArray();
         } else {
             // 2. Sinon (absent ou expiré), appeler TMDB
+            // Try TV first, then fallback to Movie
             $details = $this->tmdbService->getContentDetails($id, 'tv');
+            if (! $details) {
+                $details = $this->tmdbService->getContentDetails($id, 'movie');
+            }
 
             if ($details) {
                 // 3. Enregistrer ou mettre à jour en base
+                // Handle both TV shows and movies (different date fields)
+                $airDate = $details['first_air_date'] ?? $details['release_date'] ?? null;
+                $contentName = $details['name'] ?? $details['title'] ?? null;
+
                 $kdrama = Kdrama::updateOrCreate(
                     ['tmdb_id' => $id],
                     [
-                        'name' => $details['name'] ?? null,
-                        'en_name' => $details['translations']['en']['name'] ?? ($details['name'] ?? null),
+                        'name' => $contentName,
+                        'en_name' => $details['translations']['en']['name'] ?? $details['translations']['en']['title'] ?? ($contentName ?? null),
                         'original_name' => $details['original_name'] ?? null,
                         'overview' => $details['overview'] ?? null,
                         'poster_path' => $details['poster_path'] ?? null,
                         'backdrop_path' => $details['backdrop_path'] ?? null,
-                        'first_air_date' => $details['first_air_date'] ?? null,
+                        'first_air_date' => $airDate,
                         'vote_average' => $details['vote_average'] ?? 0,
                         'vote_count' => $details['vote_count'] ?? 0,
                         'genres' => $details['genres'] ?? [],
@@ -470,6 +549,29 @@ class ContentController extends Controller
 
         if (! $details) {
             abort(404);
+        }
+
+        // Normalize translations - ensure all languages have 'name' field filled
+        if (! isset($details['translations']) || ! is_array($details['translations'])) {
+            $details['translations'] = [];
+        }
+
+        // Ensure FR translation has name
+        if (! isset($details['translations']['fr']['name']) || empty($details['translations']['fr']['name'])) {
+            $details['translations']['fr'] = $details['translations']['fr'] ?? [];
+            $details['translations']['fr']['name'] = $details['name'] ?? null;
+        }
+
+        // Ensure EN translation has name
+        if (! isset($details['translations']['en']['name']) || empty($details['translations']['en']['name'])) {
+            $details['translations']['en'] = $details['translations']['en'] ?? [];
+            $details['translations']['en']['name'] = $details['en_name'] ?? $details['name'] ?? null;
+        }
+
+        // Ensure DE translation has name
+        if (! isset($details['translations']['de']['name']) || empty($details['translations']['de']['name'])) {
+            $details['translations']['de'] = $details['translations']['de'] ?? [];
+            $details['translations']['de']['name'] = $details['name'] ?? null;
         }
 
         $titleForSearch = $details['translations']['en']['name'] ?? ($details['name'] ?? null);

@@ -2,23 +2,32 @@
 
 namespace App\Mail;
 
+use App\Models\Setting;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Setting;
 
 class ContactMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $name;
+
     public $email;
+
     public $subject_text;
+
     public $message_text;
+
+    public $drama_image;
+
+    public $page_url;
+
+    public $ip_address;
 
     /**
      * Create a new message instance.
@@ -29,6 +38,9 @@ class ContactMail extends Mailable
         $this->email = $data['email'];
         $this->subject_text = $data['subject'];
         $this->message_text = $data['message'];
+        $this->drama_image = $data['drama_image'] ?? null;
+        $this->page_url = $data['page_url'] ?? null;
+        $this->ip_address = $data['ip_address'] ?? null;
     }
 
     /**
@@ -41,7 +53,7 @@ class ContactMail extends Mailable
         $fromAddress = env('MAIL_FROM_ADDRESS') ?? 'admin@moussouni.dev';
 
         return new Envelope(
-            subject: 'Nouveau message de contact : ' . $this->subject_text,
+            subject: 'Nouveau message de contact : '.$this->subject_text,
             from: new Address($fromAddress, $fromName),
             replyTo: [$this->email],
         );
@@ -60,7 +72,7 @@ class ContactMail extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

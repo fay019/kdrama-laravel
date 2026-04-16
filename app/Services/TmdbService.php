@@ -18,7 +18,7 @@ class TmdbService
 
     public function discoverAsianContent(array $filters = [])
     {
-        $cacheKey = 'tmdb_discover_v2_'.md5(json_encode($filters));
+        $cacheKey = 'tmdb_discover_v4_'.md5(json_encode($filters)); // v4: Added adult content filter
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($filters) {
             $languages = ['fr-FR', 'en-US'];
@@ -26,56 +26,85 @@ class TmdbService
             $totalPages = 0;
             $totalResults = 0;
 
-            foreach ($languages as $lang) {
-                $params = [
-                    'api_key' => $this->apiKey,
-                    'language' => $lang,
-                    'with_origin_country' => implode('|', $filters['origins'] ?? ['KR']),
-                    'with_genres' => $filters['genres'] ?? '18',
-                    'sort_by' => $filters['sort'] ?? 'popularity.desc',
-                    'page' => $filters['page'] ?? 1,
-                    'vote_average.gte' => $filters['min_rating'] ?? 0,
-                    'include_adult' => false,
-                ];
+            // Discover both TV shows and movies
+            $mediaTypes = ['tv', 'movie'];
 
-                if (! empty($filters['from_year'])) {
-                    $params['first_air_date.gte'] = "{$filters['from_year']}-01-01";
-                }
+            foreach ($mediaTypes as $mediaType) {
+                foreach ($languages as $lang) {
+                    $params = [
+                        'api_key' => $this->apiKey,
+                        'language' => $lang,
+                        'with_origin_country' => implode('|', $filters['origins'] ?? ['KR']),
+                        'with_genres' => $filters['genres'] ?? '18',
+                        'sort_by' => $filters['sort'] ?? 'popularity.desc',
+                        'page' => $filters['page'] ?? 1,
+                        'vote_average.gte' => $filters['min_rating'] ?? 0,
+                        'include_adult' => false,
+                    ];
 
-                if (! empty($filters['to_year'])) {
-                    $params['first_air_date.lte'] = "{$filters['to_year']}-12-31";
-                }
+                    // Different date parameters for TV vs Movies
+                    if ($mediaType === 'tv') {
+                        if (! empty($filters['from_year'])) {
+                            $params['first_air_date.gte'] = "{$filters['from_year']}-01-01";
+                        }
+                        if (! empty($filters['to_year'])) {
+                            $params['first_air_date.lte'] = "{$filters['to_year']}-12-31";
+                        }
+                    } else {
+                        if (! empty($filters['from_year'])) {
+                            $params['primary_release_date.gte'] = "{$filters['from_year']}-01-01";
+                        }
+                        if (! empty($filters['to_year'])) {
+                            $params['primary_release_date.lte'] = "{$filters['to_year']}-12-31";
+                        }
+                    }
 
-                if (! empty($filters['with_cast'])) {
-                    $params['with_cast'] = $filters['with_cast'];
-                }
+                    if (! empty($filters['with_cast'])) {
+                        $params['with_cast'] = $filters['with_cast'];
+                    }
 
-                try {
-                    $response = Http::timeout(15)->get("{$this->baseUrl}/discover/tv", $params);
-                    if ($response->successful()) {
-                        $data = $response->json();
-                        if (isset($data['results'])) {
-                            foreach ($data['results'] as $item) {
-                                $id = $item['id'];
-                                if (! isset($allResults[$id])) {
-                                    $allResults[$id] = $item;
-                                } else {
-                                    if ($lang === 'fr-FR' && ! empty($item['name'])) {
-                                        $allResults[$id]['name'] = $item['name'];
+                    try {
+                        $endpoint = "/discover/{$mediaType}";
+                        $response = Http::timeout(15)->get("{$this->baseUrl}{$endpoint}", $params);
+
+                        if ($response->successful()) {
+                            $data = $response->json();
+                            if (isset($data['results'])) {
+                                foreach ($data['results'] as $item) {
+                                    // Skip adult content
+                                    if ($item['adult'] ?? false) {
+                                        continue;
                                     }
-                                    if ($lang === 'en-US' && ! empty($item['name'])) {
-                                        $allResults[$id]['en_name'] = $item['name'];
+
+                                    $id = $item['id'];
+                                    // Add media_type to distinguish TV from Movies
+                                    $item['media_type'] = $mediaType;
+
+                                    if (! isset($allResults[$id])) {
+                                        $allResults[$id] = $item;
+                                    } else {
+                                        if ($lang === 'fr-FR' && ! empty($item['name'] ?? $item['title'])) {
+                                            $allResults[$id]['name'] = $item['name'] ?? $item['title'];
+                                        }
+                                        if ($lang === 'en-US' && ! empty($item['name'] ?? $item['title'])) {
+                                            $allResults[$id]['en_name'] = $item['name'] ?? $item['title'];
+                                        }
                                     }
                                 }
                             }
+                            $totalPages = max($totalPages, $data['total_pages'] ?? 0);
+                            $totalResults = max($totalResults, $data['total_results'] ?? 0);
                         }
-                        $totalPages = max($totalPages, $data['total_pages'] ?? 0);
-                        $totalResults = max($totalResults, $data['total_results'] ?? 0);
+                    } catch (\Exception $e) {
+                        \Log::error("TMDB API Discover Error ($mediaType/$lang): ".$e->getMessage());
                     }
-                } catch (\Exception $e) {
-                    \Log::error("TMDB API Discover Error ($lang): ".$e->getMessage());
                 }
             }
+
+            // Sort by popularity descending
+            usort($allResults, function ($a, $b) {
+                return ($b['popularity'] ?? 0) <=> ($a['popularity'] ?? 0);
+            });
 
             return [
                 'results' => array_values($allResults),
@@ -88,7 +117,7 @@ class TmdbService
 
     public function getContentDetails($tmdbId, $type = 'tv')
     {
-        $cacheKey = "tmdb_details_multi_lang_{$type}_{$tmdbId}";
+        $cacheKey = "tmdb_details_multi_lang_v2_{$type}_{$tmdbId}"; // v2: Added adult filter + title handling
 
         return Cache::remember($cacheKey, now()->addWeek(), function () use ($tmdbId, $type) {
             try {
@@ -96,11 +125,18 @@ class TmdbService
                 $data = [];
 
                 foreach ($languages as $lang) {
-                    $response = Http::timeout(15)->get("{$this->baseUrl}/{$type}/{$tmdbId}", [
+                    $params = [
                         'api_key' => $this->apiKey,
                         'language' => $lang,
                         'append_to_response' => 'credits,keywords,external_ids,similar,production_companies,networks',
-                    ]);
+                    ];
+
+                    // Add adult filter for movies
+                    if ($type === 'movie') {
+                        $params['include_adult'] = false;
+                    }
+
+                    $response = Http::timeout(15)->get("{$this->baseUrl}/{$type}/{$tmdbId}", $params);
 
                     if ($response->successful()) {
                         $data[$lang] = $response->json();
@@ -115,10 +151,18 @@ class TmdbService
                 $base = $data['fr-FR'] ?? reset($data);
                 $base['translations'] = [];
 
+                // Normalize base data: ensure 'name' field exists (movies use 'title')
+                if (! isset($base['name']) && isset($base['title'])) {
+                    $base['name'] = $base['title'];
+                }
+
                 foreach ($data as $lang => $content) {
                     $langCode = explode('-', $lang)[0]; // fr, en, de
+                    // Handle both 'name' (TV) and 'title' (movies) fields
+                    $contentName = $content['name'] ?? $content['title'] ?? null;
                     $base['translations'][$langCode] = [
-                        'name' => $content['name'] ?? null,
+                        'name' => $contentName,
+                        'title' => $contentName,  // Add title for compatibility
                         'overview' => $content['overview'] ?? null,
                         'tagline' => $content['tagline'] ?? null,
                     ];
@@ -172,43 +216,61 @@ class TmdbService
     {
         $limit = 20;
         $offset = ($page - 1) * $limit;
-        $cacheKey = 'tmdb_search_tv_v13_'.md5($query);
+        $cacheKey = 'tmdb_search_content_v15_'.md5($query); // v15: Added adult content filter
 
         $allKrData = Cache::remember($cacheKey, now()->addHours(12), function () use ($query) {
             try {
                 $languages = ['fr-FR', 'en-US'];
                 $idToData = [];
+                $mediaTypes = ['tv', 'movie']; // Search both TV and Movies
 
                 // Optimization: Scan max 5 pages instead of 20 (80% of results found in first 5)
                 for ($p = 1; $p <= 5; $p++) {
                     $foundInThisPage = false;
-                    foreach ($languages as $lang) {
-                        $response = Http::timeout(10)->get("{$this->baseUrl}/search/tv", [
-                            'api_key' => $this->apiKey,
-                            'language' => $lang,
-                            'query' => $query,
-                            'page' => $p,
-                            'include_adult' => false,
-                        ]);
+                    foreach ($mediaTypes as $mediaType) {
+                        foreach ($languages as $lang) {
+                            $endpoint = "/search/{$mediaType}";
+                            $response = Http::timeout(10)->get("{$this->baseUrl}{$endpoint}", [
+                                'api_key' => $this->apiKey,
+                                'language' => $lang,
+                                'query' => $query,
+                                'page' => $p,
+                                'include_adult' => false,
+                            ]);
 
-                        if ($response->successful()) {
-                            $data = $response->json();
-                            if (! empty($data['results'])) {
-                                $foundInThisPage = true;
-                                foreach ($data['results'] as $item) {
-                                    if (isset($item['origin_country']) && in_array('KR', $item['origin_country'])) {
-                                        $id = $item['id'];
-                                        if (! isset($idToData[$id])) {
-                                            $idToData[$id] = $item;
-                                            if ($lang === 'en-US') {
-                                                $idToData[$id]['en_name'] = $item['name'];
-                                            }
-                                        } else {
-                                            if ($lang === 'fr-FR' && ! empty($item['name'])) {
-                                                $idToData[$id]['name'] = $item['name'];
-                                            }
-                                            if ($lang === 'en-US' && ! empty($item['name'])) {
-                                                $idToData[$id]['en_name'] = $item['name'];
+                            if ($response->successful()) {
+                                $data = $response->json();
+                                if (! empty($data['results'])) {
+                                    $foundInThisPage = true;
+                                    foreach ($data['results'] as $item) {
+                                        // Skip adult content
+                                        if ($item['adult'] ?? false) {
+                                            continue;
+                                        }
+
+                                        // Check if it's Korean content
+                                        $isKorean = false;
+                                        if (isset($item['origin_country']) && in_array('KR', $item['origin_country'])) {
+                                            $isKorean = true;
+                                        }
+
+                                        if ($isKorean) {
+                                            $id = $item['id'];
+                                            // Add media_type to distinguish TV from Movies
+                                            $item['media_type'] = $mediaType;
+
+                                            if (! isset($idToData[$id])) {
+                                                $idToData[$id] = $item;
+                                                if ($lang === 'en-US') {
+                                                    $idToData[$id]['en_name'] = $item['name'] ?? $item['title'];
+                                                }
+                                            } else {
+                                                if ($lang === 'fr-FR' && ! empty($item['name'] ?? $item['title'])) {
+                                                    $idToData[$id]['name'] = $item['name'] ?? $item['title'];
+                                                }
+                                                if ($lang === 'en-US' && ! empty($item['name'] ?? $item['title'])) {
+                                                    $idToData[$id]['en_name'] = $item['name'] ?? $item['title'];
+                                                }
                                             }
                                         }
                                     }
@@ -221,6 +283,11 @@ class TmdbService
                         break;
                     }
                 }
+
+                // Sort by popularity descending
+                usort($idToData, function ($a, $b) {
+                    return ($b['popularity'] ?? 0) <=> ($a['popularity'] ?? 0);
+                });
 
                 return array_values($idToData);
             } catch (\Exception $e) {
@@ -274,13 +341,26 @@ class TmdbService
 
     private function getShowSimpleDetails($id, $lang)
     {
-        $cacheKey = "tmdb_show_simple_{$id}_{$lang}";
+        $cacheKey = "tmdb_show_simple_v2_{$id}_{$lang}"; // v2: Added adult filter + movie fallback
 
         return Cache::remember($cacheKey, now()->addWeek(), function () use ($id, $lang) {
             try {
+                // Try TV first, then fallback to movie
                 $response = Http::timeout(10)->get("{$this->baseUrl}/tv/{$id}", [
                     'api_key' => $this->apiKey,
                     'language' => $lang,
+                    'include_adult' => false,
+                ]);
+
+                if ($response->successful()) {
+                    return $response->json();
+                }
+
+                // Fallback to movie if TV not found
+                $response = Http::timeout(10)->get("{$this->baseUrl}/movie/{$id}", [
+                    'api_key' => $this->apiKey,
+                    'language' => $lang,
+                    'include_adult' => false,
                 ]);
 
                 return $response->successful() ? $response->json() : null;
@@ -292,41 +372,50 @@ class TmdbService
 
     public function getPersonTvCredits($personId, $page = 1)
     {
-        $cacheKey = "tmdb_person_tv_credits_v7_{$personId}_p{$page}";
+        $cacheKey = "tmdb_person_credits_v9_{$personId}_p{$page}"; // Incremented version
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($personId, $page) {
             try {
                 $languages = ['fr-FR', 'en-US'];
                 $allCredits = [];
+                $creditTypes = ['tv_credits', 'movie_credits']; // Get both TV and Movies
 
-                foreach ($languages as $lang) {
-                    $response = Http::timeout(15)->get("{$this->baseUrl}/person/{$personId}/tv_credits", [
-                        'api_key' => $this->apiKey,
-                        'language' => $lang,
-                        'include_adult' => false,
-                    ]);
+                foreach ($creditTypes as $creditType) {
+                    foreach ($languages as $lang) {
+                        $response = Http::timeout(15)->get("{$this->baseUrl}/person/{$personId}/{$creditType}", [
+                            'api_key' => $this->apiKey,
+                            'language' => $lang,
+                            'page' => $page,
+                            'include_adult' => false,
+                        ]);
 
-                    if ($response->successful()) {
-                        $data = $response->json();
-                        if (isset($data['cast'])) {
-                            foreach ($data['cast'] as $item) {
-                                // Filter to exclude adult content only
-                                // For Korean actors, we assume their TV credits are mostly Korean dramas
-                                if (! ($item['adult'] ?? false)) {
-                                    $id = $item['id'];
-                                    if (! isset($allCredits[$id])) {
-                                        $allCredits[$id] = $item;
-                                        if ($lang === 'fr-FR') {
-                                            $allCredits[$id]['name'] = $item['name'];
+                        if ($response->successful()) {
+                            $data = $response->json();
+                            if (isset($data['cast'])) {
+                                foreach ($data['cast'] as $item) {
+                                    // Filter to exclude adult content only
+                                    if (! ($item['adult'] ?? false)) {
+                                        $id = $item['id'];
+                                        // Add media_type to distinguish TV from Movies
+                                        $mediaType = $creditType === 'tv_credits' ? 'tv' : 'movie';
+                                        // TV uses 'name', Movies use 'title'
+                                        $itemName = $item['name'] ?? $item['title'] ?? null;
+
+                                        if (! isset($allCredits[$id])) {
+                                            $allCredits[$id] = $item;
+                                            $allCredits[$id]['media_type'] = $mediaType;
+                                            if ($lang === 'fr-FR') {
+                                                $allCredits[$id]['name'] = $itemName;
+                                            } else {
+                                                $allCredits[$id]['en_name'] = $itemName;
+                                            }
                                         } else {
-                                            $allCredits[$id]['en_name'] = $item['name'];
-                                        }
-                                    } else {
-                                        if ($lang === 'fr-FR' && ! empty($item['name'])) {
-                                            $allCredits[$id]['name'] = $item['name'];
-                                        }
-                                        if ($lang === 'en-US' && ! empty($item['name'])) {
-                                            $allCredits[$id]['en_name'] = $item['name'];
+                                            if ($lang === 'fr-FR' && ! empty($itemName)) {
+                                                $allCredits[$id]['name'] = $itemName;
+                                            }
+                                            if ($lang === 'en-US' && ! empty($itemName)) {
+                                                $allCredits[$id]['en_name'] = $itemName;
+                                            }
                                         }
                                     }
                                 }
@@ -340,14 +429,20 @@ class TmdbService
                     foreach ($allCredits as $id => &$show) {
                         if (empty($show['name']) || (isset($show['en_name']) && $show['name'] === $show['en_name'])) {
                             $details = $this->getShowSimpleDetails($id, 'fr-FR');
-                            if ($details && ! empty($details['name'])) {
-                                $show['name'] = $details['name'];
+                            if ($details) {
+                                $detailName = $details['name'] ?? $details['title'] ?? null;
+                                if (! empty($detailName)) {
+                                    $show['name'] = $detailName;
+                                }
                             }
                         }
                         if (empty($show['en_name'])) {
                             $details = $this->getShowSimpleDetails($id, 'en-US');
-                            if ($details && ! empty($details['name'])) {
-                                $show['en_name'] = $details['name'];
+                            if ($details) {
+                                $detailName = $details['name'] ?? $details['title'] ?? null;
+                                if (! empty($detailName)) {
+                                    $show['en_name'] = $detailName;
+                                }
                             }
                         }
                     }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use App\Mail\ContactMail;
 use App\Models\ContactMessage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {
@@ -26,15 +26,13 @@ class ContactController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'subject' => 'required|string|max:255',
-            'message' => 'required|string|min:10|max:5000',
-            'attachment' => 'nullable|file|max:5120|mimes:pdf,csv,xlsx,xls,jpg,jpeg,png,gif,doc,docx',
+            'message' => 'required|string|max:5000',
         ], [
             'name.required' => __('contact.validation.name_required'),
             'email.required' => __('contact.validation.email_required'),
             'email.email' => __('contact.validation.email_invalid'),
             'subject.required' => __('contact.validation.subject_required'),
             'message.required' => __('contact.validation.message_required'),
-            'message.min' => __('contact.validation.message_min'),
             'message.max' => __('contact.validation.message_max'),
             'attachment.max' => __('contact.validation.attachment_max'),
             'attachment.mimes' => __('contact.validation.attachment_mimes'),
@@ -63,11 +61,19 @@ class ContactController extends Controller
             // Send email to admin with attachment
             $adminEmail = env('MAIL_ADMIN_EMAIL', config('app.admin_email'));
 
-            $mailable = new ContactMail($validated);
+            $mailData = $validated;
+            $mailData['ip_address'] = $request->ip();
+            if ($request->has('drama_image')) {
+                $mailData['drama_image'] = $request->get('drama_image');
+            }
+            if ($request->has('page_url')) {
+                $mailData['page_url'] = $request->get('page_url');
+            }
+            $mailable = new ContactMail($mailData);
 
             // Add attachment if uploaded
             if ($attachmentPath) {
-                $fullPath = storage_path('app/private/' . $attachmentPath);
+                $fullPath = storage_path('app/private/'.$attachmentPath);
                 if (file_exists($fullPath)) {
                     $mailable->attach($fullPath, [
                         'as' => $attachmentOriginalName,
@@ -82,7 +88,7 @@ class ContactController extends Controller
             $errorMessage = $e->getMessage();
             \Log::error('Contact form email error', [
                 'error' => $errorMessage,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
         }
 
@@ -101,13 +107,27 @@ class ContactController extends Controller
                 'error_message' => $errorMessage,
             ]);
 
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => __('contact.success'),
+                ]);
+            }
+
             return redirect()->route('contact.show')
                 ->with('success', __('contact.success'));
         } catch (\Exception $e) {
             \Log::error('Contact form database error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('contact.error'),
+                ], 500);
+            }
 
             return back()
                 ->withInput()

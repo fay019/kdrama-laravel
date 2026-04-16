@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $kdrama['name'] ?? __('show.page_title'))
+@section('title', $kdrama['name'] ?? $kdrama['title'] ?? __('show.page_title'))
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -23,7 +23,7 @@
             @if($kdrama['poster_path'] ?? false)
                 <img
                     src="https://image.tmdb.org/t/p/w500{{ $kdrama['poster_path'] }}"
-                    alt="{{ $kdrama['name'] }}"
+                    alt="{{ $kdrama['name'] ?? $kdrama['title'] }}"
                     class="w-full rounded-lg shadow-lg"
                 >
             @else
@@ -58,18 +58,35 @@
                             data-watch-text="{{ __('show.mark_watched') }}">
                         {{ $isWatched ? __('show.mark_unwatched') : __('show.mark_watched') }}
                     </button>
+
+                    <!-- Admin Toggle Button -->
+                    @if(auth()->user()->is_admin)
+                        <button id="toggleAdultBtn" data-content-id="{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}"
+                                class="w-full {{ ($kdrama['adult_only'] ?? false) ? 'bg-red-700' : 'bg-slate-700' }} hover:opacity-90 text-white font-bold py-2 rounded-lg transition text-sm"
+                                onclick="toggleAdultContent('{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}')">
+                            {{ ($kdrama['adult_only'] ?? false) ? __('show.unmark_as_adult') : __('show.mark_as_adult') }}
+                        </button>
+                    @endif
                 @else
                     <a href="{{ route('login') }}" class="block w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg transition text-center">
                         {{ __('show.login_to_add') }}
                     </a>
                 @endauth
+
+                <!-- Report Button (visible for everyone except admins) -->
+                @if(!auth()->check() || !auth()->user()->is_admin)
+                    <button class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition text-sm"
+                            onclick="reportContent('{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}')">
+                        {{ __('show.report_content') }}
+                    </button>
+                @endif
             </div>
         </div>
 
         <!-- Détails -->
         <div class="md:col-span-2">
             <div class="flex justify-between items-start mb-2">
-                <h1 id="drama-title" class="text-4xl font-bold">{{ $kdrama['name'] ?? 'N/A' }}</h1>
+                <h1 id="drama-title" class="text-4xl font-bold">{{ $kdrama['name'] ?? $kdrama['title'] ?? 'N/A' }}</h1>
                 <div class="flex gap-2">
                     <button onclick="switchLang('fr')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-xs transition">{{ __('show.lang_fr') }}</button>
                     <button onclick="switchLang('en')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-xs transition">{{ __('show.lang_en') }}</button>
@@ -391,6 +408,57 @@
                 </div>
                 <!-- Body (chargé en AJAX) -->
                 <div id="modalBody" class="hidden"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Signalement -->
+<div id="reportModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Overlay -->
+        <div class="fixed inset-0 transition-opacity bg-slate-900 bg-opacity-90" onclick="closeReportModal()" aria-hidden="true"></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <!-- Modal Content -->
+        <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="absolute top-4 right-4 z-10">
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-full transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6 md:p-8">
+                <h3 class="text-2xl font-bold mb-4 text-white">{{ __('show.report_modal_title') }}</h3>
+                <p class="text-slate-400 mb-6">{{ __('show.report_modal_text') }}</p>
+
+                <input type="hidden" id="reportContentId">
+
+                <div class="space-y-4">
+                    @guest
+                        <div>
+                            <label for="reportEmail" class="block text-sm font-medium text-slate-300 mb-1">{{ __('common.email') }}</label>
+                            <input type="email" id="reportEmail" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="{{ __('show.report_email_placeholder') }}">
+                        </div>
+                    @endguest
+
+                    <div>
+                        <label for="reportReason" class="block text-sm font-medium text-slate-300 mb-1">{{ __('show.report_content') }}</label>
+                        <textarea id="reportReason" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="{{ __('show.report_reason_placeholder') }}"></textarea>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="closeReportModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition">
+                            {{ __('show.report_cancel') }}
+                        </button>
+                        <button onclick="submitReport()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition">
+                            {{ __('show.report_submit') }}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -849,6 +917,123 @@ document.addEventListener('DOMContentLoaded', function() {
 window.filterByActor = function(actorId, actorName) {
     // Navigate to dramas view filtered by actor ID
     window.location.href = '{{ route("kdrams.catalog") }}?view=dramas&actor_id=' + actorId;
+};
+
+// Simple toast notification
+window.showSimpleToast = function(message, type = 'success') {
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.animation = 'fade-out 0.3s ease-out forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+};
+
+// Admin: Toggle adult content flag
+window.toggleAdultContent = function(contentId) {
+    fetch('{{ route("admin.content_toggle_adult", ":id") }}'.replace(':id', contentId), {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showSimpleToast(data.message, 'success');
+            // Update button appearance
+            const btn = document.getElementById('toggleAdultBtn');
+            if (btn) {
+                btn.textContent = data.adult_only ? '{{ __("show.unmark_as_adult") }}' : '{{ __("show.mark_as_adult") }}';
+                btn.classList.toggle('bg-red-700', data.adult_only);
+                btn.classList.toggle('bg-slate-700', !data.adult_only);
+            }
+        } else {
+            showSimpleToast('Error: ' + (data.error || 'Unknown error'), 'error');
+        }
+    })
+    .catch(e => showSimpleToast('Network error', 'error'));
+};
+
+// User: Report inappropriate content
+window.reportContent = function(contentId) {
+    document.getElementById('reportContentId').value = contentId;
+    document.getElementById('reportModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+};
+
+window.closeReportModal = function() {
+    document.getElementById('reportModal').classList.add('hidden');
+    document.body.style.overflow = '';
+};
+
+window.submitReport = function() {
+    const contentId = document.getElementById('reportContentId').value;
+    const reason = document.getElementById('reportReason').value;
+    const emailField = document.getElementById('reportEmail');
+    const email = emailField ? emailField.value : null;
+
+    if (reason.trim().length < 5) {
+        showSimpleToast('Please provide a more detailed reason', 'error');
+        return;
+    }
+
+    const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
+    let url, body;
+
+    if (!isAuthenticated) {
+        const imageUrl = '{{ $kdrama["poster_path"] ?? $kdrama["backdrop_path"] ?? "" }}'
+            ? 'https://image.tmdb.org/t/p/w500' + '{{ $kdrama["poster_path"] ?? $kdrama["backdrop_path"] }}'
+            : null;
+
+        url = '{{ route("contact.store") }}';
+        body = {
+            name: 'Anonymous Report',
+            email: email || 'noreply@example.com',
+            subject: 'Report: Inappropriate Content',
+            message: 'Content ID: ' + contentId + '\n' +
+                     'Drama: {{ addslashes($kdrama["name"]) }}\n' +
+                     'Reason: ' + reason,
+            drama_image: imageUrl,
+            page_url: window.location.href,
+        };
+    } else {
+        url = '{{ route("report.content") }}';
+        body = {
+            tmdb_id: contentId,
+            drama_name: '{{ addslashes($kdrama["name"]) }}',
+            drama_image: '{{ $kdrama["poster_path"] ?? $kdrama["backdrop_path"] ?? "" }}',
+            reason: reason,
+            page_url: window.location.href,
+        };
+    }
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify(body)
+    })
+    .then(r => r.json())
+    .then(data => {
+        showSimpleToast('{{ __("show.report_success") }}', 'success');
+        closeReportModal();
+        // Reset form
+        document.getElementById('reportReason').value = '';
+        if (emailField) emailField.value = '';
+    })
+    .catch(e => {
+        console.error('Report error:', e);
+        showSimpleToast('Error reporting content', 'error');
+    });
 };
 </script>
 @endsection

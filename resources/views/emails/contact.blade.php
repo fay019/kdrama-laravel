@@ -83,12 +83,27 @@
             <p style="white-space: pre-wrap; word-wrap: break-word;">{{ $message_text }}</p>
         </div>
 
+        @if($page_url)
+            <div class="content-section">
+                <h3>Page Source</h3>
+                <p><a href="{{ $page_url }}">{{ $page_url }}</a></p>
+            </div>
+        @endif
+
+        @if($drama_image)
+            <div class="content-section">
+                <h3>Drama Image</h3>
+                <img src="{{ $drama_image }}" alt="Drama Image" style="max-width: 100%; height: auto; border-radius: 4px; border: 1px solid #e5e7eb;">
+            </div>
+        @endif
+
         <p>
             <strong>{{ __('emails.contact.reply_text') }}</strong> <a href="mailto:{{ $email }}?subject=Re: {{ $subject_text }}">{{ __('emails.contact.reply_link') }}</a> {{ __('emails.contact.reply_or') }} {{ $email }}
         </p>
 
         <div class="footer">
             <p>
+                <strong>IP :</strong> {{ $ip_address ?? 'N/A' }}<br>
                 {{ __('emails.contact.footer_notice') }}<br>
                 <small>{{ __('emails.contact.footer_warning') }}</small>
             </p>

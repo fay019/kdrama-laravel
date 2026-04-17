@@ -127,7 +127,7 @@
 
         .badge {
             display: inline-block;
-            padding: 5px 12px;
+            padding: 3px 10px;
             border-radius: 4px;
             font-size: 10px;
             font-weight: bold;
@@ -135,6 +135,14 @@
             margin-right: 8px;
             margin-bottom: 4px;
             text-transform: uppercase;
+            vertical-align: middle;
+            line-height: 16px;
+            height: 16px;
+        }
+
+        .badge img {
+            vertical-align: middle;
+            margin-bottom: 2px;
         }
 
         .badge-status-watched { background-color: #16a34a; } /* Green 600 */
@@ -196,7 +204,10 @@
     <!-- Header definition -->
     <htmlpageheader name="page-header">
         <div class="header-bg">
-            <div class="header-title">🍿 KDrama Watchlist</div>
+            <div class="header-title">
+                <img src="{{ $icons['popcorn'] }}" width="24" height="24" style="vertical-align: middle; margin-right: 5px;">
+                KDrama Watchlist
+            </div>
             <div class="header-meta">
                 Exporté par <b>{{ $user->name }}</b> • {{ now()->format('d/m/Y') }} •
                 @switch($locale)
@@ -281,21 +292,36 @@
                                 <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
 
                                 @if(!empty($selectedColumns['vote_average']) && $tmdbScore)
-                                    <span class="badge badge-score">⭐ {{ $tmdbScore }}</span>
+                                    <span class="badge badge-score">
+                                        <img src="{{ $icons['star'] }}" width="10" height="10">
+                                        {{ $tmdbScore }}
+                                    </span>
                                 @endif
 
                                 @if(!empty($selectedColumns['rating']) && $userRating)
-                                    <span class="badge badge-rating">★ {{ $userRating }}</span>
+                                    <span class="badge badge-rating">
+                                        @php
+                                            $isTriple = ($item['rating'] ?? 0) === 3;
+                                            $ratingIcon = match($item['rating'] ?? 0) {
+                                                1 => $icons['thumbs_down'],
+                                                2, 3 => $icons['thumbs_up'],
+                                                default => $icons['star']
+                                            };
+                                        @endphp
+                                        <img src="{{ $ratingIcon }}" width="10" height="10">@if($isTriple)<img src="{{ $ratingIcon }}" width="10" height="10" style="margin-left: -2px;">@endif
+                                        {{ trim($item['rating_text'] ?? '') }}
+                                    </span>
                                 @endif
 
                                 @if(!empty($selectedColumns['year']) && $year)
-                                    <span class="badge badge-year" style="float: right;">Sortie: {{ $year }}</span>
+                                    <span class="badge badge-year" style="float: right; margin-right: 0;">Sortie: {{ $year }}</span>
                                 @endif
                             </div>
 
                             <!-- Genres -->
                             @if(!empty($selectedColumns['genres']) && $genresStr)
                                 <div class="genres">
+                                    <img src="{{ $icons['genres'] }}" width="12" height="12" style="vertical-align: middle; margin-right: 3px;">
                                     <strong>{{ __('pdf.genres') }}:</strong> <span class="genre-tag">{{ $genresStr }}</span>
                                 </div>
                             @endif

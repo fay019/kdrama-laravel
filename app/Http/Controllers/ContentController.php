@@ -141,11 +141,27 @@ class ContentController extends Controller
         });
         $upcoming = array_slice($upcoming, 0, 8);
 
+        // Get popular actors from database
+        $popularActors = Actor::where('profile_path', '!=', null)
+            ->orderBy('popularity', 'desc')
+            ->limit(20)
+            ->get()
+            ->toArray();
+
+        // Get top actors (first 12 for carousel)
+        $topActors = Actor::where('profile_path', '!=', null)
+            ->orderBy('popularity', 'desc')
+            ->limit(12)
+            ->get()
+            ->toArray();
+
         return view('index', [
             'featured' => $featured,
             'isAdminList' => $isAdminList,
             'newest' => $newest,
             'upcoming' => $upcoming,
+            'popularActors' => $popularActors,
+            'topActors' => $topActors,
         ]);
     }
 
@@ -260,7 +276,7 @@ class ContentController extends Controller
             'search' => $request->get('search'),
             'exact_name' => $request->boolean('exact_name'),
             'has_photo' => $request->boolean('has_photo'),
-            'has_works' => $request->boolean('has_works', true),
+            'has_works' => $request->boolean('has_works'),
             'actor' => $request->get('actor'),
             'actor_id' => $request->get('actor_id'),
             'hide_watched' => $request->boolean('hide_watched'),
@@ -435,15 +451,9 @@ class ContentController extends Controller
             // Overwriting them with count() would break pagination for the 2800+ total dramas.
         }
 
-        // Filter out films if hide_films is enabled AND no search query
-        // (Films are shown in search results even if hide_films is true)
-        if ($view === 'dramas' && $filters['hide_films'] && empty($filters['search']) && ! empty($results['results'])) {
-            $results['results'] = array_filter($results['results'], function ($item) {
-                // Keep TV shows (media_type = 'tv'), exclude movies (media_type = 'movie')
-                return ($item['media_type'] ?? 'tv') === 'tv';
-            });
-            $results['results'] = array_values($results['results']);
-        }
+        // Note: hide_films filtering is now handled at API level in TmdbService
+        // This keeps pagination counts accurate. Films are shown in search results
+        // because search uses a different endpoint without hide_films support.
 
         // Récupérer les infos de watchlist et ratings si l'utilisateur est connecté
         $userStatus = [];

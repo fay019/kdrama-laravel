@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\WatchlistItem;
 use App\Models\User;
+use App\Models\WatchlistItem;
 use Carbon\Carbon;
-use Mpdf\Mpdf;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
+use Mpdf\Mpdf;
 
 class WatchlistExportService
 {
@@ -26,7 +25,7 @@ class WatchlistExportService
         $items = $this->getFilteredWatchlist($userId, $options);
 
         // Log pour déboguer
-        Log::info("Export PDF - User {$userId}: " . count($items) . " items récupérés");
+        Log::info("Export PDF - User {$userId}: ".count($items).' items récupérés');
 
         // Calculer stats - compter par status (plus fiable)
         $totalItems = count($items);
@@ -66,18 +65,36 @@ class WatchlistExportService
             'selectedColumns' => $options['columns'] ?? [],
             'locale' => $locale,
             'totalPages' => $totalPages,
+            'icons' => [
+                'popcorn' => public_path('images/pdf-icons/popcorn.svg'),
+                'star' => public_path('images/pdf-icons/star.svg'),
+                'check' => public_path('images/pdf-icons/check.svg'),
+                'calendar' => public_path('images/pdf-icons/calendar.svg'),
+                'tv' => public_path('images/pdf-icons/tv.svg'),
+                'user' => public_path('images/pdf-icons/user.svg'),
+                'clapperboard' => public_path('images/pdf-icons/clapperboard.svg'),
+                'email' => public_path('images/pdf-icons/email.svg'),
+                'settings' => public_path('images/pdf-icons/settings.svg'),
+                'genres' => public_path('images/pdf-icons/genres.svg'),
+                'thought' => public_path('images/pdf-icons/thought.svg'),
+                'stats' => public_path('images/pdf-icons/stats.svg'),
+                'status' => public_path('images/pdf-icons/status.svg'),
+                'synopsis' => public_path('images/pdf-icons/synopsis.svg'),
+                'thumbs_up' => public_path('images/pdf-icons/thumbs-up.svg'),
+                'thumbs_down' => public_path('images/pdf-icons/thumbs-down.svg'),
+            ],
         ];
 
         // Générer le HTML
         $html = view('exports.watchlist-pdf', $viewData)->render();
 
-        // Remplacer les émojis pour une meilleure compatibilité PDF
-        $html = $this->replaceEmojisForPDF($html);
+        // Remplacer les émojis pour une meilleure compatibilité PDF (optionnel si on utilise les images directes dans Blade)
+        // $html = $this->replaceEmojisForPDF($html);
 
         // Utiliser mPDF pour générer le PDF
         try {
             $tempDir = storage_path('app/temp');
-            if (!is_dir($tempDir)) {
+            if (! is_dir($tempDir)) {
                 mkdir($tempDir, 0755, true);
             }
 
@@ -108,7 +125,7 @@ class WatchlistExportService
             return $mpdf->Output('', 'S');
 
         } catch (\Exception $e) {
-            Log::error("PDF generation failed: " . $e->getMessage());
+            Log::error('PDF generation failed: '.$e->getMessage());
             throw $e;
         }
     }
@@ -131,15 +148,15 @@ class WatchlistExportService
         $query->where(function ($q) use ($filters) {
             $hasFilter = false;
 
-            if (!empty($filters['watched'])) {
+            if (! empty($filters['watched'])) {
                 $q->orWhere('is_watched', true);
                 $hasFilter = true;
             }
-            if (!empty($filters['watching'])) {
+            if (! empty($filters['watching'])) {
                 $q->orWhere('is_watching', true);
                 $hasFilter = true;
             }
-            if (!empty($filters['to_watch'])) {
+            if (! empty($filters['to_watch'])) {
                 $q->orWhere('is_in_watchlist', true);
                 $hasFilter = true;
             }
@@ -157,7 +174,7 @@ class WatchlistExportService
         foreach ($items as $item) {
             $kdrama = $item->kdrama;
 
-            if (!$kdrama) {
+            if (! $kdrama) {
                 continue; // Skip si pas de kdrama associé
             }
 
@@ -172,7 +189,7 @@ class WatchlistExportService
             }
 
             // Créer une clé unique basée sur TMDB ID + statut
-            $uniqueKey = $kdrama->tmdb_id . '_' . $status;
+            $uniqueKey = $kdrama->tmdb_id.'_'.$status;
 
             // Vérifier si on a déjà vu cette combinaison
             if (isset($seenKeys[$uniqueKey])) {
@@ -182,16 +199,16 @@ class WatchlistExportService
             $seenKeys[$uniqueKey] = true;
 
             // Ajouter l'URL du poster
-            if (!empty($kdramaArray['poster_path'])) {
+            if (! empty($kdramaArray['poster_path'])) {
                 $kdramaArray['poster_url'] = "https://image.tmdb.org/t/p/w200{$kdramaArray['poster_path']}";
             }
 
             // Ajouter les genres et networks s'ils existent
-            if (!empty($kdramaArray['genres']) && is_string($kdramaArray['genres'])) {
+            if (! empty($kdramaArray['genres']) && is_string($kdramaArray['genres'])) {
                 $kdramaArray['genres'] = json_decode($kdramaArray['genres'], true) ?? [];
             }
 
-            if (!empty($kdramaArray['networks']) && is_string($kdramaArray['networks'])) {
+            if (! empty($kdramaArray['networks']) && is_string($kdramaArray['networks'])) {
                 $kdramaArray['networks'] = json_decode($kdramaArray['networks'], true) ?? [];
             }
 
@@ -204,6 +221,7 @@ class WatchlistExportService
                 'added_at' => $item->added_at,
                 'rating' => $item->rating,
                 'user_rating' => $item->rating,
+                'rating_text' => $this->formatRating($item->rating),
                 'status' => $status,
                 'unique_key' => $uniqueKey,
             ]);
@@ -230,22 +248,26 @@ class WatchlistExportService
                 case 'title':
                     $titleA = $this->formatTitle($a);
                     $titleB = $this->formatTitle($b);
+
                     return strcasecmp($titleA, $titleB);
 
                 case 'rating':
                     $ratingA = $a['user_rating'] ?? 0;
                     $ratingB = $b['user_rating'] ?? 0;
+
                     return $ratingB <=> $ratingA;
 
                 case 'vote_average':
                     $voteA = $a['vote_average'] ?? 0;
                     $voteB = $b['vote_average'] ?? 0;
+
                     return $voteB <=> $voteA;
 
                 case 'added_at':
                 default:
-                    $aDate = !empty($a['added_at']) ? Carbon::parse($a['added_at']) : Carbon::now();
-                    $bDate = !empty($b['added_at']) ? Carbon::parse($b['added_at']) : Carbon::now();
+                    $aDate = ! empty($a['added_at']) ? Carbon::parse($a['added_at']) : Carbon::now();
+                    $bDate = ! empty($b['added_at']) ? Carbon::parse($b['added_at']) : Carbon::now();
+
                     return $bDate <=> $aDate;
             }
         });
@@ -260,20 +282,20 @@ class WatchlistExportService
     {
         // Chercher dans les translations si disponibles
         if (isset($item['translations']) && is_array($item['translations'])) {
-            if (!empty($item['translations']['fr']['name'] ?? null)) {
+            if (! empty($item['translations']['fr']['name'] ?? null)) {
                 return $item['translations']['fr']['name'];
             }
-            if (!empty($item['translations']['en']['name'] ?? null)) {
+            if (! empty($item['translations']['en']['name'] ?? null)) {
                 return $item['translations']['en']['name'];
             }
         }
 
         // Fallback sur les champs directs
-        if (!empty($item['name'])) {
+        if (! empty($item['name'])) {
             return $item['name'];
         }
 
-        if (!empty($item['en_name'])) {
+        if (! empty($item['en_name'])) {
             return $item['en_name'];
         }
 
@@ -290,9 +312,9 @@ class WatchlistExportService
         }
 
         return match ($rating) {
-            1 => '👎 Bof',
-            2 => '👍 Bien',
-            3 => '👍👍 Très bien',
+            1 => 'Bof',
+            2 => 'Bien',
+            3 => 'Très bien',
             default => '',
         };
     }
@@ -307,23 +329,47 @@ class WatchlistExportService
         // Filtres
         $filters = $options['filters'] ?? [];
         $filterLabels = [];
-        if (!empty($filters['watched'])) $filterLabels[] = 'Regardés';
-        if (!empty($filters['watching'])) $filterLabels[] = 'En cours';
-        if (!empty($filters['to_watch'])) $filterLabels[] = 'À regarder';
+        if (! empty($filters['watched'])) {
+            $filterLabels[] = 'Regardés';
+        }
+        if (! empty($filters['watching'])) {
+            $filterLabels[] = 'En cours';
+        }
+        if (! empty($filters['to_watch'])) {
+            $filterLabels[] = 'À regarder';
+        }
         $display['filters'] = implode(' + ', $filterLabels) ?: 'Tous';
 
         // Colonnes
         $columns = $options['columns'] ?? [];
         $columnLabels = [];
-        if (!empty($columns['poster'])) $columnLabels[] = 'Images';
-        if (!empty($columns['title'])) $columnLabels[] = 'Titre';
-        if (!empty($columns['status'])) $columnLabels[] = 'Statut';
-        if (!empty($columns['rating'])) $columnLabels[] = 'Rating';
-        if (!empty($columns['year'])) $columnLabels[] = 'Année';
-        if (!empty($columns['vote_average'])) $columnLabels[] = 'Vote TMDB';
-        if (!empty($columns['genres'])) $columnLabels[] = 'Genres';
-        if (!empty($columns['synopsis'])) $columnLabels[] = 'Synopsis';
-        if (!empty($columns['networks'])) $columnLabels[] = 'Networks';
+        if (! empty($columns['poster'])) {
+            $columnLabels[] = 'Images';
+        }
+        if (! empty($columns['title'])) {
+            $columnLabels[] = 'Titre';
+        }
+        if (! empty($columns['status'])) {
+            $columnLabels[] = 'Statut';
+        }
+        if (! empty($columns['rating'])) {
+            $columnLabels[] = 'Rating';
+        }
+        if (! empty($columns['year'])) {
+            $columnLabels[] = 'Année';
+        }
+        if (! empty($columns['vote_average'])) {
+            $columnLabels[] = 'Vote TMDB';
+        }
+        if (! empty($columns['genres'])) {
+            $columnLabels[] = 'Genres';
+        }
+        if (! empty($columns['synopsis'])) {
+            $columnLabels[] = 'Synopsis';
+        }
+        if (! empty($columns['networks'])) {
+            $columnLabels[] = 'Networks';
+        }
         $display['columns'] = implode(', ', $columnLabels) ?: 'Colonnes par défaut';
 
         // Tri
@@ -395,7 +441,7 @@ class WatchlistExportService
         $hash = $this->generateCacheHash($userId, $options);
         $cacheDir = storage_path('app/exports');
 
-        if (!is_dir($cacheDir)) {
+        if (! is_dir($cacheDir)) {
             mkdir($cacheDir, 0755, true);
         }
 
@@ -428,27 +474,28 @@ class WatchlistExportService
      */
     private function replaceEmojisForPDF(string $html): string
     {
+        $iconsPath = public_path('images/pdf-icons/');
+
         $emojiMap = [
-            '✅' => '[Vu]',
-            '👎' => '[Bof]',
-            '👍' => '[Bien]',
+            '✅' => '<img src="'.$iconsPath.'check.svg" width="14" height="14" style="vertical-align: middle;">',
+            '👎' => '<img src="'.$iconsPath.'thumbs-down.svg" width="14" height="14" style="vertical-align: middle;">',
+            '👍' => '<img src="'.$iconsPath.'thumbs-up.svg" width="14" height="14" style="vertical-align: middle;">',
+            '📅' => '<img src="'.$iconsPath.'calendar.svg" width="14" height="14" style="vertical-align: middle;">',
+            '⭐' => '<img src="'.$iconsPath.'star.svg" width="14" height="14" style="vertical-align: middle;">',
+            '📺' => '<img src="'.$iconsPath.'tv.svg" width="14" height="14" style="vertical-align: middle;">',
+            '👤' => '<img src="'.$iconsPath.'user.svg" width="14" height="14" style="vertical-align: middle;">',
+            '🎬' => '<img src="'.$iconsPath.'clapperboard.svg" width="14" height="14" style="vertical-align: middle;">',
+            '📧' => '<img src="'.$iconsPath.'email.svg" width="14" height="14" style="vertical-align: middle;">',
+            '⚙' => '<img src="'.$iconsPath.'settings.svg" width="14" height="14" style="vertical-align: middle;">',
+            '🍿' => '<img src="'.$iconsPath.'popcorn.svg" width="14" height="14" style="vertical-align: middle;">',
+            '🎭' => '<img src="'.$iconsPath.'genres.svg" width="14" height="14" style="vertical-align: middle;">',
+            '💭' => '<img src="'.$iconsPath.'thought.svg" width="14" height="14" style="vertical-align: middle;">',
+            '📊' => '<img src="'.$iconsPath.'stats.svg" width="14" height="14" style="vertical-align: middle;">',
+            '📌' => '<img src="'.$iconsPath.'status.svg" width="14" height="14" style="vertical-align: middle;">',
+            '📖' => '<img src="'.$iconsPath.'synopsis.svg" width="14" height="14" style="vertical-align: middle;">',
             '👍👍' => '[Très bien]',
-            '📅' => '[Année]',
-            '⭐' => '[Note]',
-            '📺' => '[TV]',
-            '👤' => '[User]',
             '🌟' => '[Populaire]',
-            '🎬' => '[En cours]',
-            '📧' => '[Email]',
-            '⚙' => '[Options]',
-            '🍿' => '[KDrama]',
-            '🎭' => '[Genres]',
-            '💭' => '[Rating]',
-            '📊' => '[Stats]',
-            '📌' => '[Statut]',
-            '📖' => '[Synopsis]',
             '📭' => '[Vide]',
-            '️' => '', // Remove zero-width joiner
         ];
 
         return str_replace(array_keys($emojiMap), array_values($emojiMap), $html);
@@ -463,15 +510,29 @@ class WatchlistExportService
         $selectedColumns = $options['columns'] ?? [];
 
         $headers = ['Titre'];
-        if ($selectedColumns['status'] ?? true) $headers[] = 'Statut';
-        if ($selectedColumns['rating'] ?? true) $headers[] = 'Rating';
-        if ($selectedColumns['year'] ?? true) $headers[] = 'Année';
-        if ($selectedColumns['vote_average'] ?? true) $headers[] = 'Vote TMDB';
-        if ($selectedColumns['genres'] ?? true) $headers[] = 'Genres';
-        if ($selectedColumns['networks'] ?? false) $headers[] = 'Networks';
-        if ($selectedColumns['synopsis'] ?? false) $headers[] = 'Synopsis';
+        if ($selectedColumns['status'] ?? true) {
+            $headers[] = 'Statut';
+        }
+        if ($selectedColumns['rating'] ?? true) {
+            $headers[] = 'Rating';
+        }
+        if ($selectedColumns['year'] ?? true) {
+            $headers[] = 'Année';
+        }
+        if ($selectedColumns['vote_average'] ?? true) {
+            $headers[] = 'Vote TMDB';
+        }
+        if ($selectedColumns['genres'] ?? true) {
+            $headers[] = 'Genres';
+        }
+        if ($selectedColumns['networks'] ?? false) {
+            $headers[] = 'Networks';
+        }
+        if ($selectedColumns['synopsis'] ?? false) {
+            $headers[] = 'Synopsis';
+        }
 
-        $csv = implode(',', $headers) . "\n";
+        $csv = implode(',', $headers)."\n";
 
         foreach ($items as $item) {
             $row = [];
@@ -480,9 +541,9 @@ class WatchlistExportService
 
             if ($selectedColumns['status'] ?? true) {
                 $status = '';
-                if (!empty($item['is_watched'])) {
+                if (! empty($item['is_watched'])) {
                     $status = 'Vu';
-                } elseif (!empty($item['is_watching'])) {
+                } elseif (! empty($item['is_watching'])) {
                     $status = 'En cours';
                 } else {
                     $status = 'À regarder';
@@ -496,7 +557,7 @@ class WatchlistExportService
             }
 
             if ($selectedColumns['year'] ?? true) {
-                $year = !empty($item['first_air_date']) ? Carbon::parse($item['first_air_date'])->year : 'N/A';
+                $year = ! empty($item['first_air_date']) ? Carbon::parse($item['first_air_date'])->year : 'N/A';
                 $row[] = $year;
             }
 
@@ -521,7 +582,7 @@ class WatchlistExportService
                 $row[] = "\"{$synopsis}\"";
             }
 
-            $csv .= implode(',', $row) . "\n";
+            $csv .= implode(',', $row)."\n";
         }
 
         return $csv;
@@ -543,12 +604,13 @@ class WatchlistExportService
         if (is_array($genres)) {
             $genreNames = [];
             foreach ($genres as $genre) {
-                if (is_array($genre) && !empty($genre['name'])) {
+                if (is_array($genre) && ! empty($genre['name'])) {
                     $genreNames[] = $genre['name'];
                 } elseif (is_string($genre)) {
                     $genreNames[] = $genre;
                 }
             }
+
             return implode(', ', $genreNames);
         }
 

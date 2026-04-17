@@ -41,19 +41,19 @@
                         $isWatched = $userStatus && $userStatus->is_watched;
                     @endphp
                     <button id="watchlistBtn" data-content-id="{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}"
-                            class="w-full {{ $isInWatchlist ? 'bg-slate-700' : 'bg-red-500' }} hover:opacity-90 text-white font-bold py-3 rounded-lg transition watchlist-btn"
+                            class="w-full {{ $isInWatchlist ? 'bg-slate-700 hover:bg-slate-600' : 'bg-red-600 hover:bg-red-700' }} text-white font-bold py-3 rounded-lg transition duration-200 watchlist-btn"
                             data-remove-text="{{ __('show.remove_watchlist') }}"
                             data-add-text="{{ __('show.add_watchlist') }}">
                         {{ $isInWatchlist ? __('show.remove_watchlist') : __('show.add_watchlist') }}
                     </button>
                     <button id="watchingBtn" data-content-id="{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}"
-                            class="w-full {{ $isWatching ? 'bg-slate-700' : 'bg-amber-500' }} hover:opacity-90 text-white font-bold py-3 rounded-lg transition watching-btn"
+                            class="w-full {{ $isWatching ? 'bg-slate-700 hover:bg-slate-600' : 'bg-amber-500 hover:bg-amber-600' }} text-white font-bold py-3 rounded-lg transition duration-200 watching-btn"
                             data-unwatching-text="{{ __('show.mark_unwatching') }}"
                             data-watching-text="{{ __('show.mark_watching') }}">
                         {{ $isWatching ? __('show.mark_unwatching') : __('show.mark_watching') }}
                     </button>
                     <button id="watchedBtn" data-content-id="{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}"
-                            class="w-full {{ $isWatched ? 'bg-slate-700' : 'bg-green-600' }} hover:opacity-90 text-white font-bold py-3 rounded-lg transition watched-btn"
+                            class="w-full {{ $isWatched ? 'bg-slate-700 hover:bg-slate-600' : 'bg-green-600 hover:bg-green-700' }} text-white font-bold py-3 rounded-lg transition duration-200 watched-btn"
                             data-unwatch-text="{{ __('show.mark_unwatched') }}"
                             data-watch-text="{{ __('show.mark_watched') }}">
                         {{ $isWatched ? __('show.mark_unwatched') : __('show.mark_watched') }}
@@ -62,20 +62,20 @@
                     <!-- Admin Toggle Button -->
                     @if(auth()->user()->is_admin)
                         <button id="toggleAdultBtn" data-content-id="{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}"
-                                class="w-full {{ ($kdrama['adult_only'] ?? false) ? 'bg-red-700' : 'bg-slate-700' }} hover:opacity-90 text-white font-bold py-2 rounded-lg transition text-sm"
+                                class="w-full {{ ($kdrama['adult_only'] ?? false) ? 'bg-red-700 hover:bg-red-800' : 'bg-slate-700 hover:bg-slate-600' }} text-white font-semibold py-2 rounded-lg transition duration-200 text-sm"
                                 onclick="toggleAdultContent('{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}')">
                             {{ ($kdrama['adult_only'] ?? false) ? __('show.unmark_as_adult') : __('show.mark_as_adult') }}
                         </button>
                     @endif
                 @else
-                    <a href="{{ route('login') }}" class="block w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg transition text-center">
+                    <a href="{{ route('login') }}" class="block w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition duration-200 text-center">
                         {{ __('show.login_to_add') }}
                     </a>
                 @endauth
 
                 <!-- Report Button (visible for everyone except admins) -->
                 @if(!auth()->check() || !auth()->user()->is_admin)
-                    <button class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition text-sm"
+                    <button class="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 rounded-lg transition duration-200 text-sm"
                             onclick="reportContent('{{ $kdrama['tmdb_id'] ?? $kdrama['id'] }}')">
                         {{ __('show.report_content') }}
                     </button>

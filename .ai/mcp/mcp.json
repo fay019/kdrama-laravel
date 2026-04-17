@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "laravel-boost": {
+      "command": "/Users/fay019/Library/Application Support/Herd/bin/php83",
+      "args": [
+        "/Volumes/Dev/Projets/Web/kdrama-laravel/artisan",
+        "boost:mcp"
+      ]
+    }
+  }
+}

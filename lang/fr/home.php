@@ -12,10 +12,13 @@ return [
     // Featured section
     'featured_title' => 'Populaires en ce moment',
     'featured_title_admin' => 'Recommandations de l\'admin',
+    'top_actors_title' => 'Acteurs en vedette',
     'newest_releases_title' => 'Dernières sorties',
     'upcoming_releases_title' => 'À venir prochainement',
+    'popular_actors_title' => 'Acteurs populaires ({count})',
     'date_format' => 'd M Y',
     'no_image' => 'Pas d\'image',
+    'no_actors' => 'Aucun acteur disponible',
 
     // No content
     'no_content' => 'Aucun contenu disponible pour le moment.',

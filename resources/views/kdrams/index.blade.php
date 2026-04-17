@@ -9,26 +9,24 @@
         $hasFilters = !empty($filters['search']) || !empty($filters['actor']) || !empty($filters['min_rating']) || !empty($filters['from_year']) || !empty($filters['to_year']) || !empty($filters['hide_watched']) || !empty($filters['hide_watchlist']) || !empty($filters['hide_films']) || !empty($filters['exact_name']) || !empty($filters['has_photo']) || !empty($filters['has_works']);
     @endphp
     <div class="mb-8" x-data="{ showFilters: {{ $hasFilters ? 'true' : 'false' }}, isLoading: false }">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <h1 class="text-4xl font-bold">{{ __('catalog.title') }}</h1>
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">{{ __('catalog.title') }}</h1>
+            <p class="text-slate-400 mb-6">{{ __('catalog.subtitle') }}</p>
 
-                    <!-- Tabs -->
-                    <div class="flex bg-slate-800/50 p-1 rounded-lg border border-slate-700">
-                        <button type="button"
-                                onclick="switchView('dramas')"
-                                class="px-4 py-2 rounded-md text-sm font-medium transition-all {{ ($filters['view'] ?? 'dramas') === 'dramas' ? 'bg-red-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200' }}">
-                            {{ __('catalog.tabs_dramas') }}
-                        </button>
-                        <button type="button"
-                                onclick="switchView('actors')"
-                                class="px-4 py-2 rounded-md text-sm font-medium transition-all {{ ($filters['view'] ?? 'dramas') === 'actors' ? 'bg-red-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200' }}">
-                            {{ __('catalog.tabs_actors') }}
-                        </button>
-                    </div>
+            <!-- Modern Pill Tabs - Centered -->
+            <div class="flex justify-center">
+                <div class="inline-flex gap-2 p-2 rounded-full bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
+                    <button type="button"
+                            onclick="switchView('dramas')"
+                            class="px-6 py-3 rounded-full text-base font-semibold transition-all duration-200 {{ ($filters['view'] ?? 'dramas') === 'dramas' ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-600/30 scale-105' : 'text-slate-300 hover:text-white hover:bg-slate-700/30' }}">
+                        {{ __('catalog.tabs_dramas') }}
+                    </button>
+                    <button type="button"
+                            onclick="switchView('actors')"
+                            class="px-6 py-3 rounded-full text-base font-semibold transition-all duration-200 {{ ($filters['view'] ?? 'dramas') === 'actors' ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-600/30 scale-105' : 'text-slate-300 hover:text-white hover:bg-slate-700/30' }}">
+                        {{ __('catalog.tabs_actors') }}
+                    </button>
                 </div>
-                <p class="text-slate-400">{{ __('catalog.subtitle') }}</p>
             </div>
         </div>
 
@@ -58,7 +56,7 @@
                       }"
                       x-init="window.__alpine_data = $data"
                       @view-switched.window="currentView = $event.detail.view"
-                      class="card-dark p-3 border-slate-700/50 shadow-2xl sticky top-20">
+                      class="rounded-xl bg-slate-900/50 dark:bg-slate-950/50 border border-slate-800 dark:border-slate-700 p-3 shadow-2xl sticky top-20">
                     <!-- Page number input (hidden) -->
                     <input type="hidden" name="page" id="page-input" value="{{ $current_page }}">
                     <input type="hidden" name="view" id="view-input" x-model="currentView">
@@ -179,7 +177,6 @@
                     <div class="filter-form-group">
                         <label class="filter-form-label">{{ __('catalog.filter_hide_films') }}</label>
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="hidden" name="hide_films" value="0">
                             <input type="checkbox" name="hide_films" value="1" {{ $filters['hide_films'] ? 'checked' : '' }} class="sr-only peer">
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-purple-500 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                             <span class="ml-3 text-xs font-medium text-slate-400">{{ __('catalog.filter_toggle_active') }}</span>
@@ -215,8 +212,7 @@
                     <div class="filter-form-group">
                         <label class="filter-form-label">Avec au moins 1 film</label>
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="hidden" name="has_works" value="0">
-                            <input type="checkbox" name="has_works" value="1" {{ ($filters['has_works'] ?? true) ? 'checked' : '' }} class="sr-only peer">
+                            <input type="checkbox" name="has_works" value="1" {{ $filters['has_works'] ? 'checked' : '' }} class="sr-only peer">
                             <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-blue-500 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                             <span class="ml-3 text-xs font-medium text-slate-400">{{ __('catalog.filter_toggle_active') }}</span>
                         </label>
@@ -225,7 +221,7 @@
             </div>
 
             <div class="mt-4 pt-3 border-t border-slate-700/50">
-                <button type="button" onclick="resetFiltersAndReload()" class="btn-outline text-center py-2 px-6 text-sm w-full">
+                <button type="button" onclick="resetFiltersAndReload()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-center py-2 px-6 text-sm rounded-lg transition-colors duration-200">
                     🔄 {{ __('catalog.filter_clear') }}
                 </button>
             </div>
@@ -267,17 +263,13 @@
                 </div>
 
                 <div id="kdrama-grid-container">
-                    <div id="kdrama-grid" class="content-grid mb-12 {{ count($kdrams) === 0 ? 'hidden' : '' }}">
-                        @php
-                            $viewName = ($filters['view'] ?? 'dramas') === 'actors' ? 'kdrams._actor_card' : 'kdrams._card';
-                        @endphp
+                    <div id="kdrama-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-12 {{ count($kdrams) === 0 ? 'hidden' : '' }}">
                         @foreach($kdrams as $item)
-                            @include($viewName, [
-                                'kdrama' => $item,
-                                'actor' => $item,
-                                'filters' => $filters,
-                                'userStatus' => $userStatus ?? []
-                            ])
+                            @if(($filters['view'] ?? 'dramas') === 'actors')
+                                @include('kdrams._actor_card', ['actor' => $item])
+                            @else
+                                <x-drama-card :item="$item" variant="default" :userStatus="$userStatus ?? []" />
+                            @endif
                         @endforeach
                     </div>
 
@@ -285,7 +277,7 @@
                     <div id="pagination-container" class="flex justify-center items-center gap-4 mt-16 {{ count($kdrams) === 0 ? 'hidden' : '' }}"></div>
 
                     <!-- No Results Container (Always in DOM, hidden when there are results) -->
-                    <div id="no-results-container" class="card-dark py-24 text-center {{ count($kdrams) === 0 ? '' : 'hidden' }}">
+                    <div id="no-results-container" class="rounded-xl border-2 border-dashed border-slate-700 bg-slate-900/50 dark:bg-slate-950/50 backdrop-blur-sm py-24 text-center {{ count($kdrams) === 0 ? '' : 'hidden' }}">
                         <div class="text-6xl mb-6">🔍</div>
                         <h2 class="text-2xl font-bold text-slate-200 mb-4">{{ __('catalog.no_results') }}</h2>
                         <p class="text-slate-400 mb-8" id="no-results-message">
@@ -316,7 +308,7 @@
                             $hasActiveFilters = !empty($filters['search']) || !empty($filters['actor']) || !empty($filters['actor_id']) || !empty($filters['min_rating']) || !empty($filters['from_year']) || !empty($filters['to_year']) || $filters['hide_watched'] || $filters['hide_watching'] || $filters['hide_watchlist'] || $filters['exact_name'] || $filters['has_photo'];
                         @endphp
                         @if($hasActiveFilters)
-                            <a href="{{ route('kdrams.catalog') }}?view={{ $filters['view'] ?? 'dramas' }}" class="btn-primary inline-block">
+                            <a href="{{ route('kdrams.catalog') }}?view={{ $filters['view'] ?? 'dramas' }}" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-lg shadow-lg hover:shadow-red-600/50 transition-all duration-300 transform hover:scale-105">
                                 🔄 {{ __('catalog.filter_clear') }}
                             </a>
                         @endif
@@ -389,26 +381,18 @@ document.addEventListener('DOMContentLoaded', function() {
     window.switchView = function(view) {
         const viewInput = document.getElementById('view-input');
         const pageInput = document.getElementById('page-input');
+        const filterForm = document.querySelector('form[method="GET"]');
 
         if (viewInput) viewInput.value = view;
         if (pageInput) pageInput.value = 1;
 
-        // Mettre à jour les boutons visuellement immédiatement
-        const buttons = document.querySelectorAll('[onclick^="switchView"]');
-        buttons.forEach(btn => {
-            if (btn.getAttribute('onclick').includes(view)) {
-                btn.classList.add('bg-red-500', 'text-white', 'shadow-lg');
-                btn.classList.remove('text-slate-400', 'hover:text-slate-200');
-            } else {
-                btn.classList.remove('bg-red-500', 'text-white', 'shadow-lg');
-                btn.classList.add('text-slate-400', 'hover:text-slate-200');
-            }
-        });
-
         // Déclencher l'événement pour Alpine.js
         window.dispatchEvent(new CustomEvent('view-switched', { detail: { view: view } }));
 
-        applyLiveFilter();
+        // Submit form to reload data for the new view
+        if (filterForm) {
+            filterForm.submit();
+        }
     };
 
     // Filtrer par acteur spécifique
@@ -462,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make triggerLiveFilter globally accessible for Alpine.js
     window.triggerLiveFilter = function(inputElement) {
         // Si c'est un filtre de recherche, reset la page à 1
-        const searchFilters = ['search_drama', 'search_actor', 'actor', 'from_year', 'to_year', 'min_rating', 'exact_name', 'has_photo', 'has_works'];
+        const searchFilters = ['search_drama', 'search_actor', 'actor', 'from_year', 'to_year', 'min_rating', 'exact_name', 'has_photo', 'has_works', 'hide_films', 'hide_watched', 'hide_watching', 'hide_watchlist'];
         if (inputElement && (searchFilters.includes(inputElement.name) || inputElement.id === 'view-input')) {
             const pageInput = document.getElementById('page-input');
             if (pageInput) {
@@ -498,6 +482,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const view = formData.get('view') || 'dramas';
             const params = new URLSearchParams();
 
+            // Track which checkboxes we've already processed to avoid duplicates
+            const processedCheckboxes = new Set();
+
             for (const [key, value] of formData.entries()) {
                 if (value === '') continue;
 
@@ -507,6 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         params.append('search', value);
                     } else if (['view', 'page', 'exact_name', 'has_photo', 'has_works'].includes(key)) {
                         params.append(key, value);
+                        processedCheckboxes.add(key);
                     }
                 } else {
                     // En vue drames
@@ -514,8 +502,35 @@ document.addEventListener('DOMContentLoaded', function() {
                         params.append('search', value);
                     } else if (key !== 'search_actor') {
                         params.append(key, value);
+                        if (key === 'hide_films' || key === 'hide_watched' || key === 'hide_watching' || key === 'hide_watchlist') {
+                            processedCheckboxes.add(key);
+                        }
                     }
                 }
+            }
+
+            // Handle unchecked checkboxes for drama view - ensure they have explicit values
+            if (view === 'dramas') {
+                const checkboxesToProcess = ['hide_films', 'hide_watched', 'hide_watching', 'hide_watchlist'];
+                checkboxesToProcess.forEach(checkboxName => {
+                    const checkbox = filterForm.querySelector(`input[name="${checkboxName}"]`);
+                    if (checkbox && !processedCheckboxes.has(checkboxName)) {
+                        // Unchecked - explicitly add "0"
+                        params.append(checkboxName, '0');
+                    }
+                });
+            }
+
+            // Handle unchecked checkboxes for actor view
+            if (view === 'actors') {
+                const checkboxesToProcess = ['exact_name', 'has_photo', 'has_works'];
+                checkboxesToProcess.forEach(checkboxName => {
+                    const checkbox = filterForm.querySelector(`input[name="${checkboxName}"]`);
+                    if (checkbox && !processedCheckboxes.has(checkboxName)) {
+                        // Unchecked - explicitly add "0"
+                        params.append(checkboxName, '0');
+                    }
+                });
             }
 
             const url = `{{ route('kdrams.catalog') }}?${params.toString()}`;

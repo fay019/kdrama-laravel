@@ -1,7 +1,50 @@
 # 🎬 KDrama Laravel - Documentation Complète
 
-**Date de mise à jour:** 2026-04-16
-**Dernier développement:** Professional Async Queue Setup + Admin Jobs Dashboard + Dual Catalog View System
+**Date de mise à jour:** 2026-04-17
+**Dernier développement:** Actor Modal on Homepage + ActorFactory Tests
+
+---
+
+## 🔄 Recent Changes (2026-04-17)
+
+### ✅ Actor Modal Integration on Homepage
+**Major Enhancement:** Clicking carousel actors now opens modal directly instead of redirecting to search page
+
+**Features Implemented:**
+- ✅ **Actor Modal on Homepage** (`resources/views/index.blade.php`):
+  - Fixed modal HTML structure with backdrop, loader spinner, and content container
+  - Reuses existing actor modal template from kdrams pages
+  - Smooth animations with overlay click and ESC key handlers
+- ✅ **JavaScript Functions**:
+  - `openActorModal(actorId)` - Fetches actor details via `/kdrams/actor/{id}` endpoint
+  - `closeActorModal()` - Closes modal and restores page scrolling
+  - `filterByActor(actorId, actorName)` - Redirects to kdrams catalog filtered by actor
+  - Event listeners for overlay click and ESC key
+- ✅ **Actor Details Endpoint** - Uses existing `/kdrams/actor/{id}` route returning HTML
+- ✅ **Translation Support**:
+  - Added `actor_error_loading` key to `lang/en|fr|de/show.php`
+  - Uses existing `common.loading` key for loader message
+- ✅ **Model & Factory**:
+  - Added `HasFactory` trait to `app/Models/Actor.php`
+  - Created `database/factories/ActorFactory.php` with realistic test data
+- ✅ **Comprehensive Tests** (`tests/Feature/ActorModalTest.php`):
+  - 7 tests covering modal HTML, carousel rendering, actor details fetching
+  - Tests for keyboard/overlay interactions and translation keys
+  - All tests passing ✅
+
+**Files Modified/Created:**
+- `resources/views/index.blade.php` - Added modal HTML + JS functions
+- `lang/en|fr|de/show.php` - Added translation key `actor_error_loading`
+- `app/Models/Actor.php` - Added `HasFactory` trait
+- `database/factories/ActorFactory.php` - NEW
+- `tests/Feature/ActorModalTest.php` - NEW
+
+**User Experience Flow:**
+1. User opens homepage → Carousel displays 12 popular actors
+2. User clicks actor card → Modal opens with loading spinner
+3. Actor details fetched asynchronously from `/kdrams/actor/{id}`
+4. Modal displays full actor bio, photo, social links, recent projects
+5. User clicks "View all K-Dramas" → Navigates to kdrams catalog filtered by actor
 
 ---
 

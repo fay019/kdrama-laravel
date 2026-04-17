@@ -26,9 +26,6 @@
                         {{ __('common.nav_contact') }}
                     </x-nav-link>
                     @auth
-                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                            {{ __('common.nav_dashboard') }}
-                        </x-nav-link>
                         <x-nav-link :href="route('watchlist.index')" :active="request()->routeIs('watchlist.*')">
                             {{ __('common.nav_watchlist') }}
                         </x-nav-link>
@@ -136,9 +133,6 @@
                     ✉️ {{ __('common.nav_contact') }}
                 </a>
                 @auth
-                    <a href="{{ route('dashboard') }}" class="block px-4 py-3 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'bg-red-500/20 text-red-400' : '' }}">
-                        📊 {{ __('common.nav_dashboard') }}
-                    </a>
                     <a href="{{ route('watchlist.index') }}" class="block px-4 py-3 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition-colors duration-200 {{ request()->routeIs('watchlist.*') ? 'bg-red-500/20 text-red-400' : '' }}">
                         ❤️ {{ __('common.nav_watchlist') }}
                     </a>

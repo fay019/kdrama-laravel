@@ -33,9 +33,6 @@
                         <li>
                             <a href="{{ route('watchlist.index') }}" class="text-slate-400 hover:text-white transition">{{ __('common.footer_watchlist') }}</a>
                         </li>
-                        <li>
-                            <a href="{{ route('dashboard') }}" class="text-slate-400 hover:text-white transition">{{ __('common.footer_dashboard') }}</a>
-                        </li>
                     @endauth
                 </ul>
             </div>

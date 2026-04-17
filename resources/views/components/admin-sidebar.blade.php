@@ -39,13 +39,6 @@
             </a>
 
             @auth
-                <a href="{{ route('dashboard') }}"
-                   class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition">
-                    <span class="flex items-center gap-2">
-                        <span>🎬</span> {{ __('admin.nav_dashboard') }}
-                    </span>
-                </a>
-
                 <a href="{{ route('watchlist.index') }}"
                    class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition">
                     <span class="flex items-center gap-2">
@@ -262,9 +255,6 @@
                     <span class="flex items-center gap-2"><span>📧</span> {{ __('admin.nav_contact') }}</span>
                 </a>
                 @auth
-                    <a href="{{ route('dashboard') }}" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition" onclick="toggleMobileAdminMenu()">
-                        <span class="flex items-center gap-2"><span>🎬</span> {{ __('admin.nav_dashboard') }}</span>
-                    </a>
                     <a href="{{ route('watchlist.index') }}" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition" onclick="toggleMobileAdminMenu()">
                         <span class="flex items-center gap-2"><span>📋</span> {{ __('admin.nav_watchlist') }}</span>
                     </a>

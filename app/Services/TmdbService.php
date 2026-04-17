@@ -18,26 +18,35 @@ class TmdbService
 
     public function discoverAsianContent(array $filters = [])
     {
-        $cacheKey = 'tmdb_discover_v4_'.md5(json_encode($filters)); // v4: Added adult content filter
+        $cacheKey = 'tmdb_discover_v5_'.md5(json_encode($filters)); // v5: Fixed TV+Movie pagination
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($filters) {
-            $languages = ['fr-FR', 'en-US'];
             $allResults = [];
-            $totalPages = 0;
-            $totalResults = 0;
+            $totalTvResults = 0;
+            $totalMovieResults = 0;
+            $language = 'en-US'; // Use single language for consistent pagination
 
-            // Discover both TV shows and movies
-            $mediaTypes = ['tv', 'movie'];
+            // Determine media types based on hide_films filter (default: true = hide films)
+            $hideFilms = $filters['hide_films'] ?? true;
+            $mediaTypes = $hideFilms ? ['tv'] : ['tv', 'movie'];
+
+            $currentPage = (int) ($filters['page'] ?? 1);
+            $perPage = 20;
+
+            // When combining TV + Movies, fetch enough pages to cover the requested page
+            // For page N, we need at least N*20 results, so fetch N pages from each media type
+            $pagesToFetch = $currentPage;
 
             foreach ($mediaTypes as $mediaType) {
-                foreach ($languages as $lang) {
+                // Fetch multiple pages and combine
+                for ($page = 1; $page <= $pagesToFetch; $page++) {
                     $params = [
                         'api_key' => $this->apiKey,
-                        'language' => $lang,
+                        'language' => $language,
                         'with_origin_country' => implode('|', $filters['origins'] ?? ['KR']),
                         'with_genres' => $filters['genres'] ?? '18',
                         'sort_by' => $filters['sort'] ?? 'popularity.desc',
-                        'page' => $filters['page'] ?? 1,
+                        'page' => $page,
                         'vote_average.gte' => $filters['min_rating'] ?? 0,
                         'include_adult' => false,
                     ];
@@ -79,24 +88,20 @@ class TmdbService
                                     $id = $item['id'];
                                     // Add media_type to distinguish TV from Movies
                                     $item['media_type'] = $mediaType;
-
-                                    if (! isset($allResults[$id])) {
-                                        $allResults[$id] = $item;
-                                    } else {
-                                        if ($lang === 'fr-FR' && ! empty($item['name'] ?? $item['title'])) {
-                                            $allResults[$id]['name'] = $item['name'] ?? $item['title'];
-                                        }
-                                        if ($lang === 'en-US' && ! empty($item['name'] ?? $item['title'])) {
-                                            $allResults[$id]['en_name'] = $item['name'] ?? $item['title'];
-                                        }
-                                    }
+                                    $allResults[$id] = $item;
                                 }
                             }
-                            $totalPages = max($totalPages, $data['total_pages'] ?? 0);
-                            $totalResults = max($totalResults, $data['total_results'] ?? 0);
+                            // Track totals from TMDB on first page
+                            if ($page === 1) {
+                                if ($mediaType === 'tv') {
+                                    $totalTvResults = $data['total_results'] ?? 0;
+                                } else {
+                                    $totalMovieResults = $data['total_results'] ?? 0;
+                                }
+                            }
                         }
                     } catch (\Exception $e) {
-                        \Log::error("TMDB API Discover Error ($mediaType/$lang): ".$e->getMessage());
+                        \Log::error("TMDB API Discover Error ($mediaType/$language page $page): ".$e->getMessage());
                     }
                 }
             }
@@ -106,11 +111,20 @@ class TmdbService
                 return ($b['popularity'] ?? 0) <=> ($a['popularity'] ?? 0);
             });
 
+            // Client-side pagination: slice the combined sorted results
+            $sortedResults = array_values($allResults);
+            $offset = ($currentPage - 1) * $perPage;
+            $paginatedResults = array_slice($sortedResults, $offset, $perPage);
+
+            // Calculate totals based on what we're displaying
+            $totalResults = $hideFilms ? $totalTvResults : ($totalTvResults + $totalMovieResults);
+            $totalPages = max(1, (int) ceil($totalResults / $perPage));
+
             return [
-                'results' => array_values($allResults),
-                'total_pages' => (int) $totalPages,
+                'results' => $paginatedResults,
+                'total_pages' => $totalPages,
                 'total_results' => (int) $totalResults,
-                'page' => (int) ($filters['page'] ?? 1),
+                'page' => $currentPage,
             ];
         });
     }
@@ -252,6 +266,12 @@ class TmdbService
                                         $isKorean = false;
                                         if (isset($item['origin_country']) && in_array('KR', $item['origin_country'])) {
                                             $isKorean = true;
+                                        } elseif (empty($item['origin_country'])) {
+                                            // If origin_country is missing, fetch full details to verify
+                                            $details = $this->getShowSimpleDetails($item['id'], 'en-US');
+                                            if ($details && isset($details['origin_country']) && in_array('KR', $details['origin_country'])) {
+                                                $isKorean = true;
+                                            }
                                         }
 
                                         if ($isKorean) {
@@ -288,6 +308,59 @@ class TmdbService
                 usort($idToData, function ($a, $b) {
                     return ($b['popularity'] ?? 0) <=> ($a['popularity'] ?? 0);
                 });
+
+                // If no Korean content found with strict filtering, include results without origin_country
+                // This handles cases where TMDB doesn't properly tag Korean content
+                if (empty($idToData)) {
+                    foreach ($queriesToTry as $q) {
+                        $currentTmdbPage = 1;
+                        while ($currentTmdbPage <= 3) {
+                            $response = Http::timeout(15)->get("{$this->baseUrl}/search/tv", [
+                                'api_key' => $this->apiKey,
+                                'language' => 'en-US',
+                                'query' => $q,
+                                'include_adult' => false,
+                                'page' => $currentTmdbPage,
+                            ]);
+
+                            if ($response->failed()) {
+                                break;
+                            }
+
+                            $data = $response->json();
+                            if (empty($data['results'])) {
+                                break;
+                            }
+
+                            foreach ($data['results'] as $item) {
+                                if (($item['adult'] ?? false) === false && ! empty($item['name'] ?? $item['title'])) {
+                                    $id = $item['id'];
+                                    $item['media_type'] = 'tv';
+                                    if (! isset($idToData[$id])) {
+                                        $idToData[$id] = $item;
+                                    }
+                                }
+                            }
+
+                            if ($currentTmdbPage >= ($data['total_pages'] ?? 0)) {
+                                break;
+                            }
+
+                            $currentTmdbPage++;
+                            if (count($idToData) >= 20) {
+                                break;
+                            }
+                        }
+                        if (count($idToData) >= 20) {
+                            break;
+                        }
+                    }
+
+                    // Resort after adding fallback results
+                    usort($idToData, function ($a, $b) {
+                        return ($b['popularity'] ?? 0) <=> ($a['popularity'] ?? 0);
+                    });
+                }
 
                 return array_values($idToData);
             } catch (\Exception $e) {

@@ -18,9 +18,9 @@
 </div>
 
 <!-- Contact Section -->
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 py-12">
     <!-- Info Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
         <div class="card-dark p-6 text-center">
             <div class="text-5xl mb-3">💬</div>
             <h3 class="text-lg font-bold text-white mb-2">{{ __('contact.info_reply_title') }}</h3>
@@ -40,10 +40,10 @@
     </div>
 
     <!-- Contact Form -->
-    <div class="card-dark p-6 sm:p-10 mb-16">
+    <div class="bg-slate-900/50 dark:bg-slate-950/50 border border-slate-700 rounded-xl p-8 sm:p-10 mb-12 backdrop-blur-sm">
         <div class="mb-8">
-            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">{{ __('contact.form_title') }}</h2>
-            <p class="text-slate-400">
+            <h2 class="text-3xl font-bold text-white mb-3 tracking-tight">{{ __('contact.form_title') }}</h2>
+            <p class="text-slate-400 text-base">
                 {{ __('contact.form_subtitle') }}
             </p>
         </div>
@@ -81,10 +81,10 @@
             </div>
         @endif
 
-        <form action="{{ route('contact.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+        <form action="{{ route('contact.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <!-- Name -->
                 <div>
                     <label for="name" class="block text-sm font-semibold text-slate-200 mb-2">
@@ -97,7 +97,7 @@
                         value="{{ old('name') }}"
                         placeholder="{{ __('contact.placeholder_name') }}"
                         required
-                        class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition @error('name') border-red-500 @enderror"
+                        class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 transition duration-200 @error('name') border-red-500 @enderror"
                     >
                 </div>
 
@@ -113,7 +113,7 @@
                         value="{{ old('email') }}"
                         placeholder="{{ __('contact.placeholder_email') }}"
                         required
-                        class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition @error('email') border-red-500 @enderror"
+                        class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 transition duration-200 @error('email') border-red-500 @enderror"
                     >
                 </div>
             </div>
@@ -130,7 +130,7 @@
                     value="{{ old('subject') }}"
                     placeholder="{{ __('contact.placeholder_subject') }}"
                     required
-                    class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition @error('subject') border-red-500 @enderror"
+                    class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 transition duration-200 @error('subject') border-red-500 @enderror"
                 >
             </div>
 
@@ -145,7 +145,7 @@
                     rows="7"
                     placeholder="{{ __('contact.placeholder_message') }}"
                     required
-                    class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition resize-none @error('message') border-red-500 @enderror"
+                    class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 transition duration-200 resize-none @error('message') border-red-500 @enderror"
                 >{{ old('message') }}</textarea>
                 <p class="text-slate-400 text-xs mt-2 text-right">
                     <span id="charCount">0</span> / 5000 {{ __('contact.char_limit_label') }}
@@ -162,7 +162,7 @@
                     id="attachment"
                     name="attachment"
                     accept=".pdf,.csv,.xlsx,.xls,.jpg,.jpeg,.png,.gif,.doc,.docx"
-                    class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition file:bg-red-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1 file:cursor-pointer @error('attachment') border-red-500 @enderror"
+                    class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 transition duration-200 file:bg-red-600 file:text-white file:border-0 file:rounded file:px-4 file:py-2 file:cursor-pointer file:font-semibold file:transition hover:file:bg-red-700 @error('attachment') border-red-500 @enderror"
                 >
                 <p class="text-slate-400 text-xs mt-2">
                     {{ __('contact.attachment_hint') }}
@@ -170,16 +170,16 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-700">
                 <button
                     type="submit"
-                    class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                    class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 shadow-lg hover:shadow-red-600/30"
                 >
                     {{ __('contact.submit_button') }}
                 </button>
                 <a
                     href="{{ route('home') }}"
-                    class="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition text-center"
+                    class="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all duration-200 text-center hover:scale-105"
                 >
                     {{ __('contact.back_btn') }}
                 </a>
@@ -189,33 +189,33 @@
 
     <!-- FAQ Section -->
     <div class="mt-16">
-        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-10 text-center">
+        <h2 class="text-3xl font-bold text-white mb-10 text-center tracking-tight">
             {{ __('contact.faq_title') }}
         </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="card-dark p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="bg-slate-900/50 dark:bg-slate-950/50 border border-slate-700 rounded-lg p-6 backdrop-blur-sm">
                 <h4 class="font-bold text-white text-base mb-3">{{ __('contact.faq_1_title') }}</h4>
                 <p class="text-slate-400 text-sm leading-relaxed">
                     {{ __('contact.faq_1_body') }}
                 </p>
             </div>
 
-            <div class="card-dark p-6">
+            <div class="bg-slate-900/50 dark:bg-slate-950/50 border border-slate-700 rounded-lg p-6 backdrop-blur-sm">
                 <h4 class="font-bold text-white text-base mb-3">{{ __('contact.faq_2_title') }}</h4>
                 <p class="text-slate-400 text-sm leading-relaxed">
                     {{ __('contact.faq_2_body') }}
                 </p>
             </div>
 
-            <div class="card-dark p-6">
+            <div class="bg-slate-900/50 dark:bg-slate-950/50 border border-slate-700 rounded-lg p-6 backdrop-blur-sm">
                 <h4 class="font-bold text-white text-base mb-3">{{ __('contact.faq_3_title') }}</h4>
                 <p class="text-slate-400 text-sm leading-relaxed">
                     {{ __('contact.faq_3_body') }}
                 </p>
             </div>
 
-            <div class="card-dark p-6">
+            <div class="bg-slate-900/50 dark:bg-slate-950/50 border border-slate-700 rounded-lg p-6 backdrop-blur-sm">
                 <h4 class="font-bold text-white text-base mb-3">{{ __('contact.faq_4_title') }}</h4>
                 <p class="text-slate-400 text-sm leading-relaxed">
                     {{ __('contact.faq_4_body') }}

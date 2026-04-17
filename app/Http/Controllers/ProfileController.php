@@ -87,7 +87,7 @@ class ProfileController extends Controller
             'password_must_change' => false,  // Clear the flag
         ]);
 
-        return redirect()->route('dashboard')
+        return redirect()->route('watchlist.index')
             ->with('status', __('auth.password_changed'));
     }
 }

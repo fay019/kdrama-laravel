@@ -66,6 +66,7 @@ return [
     'actor_no_biography' => 'Derzeit keine Biografie verfügbar.',
     'actor_recent_projects' => 'Letzte Projekte',
     'actor_view_all_dramas' => '🔍 Alle K-Dramen anzeigen',
+    'actor_error_loading' => 'Fehler beim Laden der Akteurdetails.',
 
     // Social Media Links
     'social_instagram' => 'Instagram',

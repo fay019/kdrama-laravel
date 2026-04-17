@@ -10,7 +10,6 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ContentController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\WatchlistController;
@@ -58,9 +57,6 @@ Route::post('/report-issue', [ContactController::class, 'reportIssue'])->name('r
 Route::middleware(['auth', 'admin', 'check.password'])->group(function () {
     Route::post('/kdrams/{id}/refresh-streaming', [ContentController::class, 'refreshStreaming'])->name('kdrams.refresh-streaming');
 });
-
-// User dashboard
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified', 'check.password'])->name('dashboard');
 
 // Protected user routes
 Route::middleware(['auth', 'check.password'])->group(function () {

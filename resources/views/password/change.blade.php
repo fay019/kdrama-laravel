@@ -91,7 +91,7 @@
 
                 @if(!$mustChange)
                     <div class="mt-4 text-center">
-                        <a href="{{ route('dashboard') }}" class="text-slate-400 hover:text-white text-xs transition">
+                        <a href="{{ route('watchlist.index') }}" class="text-slate-400 hover:text-white text-xs transition">
                             {{ __('auth.back_to_dashboard') }}
                         </a>
                     </div>

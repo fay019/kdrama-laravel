@@ -3,7 +3,38 @@
 @section('title', __('watchlist.page_title'))
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- SECTION 1: STATS CARDS -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-12">
+        <div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3 sm:p-5 hover:border-red-500/50 transition">
+            <p class="text-slate-400 text-xs sm:text-sm font-medium">{{ __('dashboard.stat_to_watch') }}</p>
+            <p class="text-xl sm:text-3xl font-bold text-red-400 mt-1">{{ count($toWatch) }}</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3 sm:p-5 hover:border-amber-500/50 transition">
+            <p class="text-slate-400 text-xs sm:text-sm font-medium">{{ __('dashboard.stat_watching') }}</p>
+            <p class="text-xl sm:text-3xl font-bold text-amber-400 mt-1">{{ count($watching) }}</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3 sm:p-5 hover:border-green-500/50 transition">
+            <p class="text-slate-400 text-xs sm:text-sm font-medium">{{ __('dashboard.stat_watched') }}</p>
+            <p class="text-xl sm:text-3xl font-bold text-green-400 mt-1">{{ count($watched) }}</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3 sm:p-5 hover:border-purple-500/50 transition">
+            <p class="text-slate-400 text-xs sm:text-sm font-medium">{{ __('dashboard.stat_rated') }}</p>
+            <p class="text-xl sm:text-3xl font-bold text-purple-400 mt-1">{{ $items->filter(fn($i) => $i->rating !== null)->count() }}</p>
+        </div>
+        @php
+            $ratedItemsFiltered = $items->filter(fn($i) => $i->rating !== null);
+            $avgRating = $ratedItemsFiltered->count() > 0
+                ? number_format($ratedItemsFiltered->sum('rating') / $ratedItemsFiltered->count(), 1)
+                : '0.0';
+        @endphp
+        <div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3 sm:p-5 hover:border-yellow-500/50 transition">
+            <p class="text-slate-400 text-xs sm:text-sm font-medium">{{ __('dashboard.stat_average') }}</p>
+            <p class="text-xl sm:text-3xl font-bold text-yellow-400 mt-1">{{ $avgRating }}<span class="text-sm">/3</span></p>
+        </div>
+    </div>
+
+    <!-- SECTION 2: TITLE & EXPORT -->
     <div class="mb-8 flex justify-between items-start">
         <div>
             <h1 class="text-4xl font-bold mb-2">{{ __('watchlist.title') }}</h1>
@@ -17,143 +48,161 @@
     </div>
 
     @if(count($items) > 0)
-        <!-- Filter Buttons -->
-        <div class="mb-8 flex flex-col gap-4">
-            <!-- All Statuses Section -->
-            <div>
-                <p class="text-xs sm:text-sm text-slate-400 font-semibold mb-2 px-2">{{ __('watchlist.all_statuses') }}</p>
-                <div class="flex gap-1 sm:gap-3 flex-wrap">
-                    <button class="filter-btn active px-2 sm:px-6 py-1 sm:py-2 text-xs sm:text-base rounded-lg font-semibold transition" data-filter="all" id="filterAll">
-                        {{ __('watchlist.filter_all') }} (<span id="countAll">{{ count($items) }}</span>)
-                    </button>
-                </div>
-            </div>
-
-            <!-- Filter by Status Section -->
-            <div>
-                <p class="text-xs sm:text-sm text-slate-400 font-semibold mb-2 px-2">{{ __('watchlist.filter_by_status') }}</p>
-                <div class="flex gap-1 sm:gap-3 flex-wrap">
-                    <button class="filter-btn px-2 sm:px-6 py-1 sm:py-2 text-xs sm:text-base rounded-lg font-semibold transition" data-filter="towatch" id="filterToWatch">
-                        {{ __('watchlist.filter_to_watch') }} (<span id="countToWatch">{{ count($toWatch) }}</span>)
-                    </button>
-                    <button class="filter-btn px-2 sm:px-6 py-1 sm:py-2 text-xs sm:text-base rounded-lg font-semibold transition" data-filter="watching" id="filterWatching">
-                        {{ __('watchlist.filter_watching') }} (<span id="countWatching">{{ count($watching) }}</span>)
-                    </button>
-                    <button class="filter-btn px-2 sm:px-6 py-1 sm:py-2 text-xs sm:text-base rounded-lg font-semibold transition" data-filter="watched" id="filterWatched">
-                        {{ __('watchlist.filter_watched') }} (<span id="countWatched">{{ count($watched) }}</span>)
-                    </button>
-                </div>
-            </div>
+        <!-- SECTION 3: FILTER TABS -->
+        <div class="mb-8 flex gap-2 flex-wrap">
+            <button class="filter-tab active px-4 py-2 text-sm font-semibold rounded-lg transition" data-filter="all" data-count="{{ count($items) }}">
+                {{ __('watchlist.filter_all') }} (<span class="tab-count">{{ count($items) }}</span>)
+            </button>
+            <button class="filter-tab px-4 py-2 text-sm font-semibold rounded-lg transition" data-filter="towatch" data-count="{{ count($toWatch) }}">
+                {{ __('watchlist.filter_to_watch') }} (<span class="tab-count">{{ count($toWatch) }}</span>)
+            </button>
+            <button class="filter-tab px-4 py-2 text-sm font-semibold rounded-lg transition" data-filter="watching" data-count="{{ count($watching) }}">
+                {{ __('watchlist.filter_watching') }} (<span class="tab-count">{{ count($watching) }}</span>)
+            </button>
+            <button class="filter-tab px-4 py-2 text-sm font-semibold rounded-lg transition" data-filter="watched" data-count="{{ count($watched) }}">
+                {{ __('watchlist.filter_watched') }} (<span class="tab-count">{{ count($watched) }}</span>)
+            </button>
         </div>
 
-        <div class="content-grid" id="watchlistGrid">
+        <!-- SECTION 4: UNIFIED GRID -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-12" id="watchlistGrid">
             @foreach($items as $item)
-                <div class="content-card group fade-in watchlist-item" data-watched="{{ $item->is_watched ? 'true' : 'false' }}" data-watching="{{ $item->is_watching ? 'true' : 'false' }}" data-in-watchlist="{{ $item->is_in_watchlist ? 'true' : 'false' }}" data-content-id="{{ $item->tmdb_id }}" data-title="{{ $item->kdrama->name ?? 'Unknown' }}">
+                <div class="group relative overflow-hidden rounded-xl h-52 sm:h-60 cursor-pointer transition-transform duration-300 hover:scale-105 watchlist-item"
+                     data-watched="{{ $item->is_watched ? 'true' : 'false' }}"
+                     data-watching="{{ $item->is_watching ? 'true' : 'false' }}"
+                     data-in-watchlist="{{ $item->is_in_watchlist ? 'true' : 'false' }}"
+                     data-content-id="{{ $item->tmdb_id }}"
+                     data-title="{{ $item->kdrama->name ?? 'Unknown' }}">
+
                     <!-- Status Badge -->
+                    <div class="absolute top-2 left-2 text-white px-3 py-1 rounded-full text-xs font-semibold z-10 status-badge pointer-events-none">
+                        @if($item->is_watched)
+                            <span class="bg-green-600">{{ __('watchlist.status_watched') }}</span>
+                        @elseif($item->is_watching)
+                            <span class="bg-amber-500">{{ __('watchlist.status_watching') }}</span>
+                        @else
+                            <span class="bg-red-600">{{ __('watchlist.status_to_watch') }}</span>
+                        @endif
+                    </div>
+
+                    <!-- Poster Link -->
+                    <a href="{{ route('kdrams.show', $item->tmdb_id) }}" class="absolute inset-0 z-5 block"></a>
+                    <div class="absolute inset-0 z-0">
+                        @if($item->kdrama && $item->kdrama->poster_path)
+                            <img src="https://image.tmdb.org/t/p/w500{{ $item->kdrama->poster_path }}"
+                                 alt="{{ $item->kdrama->name }}"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                 loading="lazy"
+                                 decoding="async">
+                        @else
+                            <div class="w-full h-full bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
+                                <div class="text-4xl">🎬</div>
+                            </div>
+                        @endif
+
+                        <!-- Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    </div>
+
+                    <!-- Content Overlay (Title & Date) -->
+                    <div class="absolute inset-0 flex flex-col justify-between p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100 z-30 pointer-events-none">
+                        <div></div>
+                        <div class="space-y-2">
+                            <h3 class="text-white font-semibold leading-tight line-clamp-2 text-xs sm:text-sm">
+                                {{ $item->kdrama->name ?? $item->kdrama->en_name ?? 'Unknown' }}
+                            </h3>
+                            @if($item->kdrama && $item->kdrama->first_air_date)
+                                <p class="text-slate-200 text-xs">
+                                    📅 {{ \Carbon\Carbon::parse($item->kdrama->first_air_date)->format(__('home.date_format')) }}
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-2 items-center justify-center px-3 py-3 z-20 backdrop-blur-sm pointer-events-none group-hover:pointer-events-auto">
+                        <button type="button" class="px-2.5 py-2 rounded-lg text-white text-base transition toggle-watchlist-btn {{ $item->is_in_watchlist ? 'bg-red-600 cursor-default' : 'bg-white/20 hover:bg-red-500/80 cursor-pointer' }}" data-content-id="{{ $item->tmdb_id }}" title="{{ __('watchlist.title_watchlist_toggle') }}" {{ $item->is_in_watchlist ? 'disabled' : '' }}>
+                            📺
+                        </button>
+                        <button type="button" class="px-2.5 py-2 rounded-lg text-white text-base transition toggle-watching-btn {{ $item->is_watching ? 'bg-amber-600 cursor-default' : 'bg-white/20 hover:bg-amber-500/80 cursor-pointer' }}" data-content-id="{{ $item->tmdb_id }}" title="{{ __('watchlist.title_watching_toggle') }}" {{ $item->is_watching ? 'disabled' : '' }}>
+                            🎬
+                        </button>
+                        <button type="button" class="px-2.5 py-2 rounded-lg text-white text-base transition toggle-watched-btn {{ $item->is_watched ? 'bg-green-600 cursor-default' : 'bg-white/20 hover:bg-green-500/80 cursor-pointer' }}" data-content-id="{{ $item->tmdb_id }}" title="{{ __('watchlist.title_watched_toggle') }}" {{ $item->is_watched ? 'disabled' : '' }}>
+                            ✅
+                        </button>
+                        <button type="button" class="px-2.5 py-2 rounded-lg bg-white/20 hover:bg-red-600/80 text-white text-base transition delete-btn cursor-pointer" data-content-id="{{ $item->tmdb_id }}" title="{{ __('watchlist.title_delete') }}">
+                            🗑️
+                        </button>
+                    </div>
+
+                    <!-- Rating (for watched items) -->
                     @if($item->is_watched)
-                        <div class="absolute top-2 left-2 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
-                            {{ __('watchlist.status_watched') }}
-                        </div>
-                    @elseif($item->is_watching)
-                        <div class="absolute top-2 left-2 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
-                            {{ __('watchlist.status_watching') }}
-                        </div>
-                    @else
-                        <div class="absolute top-2 left-2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
-                            {{ __('watchlist.status_to_watch') }}
+                        <div class="absolute bottom-2 right-2 z-10 rating-display-container" data-current-rating="{{ $item->rating }}" data-content-id="{{ $item->tmdb_id }}">
+                            @if($item->rating)
+                                <span class="rating-emoji text-lg bg-black/30 backdrop-blur-sm px-1.5 py-0.5 rounded-lg inline-block">
+                                    {{ $item->rating === 1 ? '👎' : ($item->rating === 2 ? '👍' : '👍👍') }}
+                                </span>
+                            @endif
+                            <div class="rating-menu hidden absolute bottom-8 right-0 bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-lg p-1.5 flex gap-1 shadow-lg" style="z-index: 20;">
+                                <button type="button" class="watchlist-rating-btn px-2 py-1.5 rounded text-xs font-bold bg-slate-700 hover:bg-red-600 transition" data-rating="1" title="{{ __('watchlist.title_rating_bad') }}">👎</button>
+                                <button type="button" class="watchlist-rating-btn px-2 py-1.5 rounded text-xs font-bold bg-slate-700 hover:bg-green-600 transition" data-rating="2" title="{{ __('watchlist.title_rating_good') }}">👍</button>
+                                <button type="button" class="watchlist-rating-btn px-2 py-1.5 rounded text-xs font-bold bg-slate-700 hover:bg-purple-600 transition" data-rating="3" title="{{ __('watchlist.title_rating_very_good') }}">👍👍</button>
+                                <button type="button" class="watchlist-rating-btn px-2 py-1.5 rounded text-xs font-bold bg-slate-700 hover:bg-red-500 transition" data-rating="null" title="{{ __('watchlist.title_rating_remove') }}">✕</button>
+                            </div>
                         </div>
                     @endif
-
-                    <a href="{{ route('kdrams.show', $item->tmdb_id) }}" class="block">
-                        <div class="content-image">
-                            @if($item->kdrama && $item->kdrama->poster_path)
-                                <img
-                                    src="https://image.tmdb.org/t/p/w500{{ $item->kdrama->poster_path }}"
-                                    alt="{{ $item->kdrama->name }}"
-                                >
-                            @else
-                                <div class="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-                                    <span class="text-slate-400 text-center">
-                                        <div class="text-3xl mb-2">🎬</div>
-                                        {{ __('watchlist.no_image') }}
-                                    </span>
-                                </div>
-                            @endif
-
-                            <!-- Action buttons overlay -->
-                            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-6 items-center justify-center px-6 py-3">
-                                <!-- Watchlist Toggle -->
-                                <button type="button" class="card-icon-btn toggle-watchlist-btn {{ $item->is_in_watchlist ? 'active' : '' }}" data-content-id="{{ $item->tmdb_id }}" data-label="{{ __('watchlist.btn_list') }}" title="{{ __('watchlist.title_watchlist_toggle') }}">
-                                    📺
-                                </button>
-
-                                <!-- Watching Toggle -->
-                                <button type="button" class="card-icon-btn toggle-watching-btn {{ $item->is_watching ? 'active' : '' }}" data-content-id="{{ $item->tmdb_id }}" data-label="{{ __('watchlist.btn_watching') }}" title="{{ __('watchlist.title_watching_toggle') }}">
-                                    🎬
-                                </button>
-
-                                <!-- Watched Toggle -->
-                                <button type="button" class="card-icon-btn toggle-watched-btn {{ $item->is_watched ? 'active' : '' }}" data-content-id="{{ $item->tmdb_id }}" data-label="{{ __('watchlist.btn_watched') }}" title="{{ __('watchlist.title_watched_toggle') }}">
-                                    ✅
-                                </button>
-
-                                <!-- Delete Button -->
-                                <button type="button" class="card-icon-btn delete-btn" data-content-id="{{ $item->tmdb_id }}" data-label="{{ __('watchlist.title_delete') }}" title="{{ __('watchlist.title_delete') }}">
-                                    🗑️
-                                </button>
-                            </div>
-
-                            <!-- Rating display for watched items -->
-                            @if($item->is_watched)
-                                <div class="absolute bottom-1 right-1 rating-display-container" data-current-rating="{{ $item->rating }}" data-content-id="{{ $item->tmdb_id }}">
-                                    <!-- Show selected rating emoji if rated, otherwise show hidden menu -->
-                                    @if($item->rating)
-                                        <span class="rating-emoji text-lg bg-black/30 backdrop-blur-sm px-1.5 py-0.5 rounded-lg inline-block">
-                                            {{ $item->rating === 1 ? '👎' : ($item->rating === 2 ? '👍' : '👍👍') }}
-                                        </span>
-                                    @endif
-                                    <!-- Hidden rating menu appears on hover -->
-                                    <div class="rating-menu hidden absolute bottom-8 right-0 bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-lg p-1.5 flex gap-1 shadow-lg" style="z-index: 20;">
-                                        <button type="button" class="watchlist-rating-btn px-2 py-1.5 rounded text-xs font-bold bg-slate-700 hover:bg-red-600 transition flex items-center justify-center" data-rating="1" title="{{ __('watchlist.title_rating_bad') }}">👎</button>
-                                        <button type="button" class="watchlist-rating-btn px-2 py-1.5 rounded text-xs font-bold bg-slate-700 hover:bg-green-600 transition flex items-center justify-center" data-rating="2" title="{{ __('watchlist.title_rating_good') }}">👍</button>
-                                        <button type="button" class="watchlist-rating-btn px-2 py-1.5 rounded text-xs font-bold bg-slate-700 hover:bg-purple-600 transition flex items-center justify-center" data-rating="3" title="{{ __('watchlist.title_rating_very_good') }}">👍👍</button>
-                                        <button type="button" class="watchlist-rating-btn px-2 py-1.5 rounded text-xs font-bold bg-slate-700 hover:bg-red-500 transition flex items-center justify-center" data-rating="null" title="{{ __('watchlist.title_rating_remove') }}">✕</button>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    </a>
-
-                    <div class="p-4">
-                        <a href="{{ route('kdrams.show', $item->tmdb_id) }}" class="block">
-                            <h3 class="font-bold text-lg text-slate-100 group-hover:text-red-400 transition line-clamp-2">
-                                {{ $item->kdrama->name ?? __('watchlist.unknown_drama') }}
-                            </h3>
-                        </a>
-                        <p class="text-slate-400 text-sm mt-2">
-                            @if($item->kdrama && $item->kdrama->first_air_date)
-                                📅
-                                @php
-                                    $date = $item->kdrama->first_air_date;
-                                    if (is_string($date)) {
-                                        $date = \Carbon\Carbon::parse($date);
-                                    }
-                                @endphp
-                                {{ $date->format('Y') }}
-                            @endif
-                        </p>
-                    </div>
                 </div>
             @endforeach
         </div>
+
+        <!-- SECTION 5: RATINGS SECTION -->
+        @php
+            $ratedItems = $items->filter(fn($i) => $i->rating !== null);
+        @endphp
+        @if(count($ratedItems) > 0)
+            <div class="mt-12 border border-slate-700 bg-slate-900/30 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-semibold text-xl text-slate-100 flex items-center gap-2">
+                        ⭐ {{ __('dashboard.section_ratings') }} ({{ count($ratedItems) }})
+                    </h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($ratedItems as $item)
+                        <div class="border border-slate-600 bg-slate-700/30 rounded-lg p-4 hover:border-purple-500/50 transition">
+                            <a href="{{ route('kdrams.show', $item->tmdb_id) }}"
+                               class="text-slate-100 hover:text-purple-400 font-semibold text-sm block mb-3 line-clamp-2 transition">
+                                {{ $item->kdrama->name ?? $item->kdrama->en_name ?? 'K-Drama #'.$item->tmdb_id }}
+                            </a>
+
+                            <div class="flex items-center gap-2 mb-3">
+                                @if($item->rating == 1)
+                                    <span class="text-lg">👎</span>
+                                    <span class="text-red-400 font-semibold text-sm">{{ __('dashboard.rating_bad') }}</span>
+                                @elseif($item->rating == 2)
+                                    <span class="text-lg">👍</span>
+                                    <span class="text-green-400 font-semibold text-sm">{{ __('dashboard.rating_good') }}</span>
+                                @elseif($item->rating == 3)
+                                    <span class="text-lg">👍👍</span>
+                                    <span class="text-purple-400 font-semibold text-sm">{{ __('dashboard.rating_very_good') }}</span>
+                                @endif
+                            </div>
+
+                            <p class="text-slate-500 text-xs">
+                                {{ $item->updated_at->diffForHumans() }}
+                            </p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     @else
-        <div class="card-dark py-24 text-center">
-            <div class="text-6xl mb-6">🍿</div>
-            <h2 class="text-2xl font-bold text-slate-200 mb-4">{{ __('watchlist.empty_title') }}</h2>
-            <p class="text-slate-400 mb-8 max-w-md mx-auto">
-                {{ __('watchlist.empty_description') }}
-            </p>
-            <a href="{{ route('kdrams.catalog') }}" class="btn-primary inline-block">
+        <!-- EMPTY STATE -->
+        <div class="rounded-xl border-2 border-dashed border-slate-600/50 bg-slate-900/30 backdrop-blur-sm py-24 px-6 text-center">
+            <div class="text-7xl mb-6">🍿</div>
+            <h2 class="text-3xl font-bold text-white mb-4">{{ __('watchlist.empty_title') }}</h2>
+            <p class="text-slate-400 mb-10 max-w-md mx-auto text-base">{{ __('watchlist.empty_description') }}</p>
+            <a href="{{ route('kdrams.catalog') }}" class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-lg shadow-lg hover:shadow-red-600/40 transition-all duration-300 transform hover:scale-105">
                 {{ __('watchlist.empty_cta') }}
             </a>
         </div>
@@ -162,85 +211,44 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const filterBtns = document.querySelectorAll('.filter-btn');
+    const filterTabs = document.querySelectorAll('.filter-tab');
     const watchlistItems = document.querySelectorAll('.watchlist-item');
-    const watchlistToggleBtns = document.querySelectorAll('.toggle-watchlist-btn');
-    const watchingBtns = document.querySelectorAll('.toggle-watching-btn');
-    const watchedBtns = document.querySelectorAll('.toggle-watched-btn');
-    const deleteBtns = document.querySelectorAll('.delete-btn');
-    let currentFilter = 'all';
 
-    // Update counter badges
-    function updateCounters() {
-        let toWatchCount = 0;
-        let watchingCount = 0;
-        let watchedCount = 0;
-
-        document.querySelectorAll('.watchlist-item').forEach(item => {
-            const isWatched = item.dataset.watched === 'true';
-            const isWatching = item.dataset.watching === 'true';
-            const isInWatchlist = item.dataset.inWatchlist === 'true';
-
-            if (isWatched) {
-                watchedCount++;
-            } else if (isWatching) {
-                watchingCount++;
-            } else if (isInWatchlist) {
-                toWatchCount++;
-            }
-        });
-
-        const totalCount = toWatchCount + watchingCount + watchedCount;
-
-        // Update counter displays
-        document.getElementById('countAll').textContent = totalCount;
-        document.getElementById('countToWatch').textContent = toWatchCount;
-        document.getElementById('countWatching').textContent = watchingCount;
-        document.getElementById('countWatched').textContent = watchedCount;
-    }
-
-    // Filter functionality
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            currentFilter = this.dataset.filter;
-
-            // Update active button
-            filterBtns.forEach(b => b.classList.remove('active', 'bg-red-600', 'text-white'));
-            filterBtns.forEach(b => b.classList.add('bg-slate-700', 'text-slate-300'));
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            filterTabs.forEach(t => {
+                t.classList.remove('active', 'bg-red-600', 'text-white');
+                t.classList.add('bg-slate-700', 'text-slate-300');
+            });
             this.classList.remove('bg-slate-700', 'text-slate-300');
             this.classList.add('active', 'bg-red-600', 'text-white');
 
-            // Filter items
             watchlistItems.forEach(item => {
                 const isWatched = item.dataset.watched === 'true';
                 const isWatching = item.dataset.watching === 'true';
                 const isInWatchlist = item.dataset.inWatchlist === 'true';
 
-                if (currentFilter === 'all') {
-                    item.style.display = '';
-                } else if (currentFilter === 'towatch' && isInWatchlist && !isWatched && !isWatching) {
-                    item.style.display = '';
-                } else if (currentFilter === 'watching' && isWatching) {
-                    item.style.display = '';
-                } else if (currentFilter === 'watched' && isWatched) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
+                let show = false;
+                if (filter === 'all') show = true;
+                else if (filter === 'towatch' && isInWatchlist && !isWatched && !isWatching) show = true;
+                else if (filter === 'watching' && isWatching) show = true;
+                else if (filter === 'watched' && isWatched) show = true;
+
+                item.style.display = show ? '' : 'none';
             });
         });
     });
 
-    // Toggle watchlist functionality
-    watchlistToggleBtns.forEach(btn => {
+    document.querySelectorAll('.toggle-watchlist-btn').forEach(btn => {
         btn.addEventListener('click', async function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            if (this.disabled) return;
             const contentId = this.dataset.contentId;
             const item = this.closest('.watchlist-item');
 
             try {
-                this.disabled = true;
-
                 const response = await fetch(`/api/watchlist/toggle/${contentId}`, {
                     method: 'POST',
                     headers: {
@@ -253,123 +261,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     const data = await response.json();
                     item.dataset.inWatchlist = data.inWatchlist ? 'true' : 'false';
-                    item.dataset.watching = 'false'; // Reset watching when toggling watchlist
+                    item.dataset.watching = 'false';
                     item.dataset.watched = data.inWatched ? 'true' : 'false';
-
-                    // Update button colors based on server response
-                    const watchlistBtn = this;
-                    const watchingBtn = item.querySelector('.toggle-watching-btn');
-                    const watchedBtn = item.querySelector('.toggle-watched-btn');
-
-                    if (data.inWatchlist) {
-                        watchlistBtn.classList.remove('bg-slate-600', 'hover:bg-slate-700');
-                        watchlistBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-                        watchingBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
-                        watchingBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
-                        watchedBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                        watchedBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
-                    } else {
-                        watchlistBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                        watchlistBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
-                    }
-                    showToast(data.message, 'success');
-
-                    // Update badge and counters
                     updateBadge(item);
-                    updateCounters();
-
-                    // Re-apply filter if needed
-                    if (currentFilter === 'towatch' && item.dataset.watched === 'false' && item.dataset.watching === 'false' && item.dataset.inWatchlist === 'false') {
-                        // Was in towatch, now not in any category
-                        item.style.display = 'none';
-                    }
-                } else {
-                    showToast(window.i18n.watchlist_error_modify, 'error');
+                    updateButtonStyles(item);
+                    showToast(data.message, 'success');
                 }
             } catch (error) {
-                console.error('Erreur:', error);
-                showToast(window.i18n.watchlist_error_modify, 'error');
-            } finally {
-                this.disabled = false;
+                console.error('Error:', error);
+                showToast(window.i18n?.watchlist_error_modify || 'Error', 'error');
             }
         });
     });
 
-    // Toggle watched functionality
-    watchedBtns.forEach(btn => {
+    document.querySelectorAll('.toggle-watching-btn').forEach(btn => {
         btn.addEventListener('click', async function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            if (this.disabled) return;
             const contentId = this.dataset.contentId;
             const item = this.closest('.watchlist-item');
 
             try {
-                this.disabled = true;
-
-                const response = await fetch(`/api/watched/toggle/${contentId}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    item.dataset.watched = data.inWatched ? 'true' : 'false';
-                    item.dataset.watching = 'false'; // Reset watching when toggling watched
-                    item.dataset.inWatchlist = data.inWatchlist ? 'true' : 'false';
-
-                    // Update watched, watching and watchlist button colors
-                    const watchedBtn = this;
-                    const watchingBtn = item.querySelector('.toggle-watching-btn');
-                    const watchlistBtn = item.querySelector('.toggle-watchlist-btn');
-
-                    if (data.inWatched) {
-                        watchedBtn.classList.remove('bg-slate-600', 'hover:bg-slate-700');
-                        watchedBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                        watchingBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
-                        watchingBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
-                        watchlistBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                        watchlistBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
-                    } else {
-                        watchedBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                        watchedBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
-                    }
-                    showToast(data.message, 'success');
-
-                    // Update badge and counters
-                    updateBadge(item);
-                    updateCounters();
-
-                    // Re-apply filter if needed
-                    if (currentFilter === 'towatch' && item.dataset.watched === 'true') {
-                        item.style.display = 'none';
-                    } else if (currentFilter === 'watched' && item.dataset.watched === 'false') {
-                        item.style.display = 'none';
-                    }
-                } else {
-                    showToast(window.i18n.watchlist_error_modify, 'error');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showToast(window.i18n.watchlist_error_modify, 'error');
-            } finally {
-                this.disabled = false;
-            }
-        });
-    });
-
-    // Toggle watching functionality
-    watchingBtns.forEach(btn => {
-        btn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const contentId = this.dataset.contentId;
-            const item = this.closest('.watchlist-item');
-
-            try {
-                this.disabled = true;
-
                 const response = await fetch(`/api/watching/toggle/${contentId}`, {
                     method: 'POST',
                     headers: {
@@ -384,67 +297,79 @@ document.addEventListener('DOMContentLoaded', function() {
                     item.dataset.watching = data.inWatching ? 'true' : 'false';
                     item.dataset.inWatchlist = data.inWatchlist || false ? 'true' : 'false';
                     item.dataset.watched = data.inWatched || false ? 'true' : 'false';
-
-                    // Update watching, watchlist and watched button colors
-                    const watchingBtn = this;
-                    const watchlistBtn = item.querySelector('.toggle-watchlist-btn');
-                    const watchedBtn = item.querySelector('.toggle-watched-btn');
-
-                    if (data.inWatching) {
-                        watchingBtn.classList.remove('bg-slate-600', 'hover:bg-slate-700');
-                        watchingBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
-                        watchlistBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                        watchlistBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
-                        watchedBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                        watchedBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
-                    } else {
-                        watchingBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
-                        watchingBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
-                    }
-                    showToast(data.message, 'success');
-
-                    // Update badge and counters
                     updateBadge(item);
-                    updateCounters();
-
-                    // Re-apply filter if needed
-                    if (currentFilter === 'watching' && item.dataset.watching === 'false') {
-                        item.style.display = 'none';
-                    } else if (currentFilter === 'towatch' && item.dataset.watching === 'true') {
-                        item.style.display = 'none';
-                    }
-                } else {
-                    showToast(window.i18n.watchlist_error_modify, 'error');
+                    updateButtonStyles(item);
+                    showToast(data.message, 'success');
                 }
             } catch (error) {
-                console.error('Erreur:', error);
-                showToast(window.i18n.watchlist_error_modify, 'error');
-            } finally {
-                this.disabled = false;
+                console.error('Error:', error);
+                showToast(window.i18n?.watchlist_error_modify || 'Error', 'error');
             }
         });
     });
 
-    // Delete functionality
-    deleteBtns.forEach(btn => {
+    document.querySelectorAll('.toggle-watched-btn').forEach(btn => {
         btn.addEventListener('click', async function(e) {
             e.preventDefault();
-
-            const action = this.dataset.action;
+            e.stopPropagation();
+            if (this.disabled) return;
             const contentId = this.dataset.contentId;
             const item = this.closest('.watchlist-item');
-            const deleteBtn = this;
-            const dramaTitle = item.dataset.title;
 
-            // Build confirmation message with drama title
-            const confirmMsg = (window.i18n.watchlist_confirm_delete_item || 'Supprimer "{title}"?')
-                .replace('{title}', dramaTitle);
+            try {
+                const response = await fetch(`/api/watched/toggle/${contentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    },
+                });
 
-            // Show modal confirmation with drama title
-            showConfirmModal(confirmMsg, async () => {
+                if (response.ok) {
+                    const data = await response.json();
+                    item.dataset.watched = data.inWatched ? 'true' : 'false';
+                    item.dataset.watching = 'false';
+                    item.dataset.inWatchlist = data.inWatchlist ? 'true' : 'false';
+                    updateBadge(item);
+                    updateButtonStyles(item);
+                    showToast(data.message, 'success');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast(window.i18n?.watchlist_error_modify || 'Error', 'error');
+            }
+        });
+    });
+
+    document.querySelectorAll('.watchlist-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            // Check if click is on a button or its parent
+            if (e.target.closest('.toggle-watchlist-btn') ||
+                e.target.closest('.toggle-watching-btn') ||
+                e.target.closest('.toggle-watched-btn') ||
+                e.target.closest('.delete-btn') ||
+                e.target.closest('.watchlist-rating-btn')) {
+                return;
+            }
+            // Redirect to drama page
+            const contentId = this.dataset.contentId;
+            if (contentId) {
+                window.location.href = `/kdrams/${contentId}`;
+            }
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const contentId = this.dataset.contentId;
+            const item = this.closest('.watchlist-item');
+            const title = item.dataset.title;
+
+            showConfirmModal((window.i18n?.watchlist_confirm_delete_item || 'Delete "{title}"?').replace('{title}', title), async () => {
                 try {
-                    deleteBtn.disabled = true;
-
                     const response = await fetch(`/api/watchlist/${contentId}`, {
                         method: 'DELETE',
                         headers: {
@@ -454,62 +379,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
 
                     if (response.ok) {
-                        const data = await response.json();
-
-                        // Animate removal
-                        item.style.transition = 'opacity 0.3s ease';
                         item.style.opacity = '0';
                         setTimeout(() => {
                             item.remove();
-                            showToast(data.message || window.i18n.watchlist_action_done, 'success');
-
-                            // Update counters
-                            updateCounters();
-
-                            // Check if grid is empty
                             if (document.querySelectorAll('.watchlist-item').length === 0) {
                                 location.reload();
                             }
+                            showToast(window.i18n?.watchlist_action_done || 'Done', 'success');
                         }, 300);
-                    } else {
-                        showToast(window.i18n.watchlist_error_delete, 'error');
-                        deleteBtn.disabled = false;
                     }
                 } catch (error) {
-                    console.error('Erreur:', error);
-                    showToast(window.i18n.watchlist_error_delete, 'error');
-                    deleteBtn.disabled = false;
+                    console.error('Error:', error);
+                    showToast(window.i18n?.watchlist_error_delete || 'Error', 'error');
                 }
-            }, null, dramaTitle);
+            }, null, title);
         });
     });
 
-    // Rating functionality for watched items
-    const ratingContainers = document.querySelectorAll('.rating-display-container');
-
-    ratingContainers.forEach(container => {
+    document.querySelectorAll('.rating-display-container').forEach(container => {
         const menu = container.querySelector('.rating-menu');
-        const ratingBtns = menu.querySelectorAll('.watchlist-rating-btn');
+        container.addEventListener('mouseenter', () => menu.classList.remove('hidden'));
+        container.addEventListener('mouseleave', () => menu.classList.add('hidden'));
 
-        // Show/hide menu on hover
-        container.addEventListener('mouseenter', () => {
-            menu.classList.remove('hidden');
-        });
-
-        container.addEventListener('mouseleave', () => {
-            menu.classList.add('hidden');
-        });
-
-        ratingBtns.forEach(btn => {
+        menu.querySelectorAll('.watchlist-rating-btn').forEach(btn => {
             btn.addEventListener('click', async function(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 const contentId = container.dataset.contentId;
-                const ratingStr = this.dataset.rating;
-                const rating = ratingStr === 'null' ? null : parseInt(ratingStr);
+                const rating = this.dataset.rating === 'null' ? null : parseInt(this.dataset.rating);
 
                 try {
-                    this.disabled = true;
-
                     const response = await fetch(`/api/rating/${contentId}`, {
                         method: 'POST',
                         headers: {
@@ -526,15 +425,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         updateRatingDisplay(container);
                         menu.classList.add('hidden');
                         showToast(data.message, 'success');
-                    } else {
-                        const data = await response.json();
-                        showToast(data.error || window.i18n.watchlist_error_rating, 'error');
                     }
                 } catch (error) {
-                    console.error('Erreur:', error);
-                    showToast(window.i18n.watchlist_error_connection, 'error');
-                } finally {
-                    this.disabled = false;
+                    console.error('Error:', error);
+                    showToast(window.i18n?.watchlist_error_connection || 'Error', 'error');
                 }
             });
         });
@@ -550,66 +444,77 @@ document.addEventListener('DOMContentLoaded', function() {
                 emojiSpan.textContent = emoji;
             } else {
                 const span = document.createElement('span');
-                span.className = 'rating-emoji text-lg';
+                span.className = 'rating-emoji text-lg bg-black/30 backdrop-blur-sm px-1.5 py-0.5 rounded-lg inline-block';
                 span.textContent = emoji;
                 container.insertBefore(span, container.querySelector('.rating-menu'));
             }
         } else {
-            if (emojiSpan) {
-                emojiSpan.remove();
-            }
+            if (emojiSpan) emojiSpan.remove();
         }
     }
 
-    // Initialize rating displays
-    ratingContainers.forEach(container => updateRatingDisplay(container));
-
     function updateBadge(item) {
-        const badgeContainer = item.querySelector('.absolute.top-2.left-2');
+        const badge = item.querySelector('.status-badge');
         const isWatched = item.dataset.watched === 'true';
         const isWatching = item.dataset.watching === 'true';
 
-        // Remove all color classes
-        badgeContainer.classList.remove('bg-green-600', 'bg-amber-500', 'bg-red-600');
-
-        // Add correct color based on state (exclusive: only one can be true)
+        let html = '';
         if (isWatched) {
-            badgeContainer.classList.add('bg-green-600');
-            badgeContainer.textContent = window.i18n.watchlist_badge_watched;
+            html = '<span class="bg-green-600">' + (window.i18n?.watchlist_badge_watched || 'Watched') + '</span>';
         } else if (isWatching) {
-            badgeContainer.classList.add('bg-amber-500');
-            badgeContainer.textContent = window.i18n.watchlist_badge_watching;
+            html = '<span class="bg-amber-500">' + (window.i18n?.watchlist_badge_watching || 'Watching') + '</span>';
         } else {
-            badgeContainer.classList.add('bg-red-600');
-            badgeContainer.textContent = window.i18n.watchlist_badge_to_watch;
+            html = '<span class="bg-red-600">' + (window.i18n?.watchlist_badge_to_watch || 'To Watch') + '</span>';
+        }
+        badge.innerHTML = html;
+    }
+
+    function updateButtonStyles(item) {
+        const isInWatchlist = item.dataset.inWatchlist === 'true';
+        const isWatching = item.dataset.watching === 'true';
+        const isWatched = item.dataset.watched === 'true';
+
+        // Update watchlist button
+        const watchlistBtn = item.querySelector('.toggle-watchlist-btn');
+        if (watchlistBtn) {
+            watchlistBtn.disabled = isInWatchlist;
+            watchlistBtn.className = 'px-2.5 py-2 rounded-lg text-white text-base transition toggle-watchlist-btn ' +
+                (isInWatchlist ? 'bg-red-600 cursor-default' : 'bg-white/20 hover:bg-red-500/80 cursor-pointer');
+        }
+
+        // Update watching button
+        const watchingBtn = item.querySelector('.toggle-watching-btn');
+        if (watchingBtn) {
+            watchingBtn.disabled = isWatching;
+            watchingBtn.className = 'px-2.5 py-2 rounded-lg text-white text-base transition toggle-watching-btn ' +
+                (isWatching ? 'bg-amber-600 cursor-default' : 'bg-white/20 hover:bg-amber-500/80 cursor-pointer');
+        }
+
+        // Update watched button
+        const watchedBtn = item.querySelector('.toggle-watched-btn');
+        if (watchedBtn) {
+            watchedBtn.disabled = isWatched;
+            watchedBtn.className = 'px-2.5 py-2 rounded-lg text-white text-base transition toggle-watched-btn ' +
+                (isWatched ? 'bg-green-600 cursor-default' : 'bg-white/20 hover:bg-green-500/80 cursor-pointer');
         }
     }
 
     function showToast(message, type = 'success') {
-        const existingToast = document.querySelector('.toast');
-        if (existingToast) {
-            existingToast.remove();
-        }
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
 
         const toast = document.createElement('div');
-        toast.className = `toast fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-semibold shadow-lg z-50 animate-in fade-in slide-in-from-top`;
-
-        if (type === 'success') {
-            toast.classList.add('bg-green-600');
-        } else {
-            toast.classList.add('bg-red-600');
-        }
-
+        toast.className = `toast fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-semibold shadow-lg z-50`;
+        toast.classList.add(type === 'success' ? 'bg-green-600' : 'bg-red-600');
         toast.textContent = message;
         document.body.appendChild(toast);
 
         setTimeout(() => {
-            toast.style.animation = 'fade-out 0.3s ease-out forwards';
+            toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
 
-    // Confirmation modal
     window.showConfirmModal = function(message, onConfirm, onCancel = null, title = null) {
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
@@ -619,16 +524,16 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="fixed inset-0 bg-black/50" onclick="closeConfirmModal()"></div>
             <div class="relative bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full mx-4 p-6">
                 <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <span>⚠️</span> ${window.i18n.watchlist_confirm_title || 'Confirmation'}
+                    <span>⚠️</span> ${window.i18n?.watchlist_confirm_title || 'Confirm'}
                 </h3>
                 ${titleHTML}
                 <p class="text-slate-300 mb-6">${message}</p>
                 <div class="flex gap-3">
                     <button class="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition" onclick="closeConfirmModal()">
-                        ${window.i18n.watchlist_confirm_cancel || 'Annuler'}
+                        ${window.i18n?.watchlist_confirm_cancel || 'Cancel'}
                     </button>
                     <button class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition" id="confirmBtn">
-                        ${window.i18n.watchlist_confirm_delete_btn || 'Supprimer'}
+                        ${window.i18n?.watchlist_confirm_delete_btn || 'Delete'}
                     </button>
                 </div>
             </div>
@@ -640,7 +545,6 @@ document.addEventListener('DOMContentLoaded', function() {
             onConfirm();
         });
 
-        // Close on Escape key
         const handleEscape = (e) => {
             if (e.key === 'Escape') {
                 closeConfirmModal();
@@ -653,14 +557,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.closeConfirmModal = function() {
         const modal = document.getElementById('confirmModal');
-        if (modal) {
-            modal.remove();
-        }
+        if (modal) modal.remove();
     };
 });
 </script>
 
-<!-- Export Modal -->
 @include('watchlist._export-modal')
 
 @endsection

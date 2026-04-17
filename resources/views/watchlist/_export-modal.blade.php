@@ -1,12 +1,12 @@
 <div id="exportModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <!-- Overlay -->
-        <div class="fixed inset-0 transition-opacity bg-slate-900 bg-opacity-90" onclick="closeExportModal()" aria-hidden="true"></div>
+        <div class="fixed inset-0 transition-opacity bg-black/60 backdrop-blur-sm" onclick="closeExportModal()" aria-hidden="true"></div>
 
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
         <!-- Modal Content -->
-        <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+        <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-slate-900 border border-slate-700 rounded-xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
             <!-- Close button -->
             <div class="absolute top-4 right-4 z-10">
                 <button onclick="closeExportModal()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-full transition">
@@ -25,7 +25,7 @@
             </div>
 
             <!-- Form -->
-            <form id="exportForm" class="p-6 sm:p-8 space-y-6">
+            <form id="exportForm" class="p-6 sm:p-8 space-y-8">
                 @csrf
 
                 <!-- Filtres -->

@@ -18,11 +18,11 @@ class ApiKeyHelper
 
         $length = strlen($apiKey);
         if ($length <= 4) {
-            return str_repeat('•', $length);
+            return str_repeat('*', $length);
         }
 
         $lastFour = substr($apiKey, -4);
-        $masked = str_repeat('•', $length - 4).$lastFour;
+        $masked = str_repeat('*', $length - 4).$lastFour;
 
         return $masked;
     }

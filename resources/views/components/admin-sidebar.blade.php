@@ -107,12 +107,24 @@
             </a>
 
             <!-- Telescope (Debug Tool) -->
-            <a href="/telescope"
-               class="block px-4 py-3 rounded-lg {{ request()->url() == url('/telescope') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700' }} transition">
-                <span class="flex items-center gap-2">
-                    <span>🔍</span> {{ __('admin.nav_telescope') }}
-                </span>
-            </a>
+            @php
+                $telescopeDisabled = config('app.env') === 'production' && !config('telescope.enabled');
+            @endphp
+
+            @if($telescopeDisabled)
+                <div class="block px-4 py-3 rounded-lg text-slate-500 cursor-not-allowed transition group relative" title="{{ __('admin.nav_telescope_disabled_tooltip') }}">
+                    <span class="flex items-center gap-2 opacity-50">
+                        <span>🔍</span> {{ __('admin.nav_telescope') }}
+                    </span>
+                </div>
+            @else
+                <a href="/telescope"
+                   class="block px-4 py-3 rounded-lg {{ request()->url() == url('/telescope') ? 'bg-red-600 text-white' : 'text-slate-300 hover:bg-slate-700' }} transition">
+                    <span class="flex items-center gap-2">
+                        <span>🔍</span> {{ __('admin.nav_telescope') }}
+                    </span>
+                </a>
+            @endif
         </div>
 
         <!-- Divider -->
@@ -287,9 +299,16 @@
                 <a href="{{ route('admin.icons.search') }}" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition" onclick="toggleMobileAdminMenu()">
                     <span class="flex items-center gap-2"><span>🎨</span> {{ __('admin.nav_icon_picker') }}</span>
                 </a>
-                <a href="/telescope" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition" onclick="toggleMobileAdminMenu()">
-                    <span class="flex items-center gap-2"><span>🔍</span> {{ __('admin.nav_telescope') }}</span>
-                </a>
+
+                @if($telescopeDisabled)
+                    <div class="block px-4 py-3 rounded-lg text-slate-500 cursor-not-allowed transition" title="{{ __('admin.nav_telescope_disabled_tooltip') }}">
+                        <span class="flex items-center gap-2 opacity-50"><span>🔍</span> {{ __('admin.nav_telescope') }}</span>
+                    </div>
+                @else
+                    <a href="/telescope" class="block px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition" onclick="toggleMobileAdminMenu()">
+                        <span class="flex items-center gap-2"><span>🔍</span> {{ __('admin.nav_telescope') }}</span>
+                    </a>
+                @endif
             </div>
 
             <div class="my-4 border-t border-slate-700"></div>

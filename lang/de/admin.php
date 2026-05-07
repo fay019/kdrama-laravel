@@ -24,6 +24,7 @@ return [
     'nav_messages' => 'Nachrichten',
     'nav_icon_picker' => 'Icon Picker',
     'nav_telescope' => 'Telescope',
+    'nav_telescope_disabled_tooltip' => 'Telescope ist in der Produktion über die .env-Datei deaktiviert',
 
     // Exports Navigation
     'nav_cache_pdfs' => 'PDFs zwischenspeichern',

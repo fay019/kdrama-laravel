@@ -24,6 +24,7 @@ return [
     'nav_messages' => 'Messages',
     'nav_icon_picker' => 'Icon Picker',
     'nav_telescope' => 'Telescope',
+    'nav_telescope_disabled_tooltip' => 'Telescope is disabled in production via the .env file',
 
     // Exports Navigation
     'nav_cache_pdfs' => 'Cache PDFs',

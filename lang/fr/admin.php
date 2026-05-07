@@ -408,4 +408,11 @@ return [
     'jobs_status_completed' => 'Complété',
     'jobs_status_failed' => 'Échoué',
     'jobs_completed_at' => 'Complété à',
+
+    // Queue Worker
+    'jobs_worker_start' => '▶️ Démarrer le Worker',
+    'jobs_worker_start_desc' => 'Lance le worker de file d\'attente en arrière-plan',
+    'jobs_worker_started' => 'Queue worker démarré avec succès.',
+    'jobs_worker_already_running' => 'Le queue worker est déjà en cours d\'exécution.',
+    'jobs_worker_start_failed' => 'Erreur lors du démarrage du queue worker.',
 ];

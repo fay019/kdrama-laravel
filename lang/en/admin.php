@@ -408,4 +408,11 @@ return [
     'jobs_status_completed' => 'Completed',
     'jobs_status_failed' => 'Failed',
     'jobs_completed_at' => 'Completed At',
+
+    // Queue Worker
+    'jobs_worker_start' => '▶️ Start Queue Worker',
+    'jobs_worker_start_desc' => 'Launch background queue worker to process jobs',
+    'jobs_worker_started' => 'Queue worker started successfully.',
+    'jobs_worker_already_running' => 'Queue worker is already running.',
+    'jobs_worker_start_failed' => 'Failed to start queue worker.',
 ];

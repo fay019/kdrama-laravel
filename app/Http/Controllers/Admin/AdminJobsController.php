@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\SyncPopularActors;
+use App\Models\JobHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\Process\Process;
 
 class AdminJobsController extends Controller
 {
@@ -18,6 +20,7 @@ class AdminJobsController extends Controller
             ->get()
             ->map(function ($job) {
                 $payload = json_decode($job->payload, true);
+
                 return [
                     'id' => $job->id,
                     'queue' => $job->queue,
@@ -35,6 +38,7 @@ class AdminJobsController extends Controller
             ->map(function ($job) {
                 $payload = json_decode($job->payload, true);
                 $exception = substr($job->exception, 0, 200);
+
                 return [
                     'uuid' => $job->uuid,
                     'job' => $payload['displayName'] ?? 'Unknown',
@@ -79,7 +83,7 @@ class AdminJobsController extends Controller
         $job = $request->validate(['job' => 'required|in:sync_actors'])['job'];
 
         if ($job === 'sync_actors') {
-            dispatch(new SyncPopularActors());
+            dispatch(new SyncPopularActors);
         }
 
         return back()->with('success', __('admin.jobs_dispatched'));
@@ -126,7 +130,7 @@ class AdminJobsController extends Controller
     {
         $logFile = storage_path('logs/jobs.log');
 
-        if (!file_exists($logFile)) {
+        if (! file_exists($logFile)) {
             return response()->json(['logs' => 'No job logs yet. Launch a job to see logs here.']);
         }
 
@@ -165,9 +169,60 @@ class AdminJobsController extends Controller
 
     public function history()
     {
-        $jobHistory = \App\Models\JobHistory::orderByDesc('completed_at')
+        $jobHistory = JobHistory::orderByDesc('completed_at')
             ->paginate(20);
 
         return view('admin.jobs.history', compact('jobHistory'));
+    }
+
+    public function startWorker()
+    {
+        try {
+            $logFile = storage_path('logs/queue-worker.log');
+            $pidFile = storage_path('queue-worker.pid');
+            $basePath = base_path();
+
+            // Check if worker is already running
+            if (file_exists($pidFile)) {
+                $pidContent = file_get_contents($pidFile);
+                if (preg_match('/^(\d+)/', $pidContent, $matches)) {
+                    $pid = (int) $matches[1];
+                    // Check if process is still alive
+                    exec("ps -p $pid > /dev/null 2>&1", $output, $status);
+                    if ($status === 0) {
+                        return back()->with('success', __('admin.jobs_worker_already_running'));
+                    }
+                }
+            }
+
+            // Ensure log directory exists
+            $logDir = dirname($logFile);
+            if (! is_dir($logDir)) {
+                mkdir($logDir, 0755, true);
+            }
+
+            // Use PHP_BINARY directly (works with Herd/Homebrew)
+            $phpPath = PHP_BINARY;
+
+            // Build command: launch in background without blocking
+            $cmd = sprintf(
+                'cd %s && nohup %s -d memory_limit=512M artisan queue:work --timeout=600 >> %s 2>&1 & echo $! > %s',
+                escapeshellarg($basePath),
+                escapeshellarg($phpPath),
+                escapeshellarg($logFile),
+                escapeshellarg($pidFile)
+            );
+
+            // Execute in background (non-blocking)
+            exec($cmd, $output, $exitCode);
+
+            if ($exitCode !== 0) {
+                return back()->with('error', 'Failed to start worker. Exit code: '.$exitCode);
+            }
+
+            return back()->with('success', __('admin.jobs_worker_started'));
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to start worker: '.$e->getMessage());
+        }
     }
 }

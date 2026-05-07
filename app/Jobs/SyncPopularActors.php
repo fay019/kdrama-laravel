@@ -13,6 +13,8 @@ class SyncPopularActors implements ShouldQueue
 {
     use Queueable;
 
+    public int $maxRetries = 1;
+
     public function __construct()
     {
         //
@@ -20,9 +22,6 @@ class SyncPopularActors implements ShouldQueue
 
     public function handle(TmdbService $tmdbService): void
     {
-        // Increase timeout for long-running job (scanning 100 pages of TMDB)
-        set_time_limit(300);
-
         $jobStartTime = now();
         Log::channel('jobs')->info('Starting Korean drama actors sync job');
 

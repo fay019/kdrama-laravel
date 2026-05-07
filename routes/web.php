@@ -124,6 +124,7 @@ Route::middleware(['auth', 'admin', 'check.password'])->prefix('admin')->name('a
     Route::get('jobs/history', [AdminJobsController::class, 'history'])->name('jobs.history');
     Route::post('jobs/dispatch', [AdminJobsController::class, 'dispatchJob'])->name('jobs.dispatch');
     Route::post('jobs/run-command', [AdminJobsController::class, 'runCommand'])->name('jobs.run-command');
+    Route::post('jobs/worker/start', [AdminJobsController::class, 'startWorker'])->name('jobs.worker.start');
     Route::delete('jobs/pending/{jobId}', [AdminJobsController::class, 'deletePending'])->name('jobs.pending.delete');
     Route::post('jobs/failed/{uuid}/retry', [AdminJobsController::class, 'retryFailed'])->name('jobs.failed.retry');
     Route::delete('jobs/failed/{uuid}', [AdminJobsController::class, 'deleteFailed'])->name('jobs.failed.delete');

@@ -90,7 +90,21 @@
                         </div>
                     </div>
 
-                    <!-- Section 1: Quick Actions -->
+                    <!-- Section 1: Queue Worker Control -->
+                    <div class="bg-slate-800 rounded-lg border border-slate-700 p-5">
+                        <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            ⚙️ {{ __('admin.jobs_worker_start') }}
+                        </h2>
+                        <p class="text-slate-400 mb-4">{{ __('admin.jobs_worker_start_desc') }}</p>
+                        <form method="POST" action="{{ route('admin.jobs.worker.start') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
+                                ▶️ {{ __('admin.jobs_run') }}
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Section 2: Quick Actions -->
                     <div>
                         <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
                             {{ __('admin.jobs_quick_actions') }}
@@ -127,7 +141,7 @@
                         </div>
                     </div>
 
-                    <!-- Section 2: Pending Queue -->
+                    <!-- Section 3: Pending Queue -->
                     <div>
                         <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
                             {{ __('admin.jobs_pending') }} ({{ count($pendingJobs) }})
@@ -205,7 +219,7 @@
                         @endif
                     </div>
 
-                    <!-- Section 3: Failed Jobs -->
+                    <!-- Section 4: Failed Jobs -->
                     <div>
                         <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
                             {{ __('admin.jobs_failed') }} ({{ count($failedJobs) }})

@@ -128,7 +128,7 @@
                          x-transition:leave="transition ease-in duration-75"
                          x-transition:leave-start="opacity-100 translate-y-0"
                          x-transition:leave-end="opacity-0 -translate-y-1"
-                         class="absolute bottom-full left-0 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg shadow-xl border border-slate-700 whitespace-nowrap z-50 pointer-events-none"
+                         class="absolute bottom-full left-0 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg shadow-xl border border-slate-700 z-50 pointer-events-none min-w-[200px] max-w-[250px] whitespace-normal"
                          style="display: none;">
                         <div class="flex items-center gap-2">
                             <span class="text-amber-400">⚠️</span>
@@ -336,7 +336,7 @@
                              x-transition:leave="transition ease-in duration-75"
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 -translate-y-1"
-                             class="absolute bottom-full left-0 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg shadow-xl border border-slate-700 whitespace-nowrap z-50 pointer-events-none"
+                             class="absolute bottom-full left-0 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg shadow-xl border border-slate-700 z-50 pointer-events-none min-w-[200px] max-w-[250px] whitespace-normal"
                              style="display: none;">
                             <div class="flex items-center gap-2">
                                 <span class="text-amber-400">⚠️</span>
